@@ -166,14 +166,14 @@ class White_Light_Inteferometer(tk.Tk):
         print('stop')
 
 def Refresh(app, Frame, receiver):
-    if app.Frame.connected==False:
+    if Frame.connected==False:
         app.after(1000, Refresh, app, Frame, receiver)
     else:
-        if app.Frame == app.frame:
-            app.PI_Control.Devices = app.frame.Devices_connected
+        if Frame == app.frame:
+            receiver.Devices = app.frame.Devices_connected
             app.PI_Data = app.PI_Control.Show_device()
         elif app.Frame == app.ZiFrame:
-            app.ZI_Control(DAQ = app.ZiFrame.DAQ,
+            receiver(DAQ = app.ZiFrame.DAQ,
                     Device = app.ZiFrame.device,
                     Prop = app.ZiFrame.proprieties)
             app.Zi_Data = app.ZI_Control.Zi_Setting_List
@@ -181,10 +181,9 @@ def Refresh(app, Frame, receiver):
 app = White_Light_Inteferometer()
 app.frame.CbmBox.bind("<<ComboboxSelected>>",app.frame.Meth_show)
 
-app.frame.CButton.bind('<Button-1>', lambda x : Refresh(app, frame,
-    PI_Control ))
-app.ZiFrame.CButton.bind('<Button-1>', lambda x : Refresh(app,
-    ZiFrame, ZI_Control))
+app.frame.CButton.bind('<Button-1>', lambda x : Refresh(app, app.frame,
+    app.PI_Control ))
+app.ZiFrame.CButton.bind('<Button-1>', lambda x : Refresh(app, app.ZiFrame, app.ZI_Control))
 
 app.geometry("+{}+{}".format(int(width/5),int(height/5)))
 app.mainloop()

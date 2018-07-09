@@ -313,3 +313,5 @@ def run_example(device_id, do_plot=False):
         print('Number of scope shots with triggering enabled: {}.'.format(len(scope_shots_with_trig)))
 
     return (data_no_trig, data_with_trig)
+
+run_example('dev2318', do_plot=True)

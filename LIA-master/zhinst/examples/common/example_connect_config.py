@@ -132,3 +132,5 @@ def run_example(device_id, amplitude=0.100):
     sample['phi'] = np.angle(sample['x'] + 1j*sample['y'])
     print("Measured RMS amplitude is {:.3e} V.".format(sample['R'][0]))
     return sample
+
+run_example('dev2318')
