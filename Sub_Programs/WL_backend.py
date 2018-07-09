@@ -392,7 +392,7 @@ class File_interaction(ttk.Labelframe):
             QE = ttk.Entry(NFWindow,textvariable = QA,
                     width = 12)
             QB = ttk.Button(NFWindow, text = 'Enter',
-                    command = lambda List :
+                    command = lambda :
                     self.Write_Folder(Var,QE.get(),NFWindow))
             Info = ttk.Label(NFWindow, text = 'When you have entered the new name\nclick enter. You will then be asked to\nchoose the directory where you want\nto put the new folder.')
             Q.pack(padx = 2, pady = 2)
@@ -419,10 +419,9 @@ class File_interaction(ttk.Labelframe):
         else: Var.set(parent)
 
 
-        FList = [ item for item in parent.iterdir() if
+        self.File_InDir = [ item for item in parent.iterdir() if
                 parent.is_file()]
 
-        return FList
 
 class PI_control(ttk.Labelframe):
     def __init__(self, parent, text):
