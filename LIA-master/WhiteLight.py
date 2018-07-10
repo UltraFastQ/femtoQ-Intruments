@@ -128,7 +128,10 @@ class White_Light_Inteferometer(tk.Tk):
             utils.save_settings( ZI_Data['DAQ'],
                     ZI_Data['Device_id'].get(),
                     Dir.get()+os.sep+'_zi_settings.xml')
-
+            f = open(Dir.get()+os.sep+'_pi_settings.txt', 'w+')
+            for k in PI_Data.keys():
+                f.write( k + '\t:\t' + str(PI_Data[k].get()))
+            f.close()
 
         if PI_Data or ZI_Data is None:
             messabox.showinfo(icon = 'error', title = 'WARNING',
@@ -148,7 +151,13 @@ class White_Light_Inteferometer(tk.Tk):
             utils.load_settings( ZI_Data['DAQ'],
                     ZI_Data['Device_id'].get(),
                     Dir.get()+os.sep+'_zi_settings.xml')
-
+            f = open(Dir.get()+os.sep+'_pi_settings.txt', 'r')
+            for line in f:
+                words = line.split()
+                for keys in PI_Data.keys():
+                    if keys == words(0):
+                        PI_Data[keys].set(words(2))
+            f.close()
 
         if PI_Data or ZI_Data is None:
             messabox.showinfo(icon = 'error', title = 'WARNING',

@@ -529,10 +529,16 @@ class PI_control(ttk.Labelframe):
             Axe1 = ''
         else: pass
 
-        List_PI = [ MPos, mPos, Speed, NbrSmp, NbrIte,
-                ETA, Device , Axe1 ]
+        List_PI = {'MaxPos': MPos,
+                'MinPos': mPos,
+                'Velocity': Speed,
+                'NbrSample': NbrSmp,
+                'NbrIteration': NbrIte,
+                'Time': ETA,
+                'Device_id': Device,
+                'Axes': Axe1 }
 
-        return (List_PI)
+        return List_PI
 
 
     def See_val(self,Objet,Var):
