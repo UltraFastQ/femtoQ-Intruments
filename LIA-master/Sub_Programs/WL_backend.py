@@ -21,13 +21,19 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+# Numpy :
+import numpy as np
 # Pathlib :
 from pathlib import Path
 from pathlib import PurePath
 #Zurich Instruments
 import zhinst.utils as utils
 import zhinst.ziPython as ziPython
+#
+# import subprocess
+# subprocess.run('ziDataServer',shell = True)
 #####
+
 class PI_Connection_Method(ttk.Labelframe):
     def __init__(self, parent, name):
         ttk.Labelframe.__init__(self, parent)
@@ -334,12 +340,111 @@ class Zi_Connection_Method(ttk.Labelframe):
                 columnspan = 2, padx = 2, pady = 2)
 
 ###########
-class Graphic(tk.Canvas):
-    def __init__(self,parent,width,height):
+class Graphic(ttk.Labelframe):
+    def __init__(self,parent, Spin_Box, ZI_Data):
 
-        tk.Canvas.__init__(self,parent)
-        tk.Canvas.configure(self, width = width, height = height)
-        tk.Canvas.configure(self, background = "yellow")
+        self.ZI_DATA = ZI_Data
+        self.Actual_Graph = None
+
+        ttk.Labelframe.__init__(self,parent)
+        tk.Canvas.configure(self, labelwidget = Spin_Box)
+        BOX_Frame = tk.Frame(self, relief = 'groove')
+        PLOT_Frame = tk.Frame(self, relief = 'groove')
+        Scope_Frame = tk.Frame(self, relief = 'groove')
+        if self.ZI_DATA == None:
+            BC_X = np.linspace(0, 2*np.pi, 50)
+            BC_Y = np.cos(BC_X)
+            SP_X = np.linspace(0, 2*np.pi, 50)
+            SP_Y = np.sin(SP_X)
+            PLT_X = np.linspace(0, 2*np.pi, 50)
+            PLT_Y = np.exp(PLT_X)
+
+
+        # BOXCAR Graph
+
+        BC_fig = Figure(figsize = (2,2), dpi = 100)
+        BC_axes = BC_fig.add_subplot(111)
+        BC_axes.plot(BC_X, BC_Y)
+
+        BC_canvas = FigureCanvasTkAgg(BC_fig, BOX_Frame)
+        BC_canvas.show()
+        BC_canvas.get_tk_widget().pack()
+        BC_toolbar = NavigationToolbar2TkAgg(BC_canvas, BOX_Frame)
+        BC_toolbar.update()
+        BC_canvas._tkcanvas.pack()
+
+        BOX_List = [BC_canvas, BC_fig, BC_axes]
+        # SCOPE Graph
+
+        SP_fig = Figure(figsize = (2,2), dpi = 100)
+        SP_axes = SP_fig.add_subplot(111)
+        SP_axes.plot(SP_X, SP_Y)
+
+        SP_canvas = FigureCanvasTkAgg(SP_fig, Scope_Frame)
+        SP_canvas.show()
+        SP_canvas.get_tk_widget().pack()
+        SP_toolbar = NavigationToolbar2TkAgg(SP_canvas, Scope_Frame)
+        SP_toolbar.update()
+        SP_canvas._tkcanvas.pack()
+
+        Scope_List = [SP_canvas, SP_fig, SP_axes]
+        # PLOTTER Graph
+
+        PLT_fig = Figure(figsize = (2,2), dpi = 100)
+        PLT_axes = PLT_fig.add_subplot(111)
+        PLT_axes.plot(PLT_X, PLT_Y)
+
+        PLT_canvas = FigureCanvasTkAgg(PLT_fig, PLOT_Frame)
+        PLT_canvas.show()
+        PLT_canvas.get_tk_widget().pack()
+        PLT_toolbar = NavigationToolbar2TkAgg(PLT_canvas, PLOT_Frame)
+        PLT_toolbar.update()
+        PLT_canvas._tkcanvas.pack()
+
+        PLOT_List = [PLT_canvas, PLT_fig, PLT_axes]
+        ##########
+        Graph_Lst = { 'BOXCAR' : [BOX_Frame,BOX_List],
+                'SCOPE' : [Scope_Frame,Scope_List],
+                'PLOTTER' : [PLOT_Frame,PLOT_List]}
+        Spin_Box.bind("<<ComboboxSelected>>",
+                lambda x : self.Graph_switch(Spin_Box.get(),
+                    Graph_Lst))
+        Spin_Box.current(0)
+        self.Graph_switch(Spin_Box.get(),Graph_Lst)
+
+
+    def Graph_switch(self, Graph_Name, Frames):
+
+        def show_frame(Frame):
+            Frame[0].grid(row = 0, column = 0, padx = 2, pady = 2,
+                    sticky = 'nsew')
+            Frame[1][0].get_tk_widget().pack()
+            Frame[1][0]._tkcanvas.pack()
+            self.Actual_Graph = Frame[1]
+
+        for frame in Frames:
+            Frames[frame][0].grid_forget()
+            Frames[frame][1][0].get_tk_widget().pack_forget()
+            Frames[frame][1][0]._tkcanvas.pack_forget()
+
+        show_frame(Frames[Graph_Name])
+
+    def Animate_Graph(self, Frame_Info, ZI_DATA):
+        canvas = Frame_Info[0]
+        Figure = Frame_Info[1]
+        Axes = Frame_Info[2]
+
+        if ZI_DATA !=  None:
+            daq = ZI_DATA['DAQ']
+            device = ZI_DATA['Device_id'].get()
+            poll_lenght = 0.01 # [s]
+            poll_timeout = 50 # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            Data_Set = ZI_DATA['POLL']( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            print(Data_Set)
+
+
 
 class File_interaction(ttk.Labelframe):
     def __init__(self, parent, text):
@@ -591,6 +696,7 @@ class Zi_settings(ttk.Labelframe):
         ttk.Labelframe.__init__(self, parent)
         ttk.Labelframe.configure(self, labelwidget = text)
         self.Zi_Setting_List = {}
+        self.First = True
         List_Opt = []
 
         Demod_Var = tk.IntVar()
@@ -639,10 +745,13 @@ class Zi_settings(ttk.Labelframe):
                 variable = Trig_state, onvalue = 'Enabled',
                 offvalue = 'Disabled')
 
+
         L_Trig = tk.Label(self, text = 'Trigger Frequency [Hz]: ')
+        Trig_Var = tk.IntVar()
         Trig_Entry = tk.Entry(self, width = 4,textvariable = Trig_Val,
                 state = 'disable')
-        T_Port_SpinB = tk.Spinbox(self, from_ = 0, to = 1 , width = 2)
+        T_Port_SpinB = tk.Spinbox(self, from_ = 0, to = 1 , width = 2,
+                textvariable = Trig_Var)
 
         Ohm50_state = tk.StringVar()
         Ohm50 = ttk.Checkbutton(self, text = '50 Ohm',
@@ -691,6 +800,11 @@ class Zi_settings(ttk.Labelframe):
                 textvariable = Out_Offset_Var)
         L_DB = tk.Label(self, text = 'BW 3 dB: ')
 
+        Smpl_Rate_Var = tk.IntVar()
+        Smpl_Rate_SpinB = tk.Spinbox(self, from_ = 0 , to = 16, width = 2,
+                textvariable = Smpl_Rate_Var)
+        Smpl_Rate = tk.Label(self, text = 'Sampling Rate: ')
+
 
         Item_List = [ L_Demod, D_Port_SpinB , AC , Ohm50,
                 L_Input_Channel, I_Port_SpinB,
@@ -702,7 +816,8 @@ class Zi_settings(ttk.Labelframe):
                 L_Phi, E_Phi, L_Out_Preoffset, Out_Preoffset,
                 L_Out_Offset, Offset, L_Out_Scale, Out_Scale,
                 L_Order, Order_SpinB, L_DB, DB,
-                Trig, T_Port_SpinB, L_Trig, Trig_Entry]
+                Trig, T_Port_SpinB, L_Trig, Trig_Entry,
+                Smpl_Rate, Smpl_Rate_SpinB]
         rw = 0
         clm = 0
         for item in Item_List:
@@ -725,6 +840,7 @@ class Zi_settings(ttk.Labelframe):
                 'Input Gain': Gain_Var,
                 'Phase': Phi_Var,
                 'Trigger': Trig_Val,
+                'Trig_Ch': Trig_Var,
                 'Trigger state': Trig_state,
                 '50 Ohm': Ohm50_state,
                 'AC': AC_state,
@@ -734,7 +850,8 @@ class Zi_settings(ttk.Labelframe):
                 'Out_Preoffset': Out_Preoffset_Var,
                 'Out_Offset': Out_Offset_Var,
                 'LowPassOrder': Order_Var,
-                'LowPassDBValue': DB_Var}
+                'LowPassDBValue': DB_Var,
+                'Smpling_Rate': Smpl_Rate_Var}
 
 
         Config_Button = ttk.Button(self, text ='Configure Demodulator'
@@ -750,14 +867,15 @@ class Zi_settings(ttk.Labelframe):
                 'Information')
         out_mixer_channel = utils.default_output_mixer_channel(DATA['Proprieties'])
         #First desactivate all input,scopes,Demodulator
-        Reset_settings = [
-                ['/%s/demods/*/enable' % DATA['Device_id'].get(),0],
-                ['/%s/demods/*/trigger' % DATA['Device_id'].get(),0],
-                ['/%s/sigout/*/enables/*' % DATA['Device_id'].get(),0],
-                ['/%s/scopes/*/enable' % DATA['Device_id'].get(),0]
-                ]
-        DATA['DAQ'].set(Reset_settings)
-        DATA['DAQ'].sync()
+        if self.First == True:
+            Reset_settings = [
+                    ['/%s/demods/*/enable' % DATA['Device_id'].get(),0],
+                    ['/%s/demods/*/trigger' % DATA['Device_id'].get(),0],
+                    ['/%s/sigout/*/enables/*' % DATA['Device_id'].get(),0],
+                    ['/%s/scopes/*/enable' % DATA['Device_id'].get(),0]
+                    ]
+            DATA['DAQ'].set(Reset_settings)
+            DATA['DAQ'].sync()
 
         Input_setting = [
                 ['/%s/sigins/%d/ac' % (DATA['Device_id'].get(),DATA['Input'].get()), DATA['AC'].get() == 'Enable' ],
@@ -766,7 +884,7 @@ class Zi_settings(ttk.Labelframe):
                 ['/%s/demods/%d/enable' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), 1],
                 ['/%s/demods/%d/phaseshift' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['Phase'].get()],
                 ['/%s/demods/%d/rate' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['Output_Rate'].get()],
-                ['/%s/demods/%d/adcselect' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['Input'].get()],
+                ['/%s/demods/%d/adcselect' % (DATA['Device_id'].get(), 3), DATA['Trig_Ch'].get()+2],
                 ['/%s/demods/%d/order' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['LowPassOrder'].get()],
                 ['/%s/demods/%d/timeconstant' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), utils(DATA['LowPassDBValue'],
                     DATA['LowPassOrder'].get())],
@@ -775,10 +893,33 @@ class Zi_settings(ttk.Labelframe):
                 ['/%s/oscs/%d/freq' % (DATA['Device_id'].get(),DATA['Oscillator'].get()), DATA['Osc. Freq'].get()],
                 ['/%s/sigout/%d/on' % (DATA['Device_id'].get(),DATA['Output'].get()), 1],
                 ['/%s/sigout/%d/enables/%d' % (DATA['Device_id'].get(),DATA['Output'].get(),out_mixer_channel), 1],
+                ['/%s/sigout/%d/enables/%d' % (DATA['Device_id'].get(),DATA['Output'].get(),out_mixer_channel), 1],
+                ['/%s/scopes/0/enable' % DATA['Device_id'].get(), 1],
+                ['/%s/scopes/0/trigchannel' % DATA['Device_id'].get(), DATA['Trig_Ch']],
+                ['/%s/scopes/0/trigenable' % DATA['Device_id'].get(), DATA['Trigger state'].get() == 'Enable'],
+                ['/%s/scopes/0/time' % DATA['Device_id'].get(), DATA['Smpling_Rate'].get()],
+                ['/%s/extrefs/0/enable' % DATA['Device_id'].get(), 1]
                 ]
+        # Try out take a single shot of scope (Make it a 60Hz_Graph refresh rate)
+        # 0 - continous Shot
+        # 1 - Single Shot
+        Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
+        DATA['DAQ'].set(Input_setting)
+        DATA['DAQ'].sync()
 
+        # Scope initialisation
 
+        DATA['DAQ'].unsubscribe('*')
+        DATA['DAQ'].sync()
 
+        # Subscribe to the scope DATA
+
+        DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
+        DATA['DAQ'].sync()
+        DATA['POLL'] = DATA['DAQ'].poll
+        DATA['SC_PATH'] = '/%s/scopes/0/wave' % DATA['Device_id']
+        DATA['BC_Smp_PATH'] = '/%s/boxcars/0/sample' % DATA['Device_id']
+        DATA['BC_Period_PATH'] = '/%s/boxcars/0/periods' % DATA['Device_id']
 
 
 

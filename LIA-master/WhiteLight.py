@@ -18,6 +18,8 @@ from pathlib import Path
 #Zurich Instrumente Librairies:
 import zhinst.utils as utils
 import zhinst.Save_Zi as Save_Zi
+# Mathplotlib:
+import matplotlib.animation as animation
 #Os python package:
 import os
 #Font Size
@@ -60,8 +62,12 @@ class White_Light_Inteferometer(tk.Tk):
         height = self.winfo_screenheight()
         #Initialisation of different elements
         Mainframe = ttk.Frame(self, padding = (6,6,6,6))
-        GraphBox = backend.Graphic(parent = Mainframe, width = 175,
-                height = 150)
+        GCBox = ttk.Combobox(Mainframe, textvariable = '',
+                state = 'readonly')
+        GCBox.grid(row = 0, column = 1,sticky = 'nw')
+        GCBox['value'] = ('SCOPE','PLOTTER','BOXCAR')
+        self.GraphBox = backend.Graphic( Mainframe, GCBox,
+                self.Zi_Data)
         CCBox = ttk.Combobox(Mainframe, textvariable = '',
                 state = 'readonly')
         CCBox.grid(row = 0, column = 0,sticky = 'nw')
@@ -92,9 +98,9 @@ class White_Light_Inteferometer(tk.Tk):
         #Mainframe configuration
         Mainframe.grid(row = 0, column = 0)
         #GraphBox configuration
-        GraphBox.create_text(175/2, 75, text = "Awesome Graph",font
-            = LARGE_FONT, fill = "black")
-        GraphBox.grid(row = 0, column = 1, padx = 5, pady = 5)
+#        GraphBox.create_text(150, 100, text = "Awesome Graph",font
+#            = LARGE_FONT, fill = "black")
+        self.GraphBox.grid(row = 0, column = 1, padx = 5, pady = 5)
         #File location/reading configuration
         File_Dialog.grid(row = 1, column = 1, padx = 2, pady = 2)
 
@@ -186,6 +192,8 @@ def Refresh(app, Frame, receiver):
                     Device = app.ZiFrame.device,
                     Prop = app.ZiFrame.proprieties)
             app.Zi_Data = app.ZI_Control.Zi_Setting_List
+            app.GraphBox.ZI_DATA = app.Zi_Data
+            app.ZiFrame.First = False
 
 app = White_Light_Inteferometer()
 app.frame.CbmBox.bind("<<ComboboxSelected>>",app.frame.Meth_show)
@@ -195,5 +203,10 @@ app.frame.CButton.bind('<Button-1>', lambda x : Refresh(app, app.frame,
 app.ZiFrame.CButton.bind('<Button-1>', lambda x : Refresh(app, app.ZiFrame, app.ZI_Control))
 
 app.geometry("+{}+{}".format(int(width/5),int(height/5)))
+#NOTE : This line might cause an error in the future
+animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
+        app.GraphBox.Animate_Graph( app.GraphBox.Actual_Graph,
+        app.GraphBox.ZI_DATA), interval = 1/60)
+
 app.mainloop()
 
