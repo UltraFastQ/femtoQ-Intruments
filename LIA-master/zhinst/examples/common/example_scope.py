@@ -93,7 +93,11 @@ def run_example(device_id, do_plot=False):
     in_channel = 1
     osc_index = 0
     scope_in_channel = 0  # scope input channel
+<<<<<<< HEAD
+    frequency = 7000e3
+=======
     frequency = 7e4
+>>>>>>> 56ea566be00d9818abe61c7d4de152a45f71cc5b
     exp_setting = [
         # The output signal.
         ['/%s/sigouts/%d/on'             % (device, out_channel), 1],
