@@ -90,10 +90,10 @@ def run_example(device_id, do_plot=False):
     out_channel = 0
     # Get the value of the instrument's default Signal Output mixer channel.
     out_mixer_channel = zhinst.utils.default_output_mixer_channel(props)
-    in_channel = 0
+    in_channel = 1
     osc_index = 0
     scope_in_channel = 0  # scope input channel
-    frequency = 400e3
+    frequency = 7000e3
     exp_setting = [
         # The output signal.
         ['/%s/sigouts/%d/on'             % (device, out_channel), 1],
