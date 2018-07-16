@@ -443,7 +443,7 @@ class Graphic(ttk.Labelframe):
             poll_timeout = 500 # [ms]
             poll_flags = 0
             poll_return_flat_dict = True
-            Data_Set = self.ZI_DATA['DAQ'].record( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Data_Set = self.ZI_DATA['DAQ'].record( poll_lenght, poll_timeout, poll_return_flat_dict)
             print(Data_Set)
 
 
