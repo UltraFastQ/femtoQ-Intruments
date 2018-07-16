@@ -93,7 +93,11 @@ def run_example(device_id, do_plot=False):
     in_channel = 1
     osc_index = 0
     scope_in_channel = 0  # scope input channel
+<<<<<<< HEAD
     frequency = 7000e3
+=======
+    frequency = 7e4
+>>>>>>> 56ea566be00d9818abe61c7d4de152a45f71cc5b
     exp_setting = [
         # The output signal.
         ['/%s/sigouts/%d/on'             % (device, out_channel), 1],
@@ -192,11 +196,11 @@ def run_example(device_id, do_plot=False):
 
     # First, poll data without triggering enabled.
     poll_length = 1.0  # [s]
-    poll_timeout = 500  # [ms]
+    poll_timeout = 100  # [ms]
     poll_flags = 0
-    poll_return_flat_dict = True
+    poll_return_flat_dict = False
     data_no_trig = daq.poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
-
+    print(data_no_trig)
     # Disable the scope.
     daq.setInt('/%s/scopes/0/enable' % device, 0)
 
@@ -254,7 +258,7 @@ def run_example(device_id, do_plot=False):
     daq.subscribe('/%s/scopes/0/wave' % device)
 
     data_with_trig = daq.poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
-
+    print(data_with_trig)
     # Disable the scope.
     daq.setInt('/%s/scopes/0/enable' % device, 0)
 

@@ -439,11 +439,11 @@ class Graphic(ttk.Labelframe):
         if self.ZI_DATA['DAQ'] !=  None:
             daq = self.ZI_DATA['DAQ']
             device = self.ZI_DATA['Device_id']
-            poll_lenght = 0.1 # [s]
+            poll_lenght = 0.01 # [s]
             poll_timeout = 500 # [ms]
             poll_flags = 0
             poll_return_flat_dict = True
-            Data_Set = self.ZI_DATA['POLL']( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Data_Set = self.ZI_DATA['DAQ'].record( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             print(Data_Set)
 
 
@@ -932,7 +932,7 @@ class Zi_settings(ttk.Labelframe):
 
         DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
         DATA['DAQ'].sync()
-        DATA['POLL'] = DATA['DAQ'].poll
+        DATA['REC'] = DATA['DAQ'].record
         DATA['SC_PATH'] = '/%s/scopes/0/wave' % DATA['Device_id']
         DATA['BC_Smp_PATH'] = '/%s/boxcars/0/sample' % DATA['Device_id']
         DATA['BC_Period_PATH'] = '/%s/boxcars/0/periods' % DATA['Device_id']
