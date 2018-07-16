@@ -439,8 +439,8 @@ class Graphic(ttk.Labelframe):
         if self.ZI_DATA['DAQ'] !=  None:
             daq = self.ZI_DATA['DAQ']
             device = self.ZI_DATA['Device_id']
-            poll_lenght = 0.01 # [s]
-            poll_timeout = 50 # [ms]
+            poll_lenght = 5 # [s]
+            poll_timeout = 500 # [ms]
             poll_flags = 0
             poll_return_flat_dict = True
             Data_Set = self.ZI_DATA['POLL']( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)

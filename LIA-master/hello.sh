@@ -5,7 +5,6 @@ startWebServer &
 python3 WhiteLight.py&
 
 while pgrep -f "python3 WhiteLight.py" &>/dev/null; do
-    echo "hello World"
     sleep 10s
 done
 
