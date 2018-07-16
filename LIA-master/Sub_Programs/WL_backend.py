@@ -300,7 +300,7 @@ class Zi_Connection_Method(ttk.Labelframe):
         ttk.Labelframe.configure(self, labelwidget = name)
         self.connected = False
         self.DAQ = ()
-        self.device = ''
+        self.device_id = ''
         self.proprieties = {}
 
         def Call_device(TxtVariable):
@@ -316,7 +316,7 @@ class Zi_Connection_Method(ttk.Labelframe):
             else :
                 messagebox.showinfo(icon = 'info',title='DAQ Version',
                         message = 'ziDataServer is up to date')
-            if self.DAQ != ():
+            if self.DAQ == ():
                 self.connected = True
                 self.DAQ = daq
                 self.device_id = dev
@@ -344,7 +344,7 @@ class Graphic(ttk.Labelframe):
     def __init__(self,parent, Spin_Box, ZI_Data):
 
         self.ZI_DATA = ZI_Data
-        self.Actual_Graph = None
+#        self.Actual_Graph = None
 
         ttk.Labelframe.__init__(self,parent)
         tk.Canvas.configure(self, labelwidget = Spin_Box)
@@ -429,19 +429,21 @@ class Graphic(ttk.Labelframe):
 
         show_frame(Frames[Graph_Name])
 
-    def Animate_Graph(self, Frame_Info, ZI_DATA):
-        canvas = Frame_Info[0]
-        Figure = Frame_Info[1]
-        Axes = Frame_Info[2]
-
-        if ZI_DATA !=  None:
-            daq = ZI_DATA['DAQ']
-            device = ZI_DATA['Device_id'].get()
+    def Animate_Graph(self, i, Frame_Info, ZI_DATA1, GlOB_ZI):
+        if Frame_Info != None:
+            canvas = Frame_Info[0]
+            Figure = Frame_Info[1]
+            Axes = Frame_Info[2]
+        if ZI_DATA1 != GlOB_ZI:
+           self.ZI_DATA = GlOB_ZI
+        if self.ZI_DATA['DAQ'] !=  None:
+            daq = ZI_DATA1['DAQ']
+            device = ZI_DATA1['Device_id']
             poll_lenght = 0.01 # [s]
             poll_timeout = 50 # [ms]
             poll_flags = 0
             poll_return_flat_dict = True
-            Data_Set = ZI_DATA['POLL']( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Data_Set = ZI_DATA1['POLL']( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             print(Data_Set)
 
 
@@ -698,6 +700,9 @@ class Zi_settings(ttk.Labelframe):
         self.Zi_Setting_List = {}
         self.First = True
         List_Opt = []
+        self.DAQ = DAQ
+        self.Device = Device
+        self.Prop = Prop
 
         Demod_Var = tk.IntVar()
         L_Demod = tk.Label(self, text = 'Demodulator: ')
@@ -710,12 +715,14 @@ class Zi_settings(ttk.Labelframe):
                 textvariable = Output_Var)
 
         Output_Rate_Var = tk.DoubleVar()
+        Output_Rate_Var.set(1717)
         Output_Rate = tk.Entry(self, width = 4,
                 textvariable = Output_Rate_Var)
         L_Output_Rate = tk.Label(self, text = 'Data Output Rate'+
                 '[Smp/s]: ')
 
         Input_Var = tk.IntVar()
+        Input_Var.set(1)
         I_Port_SpinB = tk.Spinbox(self, from_ = 0, to = 1 , width = 2,
                 textvariable = Input_Var)
         L_Input_Channel = tk.Label(self, text = 'Input channel: ')
@@ -726,12 +733,14 @@ class Zi_settings(ttk.Labelframe):
         L_Oscillator = tk.Label(self, text = 'Oscillator: ')
 
         OSC_F_Var = tk.IntVar()
+        OSC_F_Var.set(1000)
         OSC_F_SpinB = tk.Entry(self, width = 4,
                 textvariable = OSC_F_Var)
         L_OSC_F = tk.Label(self, text = 'Oscillator frequency'+
                 ' [Hz]: ')
 
         Gain_Var = tk.DoubleVar()
+        Gain_Var.set(1)
         E_Gain = tk.Entry(self, width = 4, textvariable = Gain_Var)
         L_Gain = tk.Label(self, text = 'Input Gain: ')
 
@@ -741,6 +750,7 @@ class Zi_settings(ttk.Labelframe):
 
         Trig_Val = tk.DoubleVar()
         Trig_state = tk.StringVar()
+        Trig_state.set('Enabled')
         Trig = ttk.Checkbutton(self, text = 'Trigger',
                 variable = Trig_state, onvalue = 'Enabled',
                 offvalue = 'Disabled')
@@ -754,6 +764,7 @@ class Zi_settings(ttk.Labelframe):
                 textvariable = Trig_Var)
 
         Ohm50_state = tk.StringVar()
+        Ohm50_state.set('Enabled')
         Ohm50 = ttk.Checkbutton(self, text = '50 Ohm',
                 variable = Ohm50_state, onvalue = 'Enabled',
                 offvalue = 'Disabled')
@@ -764,19 +775,22 @@ class Zi_settings(ttk.Labelframe):
                 offvalue = 'Disabled')
 
         Harm_Var = tk.IntVar()
+        Harm_Var.set(1)
         Harm = tk.Spinbox(self, from_ = 0 , to = 10, width = 2,
                 textvariable = Harm_Var)
         L_Harm = tk.Label(self, text = 'Selected Harmonic: ')
 
         Input_Scale_Var = tk.DoubleVar()
+        Input_Scale_Var.set(1)
         Input_Scale = tk.Entry(self,  width = 4,
                 textvariable = Input_Scale_Var)
         L_Input_Scale= tk.Label(self, text = 'Input Scaling [X V'+
                 '/V]: ')
 
         Out_Scale_Var = tk.DoubleVar()
+        Out_Scale_Var.set(1)
         Out_Scale = tk.Entry(self,  width = 4,
-                textvariable = Input_Scale_Var)
+                textvariable = Out_Scale_Var)
         L_Out_Scale= tk.Label(self, text = 'Output Scaling [X V'+
                 '/V]: ')
 
@@ -791,13 +805,15 @@ class Zi_settings(ttk.Labelframe):
         L_Out_Offset= tk.Label(self, text = 'Output Offset [V]: ')
 
         Order_Var = tk.IntVar()
+        Order_Var.set(4)
         Order_SpinB = tk.Spinbox(self, from_ = 0 , to = 10, width = 2,
-                textvariable = Harm_Var)
+                textvariable = Order_Var)
         L_Order = tk.Label(self, text = 'Low-Pass Filer Order: ')
 
         DB_Var = tk.DoubleVar()
+        DB_Var.set(100)
         DB = tk.Entry(self,  width = 4,
-                textvariable = Out_Offset_Var)
+                textvariable = DB_Var)
         L_DB = tk.Label(self, text = 'BW 3 dB: ')
 
         Smpl_Rate_Var = tk.IntVar()
@@ -828,9 +844,9 @@ class Zi_settings(ttk.Labelframe):
                 rw += 1
             else : clm += 1
 
-        self.Zi_Setting_List = { 'DAQ': DAQ,
-                'Device_id': Device,
-                'Proprieties': Prop,
+        self.Zi_Setting_List = { 'DAQ': self.DAQ,
+                'Device_id': self.Device,
+                'Prop': self.Prop,
                 'Demodulator': Demod_Var,
                 'Output_Rate': Output_Rate_Var,
                 'Output': Output_Var,
@@ -865,45 +881,45 @@ class Zi_settings(ttk.Labelframe):
                 ' the oscillator will be automatically disabled for'+
                 ' for this demodulator.', icon = 'info', title =
                 'Information')
-        out_mixer_channel = utils.default_output_mixer_channel(DATA['Proprieties'])
+
+        out_mixer_channel = utils.default_output_mixer_channel(DATA['Prop'])
         #First desactivate all input,scopes,Demodulator
         if self.First == True:
             Reset_settings = [
-                    ['/%s/demods/*/enable' % DATA['Device_id'].get(),0],
-                    ['/%s/demods/*/trigger' % DATA['Device_id'].get(),0],
-                    ['/%s/sigout/*/enables/*' % DATA['Device_id'].get(),0],
-                    ['/%s/scopes/*/enable' % DATA['Device_id'].get(),0]
+                    ['/%s/demods/*/enable' % DATA['Device_id'],0],
+                    ['/%s/demods/*/trigger' % DATA['Device_id'],0],
+                    ['/%s/sigout/*/enables/*' % DATA['Device_id'],0],
+                    ['/%s/scopes/*/enable' % DATA['Device_id'],0]
                     ]
             DATA['DAQ'].set(Reset_settings)
             DATA['DAQ'].sync()
-
+#        print(DATA['DAQ'].listNodes('/%s/' % DATA['Device_id'], 0))
         Input_setting = [
-                ['/%s/sigins/%d/ac' % (DATA['Device_id'].get(),DATA['Input'].get()), DATA['AC'].get() == 'Enable' ],
-                ['/%s/sigins/%d/imp50' % (DATA['Device_id'].get(),DATA['Input'].get()), DATA['50 Ohm'].get() == 'Enable' ],
-                ['/%s/sigins/%d/scaling' % (DATA['Device_id'].get(),DATA['Input'].get()), DATA['Input Scale'].get() ],
-                ['/%s/demods/%d/enable' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), 1],
-                ['/%s/demods/%d/phaseshift' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['Phase'].get()],
-                ['/%s/demods/%d/rate' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['Output_Rate'].get()],
-                ['/%s/demods/%d/adcselect' % (DATA['Device_id'].get(), 3), DATA['Trig_Ch'].get()+2],
-                ['/%s/demods/%d/order' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['LowPassOrder'].get()],
-                ['/%s/demods/%d/timeconstant' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), utils(DATA['LowPassDBValue'],
+                ['/%s/sigins/%d/ac' % (DATA['Device_id'],DATA['Input'].get()), DATA['AC'].get() == 'Enable' ],
+                ['/%s/sigins/%d/imp50' % (DATA['Device_id'],DATA['Input'].get()), DATA['50 Ohm'].get() == 'Enable' ],
+                ['/%s/sigins/%d/scaling' % (DATA['Device_id'],DATA['Input'].get()), DATA['Input_Scale'].get() ],
+                ['/%s/demods/%d/enable' % (DATA['Device_id'],DATA['Demodulator'].get()), 1],
+                ['/%s/demods/%d/phaseshift' % (DATA['Device_id'],DATA['Demodulator'].get()), DATA['Phase'].get()],
+                ['/%s/demods/%d/rate' % (DATA['Device_id'],DATA['Demodulator'].get()), DATA['Output_Rate'].get()],
+                ['/%s/demods/%d/adcselect' % (DATA['Device_id'], 3), DATA['Trig_Ch'].get()+2],
+                ['/%s/demods/%d/order' % (DATA['Device_id'],DATA['Demodulator'].get()), DATA['LowPassOrder'].get()],
+                ['/%s/demods/%d/timeconstant' % (DATA['Device_id'],DATA['Demodulator'].get()), utils.bw2tc(DATA['LowPassDBValue'].get(),
                     DATA['LowPassOrder'].get())],
-                ['/%s/demods/%d/oscselect' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['Oscillator'].get()],
-                ['/%s/demods/%d/harmonic' % (DATA['Device_id'].get(),DATA['Demodulator'].get()), DATA['Harmonics'].get()],
-                ['/%s/oscs/%d/freq' % (DATA['Device_id'].get(),DATA['Oscillator'].get()), DATA['Osc. Freq'].get()],
-                ['/%s/sigout/%d/on' % (DATA['Device_id'].get(),DATA['Output'].get()), 1],
-                ['/%s/sigout/%d/enables/%d' % (DATA['Device_id'].get(),DATA['Output'].get(),out_mixer_channel), 1],
-                ['/%s/sigout/%d/enables/%d' % (DATA['Device_id'].get(),DATA['Output'].get(),out_mixer_channel), 1],
-                ['/%s/scopes/0/enable' % DATA['Device_id'].get(), 1],
-                ['/%s/scopes/0/trigchannel' % DATA['Device_id'].get(), DATA['Trig_Ch']],
-                ['/%s/scopes/0/trigenable' % DATA['Device_id'].get(), DATA['Trigger state'].get() == 'Enable'],
-                ['/%s/scopes/0/time' % DATA['Device_id'].get(), DATA['Smpling_Rate'].get()],
-                ['/%s/extrefs/0/enable' % DATA['Device_id'].get(), 1]
+                ['/%s/demods/%d/oscselect' % (DATA['Device_id'],DATA['Demodulator'].get()), DATA['Oscillator'].get()],
+                ['/%s/demods/%d/harmonic' % (DATA['Device_id'],DATA['Demodulator'].get()), DATA['Harmonics'].get()],
+                ['/%s/oscs/%d/freq' % (DATA['Device_id'],DATA['Oscillator'].get()), DATA['Osc. Freq'].get()],
+                ['/%s/sigouts/%d/on' % (DATA['Device_id'],DATA['Output'].get()), 1],
+                ['/%s/sigouts/%d/enables/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), 1],
+                ['/%s/scopes/0/enable' % DATA['Device_id'], 1],
+                ['/%s/scopes/0/trigchannel' % DATA['Device_id'], DATA['Trig_Ch'].get()],
+                ['/%s/scopes/0/trigenable' % DATA['Device_id'], DATA['Trigger state'].get() == 'Enable'],
+                ['/%s/scopes/0/time' % DATA['Device_id'], DATA['Smpling_Rate'].get()],
+                ['/%s/extrefs/0/enable' % DATA['Device_id'], 1]
                 ]
         # Try out take a single shot of scope (Make it a 60Hz_Graph refresh rate)
         # 0 - continous Shot
         # 1 - Single Shot
-        Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
+#       Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
         DATA['DAQ'].set(Input_setting)
         DATA['DAQ'].sync()
 

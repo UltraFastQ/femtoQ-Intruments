@@ -187,13 +187,13 @@ def Refresh(app, Frame, receiver):
         if Frame == app.frame:
             receiver.Devices = app.frame.Devices_connected
             app.PI_Data = app.PI_Control.Show_device()
-        elif app.Frame == app.ZiFrame:
-            receiver(DAQ = app.ZiFrame.DAQ,
-                    Device = app.ZiFrame.device,
-                    Prop = app.ZiFrame.proprieties)
+        elif Frame == app.ZiFrame:
+            receiver.Zi_Setting_List['DAQ'] = app.ZiFrame.DAQ
+            receiver.Zi_Setting_List['Device_id'] = app.ZiFrame.device_id
+            receiver.Zi_Setting_List['Prop'] = app.ZiFrame.proprieties
             app.Zi_Data = app.ZI_Control.Zi_Setting_List
-            app.GraphBox.ZI_DATA = app.Zi_Data
             app.ZiFrame.First = False
+
 
 app = White_Light_Inteferometer()
 app.frame.CbmBox.bind("<<ComboboxSelected>>",app.frame.Meth_show)
@@ -204,9 +204,13 @@ app.ZiFrame.CButton.bind('<Button-1>', lambda x : Refresh(app, app.ZiFrame, app.
 
 app.geometry("+{}+{}".format(int(width/5),int(height/5)))
 #NOTE : This line might cause an error in the future
-animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
-        app.GraphBox.Animate_Graph( app.GraphBox.Actual_Graph,
-        app.GraphBox.ZI_DATA), interval = 1/60)
+# P.S. : The Future is NOW :(
+Anim = animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
+        app.GraphBox.Animate_Graph,
+        fargs = (app.GraphBox.Actual_Graph,
+        app.GraphBox.ZI_DATA,
+        app.ZI_Control.Zi_Setting_List),
+        interval = 1000)
 
 app.mainloop()
 
