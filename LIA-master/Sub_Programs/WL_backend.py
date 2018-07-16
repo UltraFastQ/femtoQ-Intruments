@@ -437,8 +437,8 @@ class Graphic(ttk.Labelframe):
         if ZI_DATA1 != GlOB_ZI:
            self.ZI_DATA = GlOB_ZI
         if self.ZI_DATA['DAQ'] !=  None:
-            daq = ZI_DATA1['DAQ']
-            device = ZI_DATA1['Device_id']
+            daq = self.ZI_DATA['DAQ']
+            device = self.ZI_DATA['Device_id']
             poll_lenght = 0.01 # [s]
             poll_timeout = 50 # [ms]
             poll_flags = 0
