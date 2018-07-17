@@ -208,7 +208,8 @@ Anim = animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
         app.GraphBox.Animate_Graph,
         fargs = (app.GraphBox.Actual_Graph,
         app.GraphBox.ZI_DATA,
-        app.ZI_Control.Zi_Setting_List),
+        app.ZI_Control.Zi_Setting_List,
+        app.ZI_Control.Ready),
         interval = 10000)
 
 app.mainloop()
