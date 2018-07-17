@@ -124,7 +124,6 @@ class White_Light_Inteferometer(tk.Tk):
                         self.Zi_Data))
 
 
-
     def Start(self, File_List, Dir,PI_Data, Zi_Data):
         print('hello')
 

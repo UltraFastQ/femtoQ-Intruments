@@ -6,6 +6,8 @@
 # -*- coding: utf-8 -*-
 ###################################################################
 #Package :
+# Python included:
+import time
 #   tkinter :
 import tkinter as tk
 from tkinter import ttk
@@ -429,24 +431,24 @@ class Graphic(ttk.Labelframe):
 
         show_frame(Frames[Graph_Name])
 
-    def Animate_Graph(self, i, Frame_Info, ZI_DATA1, GlOB_ZI):
-        if Frame_Info != None:
-            canvas = Frame_Info[0]
-            Figure = Frame_Info[1]
-            Axes = Frame_Info[2]
-        if ZI_DATA1 != GlOB_ZI:
-           self.ZI_DATA = GlOB_ZI
-        if self.ZI_DATA['DAQ'] !=  None:
-            daq = self.ZI_DATA['DAQ']
-            device = self.ZI_DATA['Device_id']
-            poll_lenght = 0.01 # [s]
-            poll_timeout = 500 # [ms]
-            poll_flags = 0
-            poll_return_flat_dict = True
-            Record_Inst = self.ZI_DATA['DAQ'].record( poll_lenght, poll_timeout)
-            Data_Set = Record_Inst.get('*',True)
-            print(Data_Set)
-
+    def Animate_Graph(self, i, Frame_Info, ZI_DATA1, GlOB_ZI, Status):
+        if Status = True:
+            if Frame_Info != None:
+                canvas = Frame_Info[0]
+                Figure = Frame_Info[1]
+                Axes = Frame_Info[2]
+            if ZI_DATA1 != GlOB_ZI:
+               self.ZI_DATA = GlOB_ZI
+            if self.ZI_DATA['DAQ'] !=  None:
+                daq = self.ZI_DATA['DAQ']
+                device = self.ZI_DATA['Device_id']
+                poll_lenght = 0.05 # [s]
+                poll_timeout = 500 # [ms]
+                poll_flags = 0
+                poll_return_flat_dict = True
+                Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+                print(Data_Set)
+        else: pass
 
 
 class File_interaction(ttk.Labelframe):
@@ -698,6 +700,7 @@ class Zi_settings(ttk.Labelframe):
 
         ttk.Labelframe.__init__(self, parent)
         ttk.Labelframe.configure(self, labelwidget = text)
+        self.Ready = False
         self.Zi_Setting_List = {}
         self.First = True
         List_Opt = []
@@ -818,6 +821,7 @@ class Zi_settings(ttk.Labelframe):
         L_DB = tk.Label(self, text = 'BW 3 dB: ')
 
         Smpl_Rate_Var = tk.IntVar()
+        Smpl_Rate_Var.set(4)
         Smpl_Rate_SpinB = tk.Spinbox(self, from_ = 0 , to = 16, width = 2,
                 textvariable = Smpl_Rate_Var)
         Smpl_Rate = tk.Label(self, text = 'Sampling Rate: ')
@@ -920,10 +924,11 @@ class Zi_settings(ttk.Labelframe):
         # Try out take a single shot of scope (Make it a 60Hz_Graph refresh rate)
         # 0 - continous Shot
         # 1 - Single Shot
-#       Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
+        Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
         DATA['DAQ'].set(Input_setting)
         DATA['DAQ'].sync()
-
+        time.sleep(1)
+        DATA['DAQ'].flush()
         # Scope initialisation
 
         DATA['DAQ'].unsubscribe('*')
@@ -933,11 +938,13 @@ class Zi_settings(ttk.Labelframe):
 
         DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
         DATA['DAQ'].sync()
-        DATA['REC'] = DATA['DAQ'].record
+        DATA['POLL'] = DATA['DAQ'].poll( 0.05, 500, 0, True)
+        time.sleep(1)
+        print(DATA['POLL'])
         DATA['SC_PATH'] = '/%s/scopes/0/wave' % DATA['Device_id']
         DATA['BC_Smp_PATH'] = '/%s/boxcars/0/sample' % DATA['Device_id']
         DATA['BC_Period_PATH'] = '/%s/boxcars/0/periods' % DATA['Device_id']
-
+        self.Ready = True
 
 
 
