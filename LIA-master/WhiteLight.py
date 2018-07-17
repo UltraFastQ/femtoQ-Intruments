@@ -210,7 +210,7 @@ Anim = animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
         app.GraphBox.ZI_DATA,
         app.ZI_Control.Zi_Setting_List,
         app.ZI_Control.Ready),
-        interval = 10000)
+        interval = 1000)
 
 app.mainloop()
 

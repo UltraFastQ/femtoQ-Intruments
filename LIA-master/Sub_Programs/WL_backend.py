@@ -432,23 +432,25 @@ class Graphic(ttk.Labelframe):
         show_frame(Frames[Graph_Name])
 
     def Animate_Graph(self, i, Frame_Info, ZI_DATA1, GlOB_ZI, Status):
-        if Status = True:
-            if Frame_Info != None:
-                canvas = Frame_Info[0]
-                Figure = Frame_Info[1]
-                Axes = Frame_Info[2]
-            if ZI_DATA1 != GlOB_ZI:
-               self.ZI_DATA = GlOB_ZI
-            if self.ZI_DATA['DAQ'] !=  None:
-                daq = self.ZI_DATA['DAQ']
-                device = self.ZI_DATA['Device_id']
-                poll_lenght = 0.05 # [s]
-                poll_timeout = 500 # [ms]
-                poll_flags = 0
-                poll_return_flat_dict = True
-                Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
-                print(Data_Set)
-        else: pass
+#        print('Hell')
+#        if Status == True:
+#            print('This is')
+        if Frame_Info != None:
+            canvas = Frame_Info[0]
+            Figure = Frame_Info[1]
+            Axes = Frame_Info[2]
+        if ZI_DATA1 != GlOB_ZI:
+            self.ZI_DATA = GlOB_ZI
+        if self.ZI_DATA['DAQ'] !=  None:
+            print('or Heaven')
+            daq = self.ZI_DATA['DAQ']
+            device = self.ZI_DATA['Device_id']
+            poll_lenght = 0.05 # [s]
+            poll_timeout = 500 # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            print(Data_Set)
 
 
 class File_interaction(ttk.Labelframe):
@@ -809,7 +811,7 @@ class Zi_settings(ttk.Labelframe):
         L_Out_Offset= tk.Label(self, text = 'Output Offset [V]: ')
 
         Order_Var = tk.IntVar()
-        Order_Var.set(4)
+        Order_Var.set(8)
         Order_SpinB = tk.Spinbox(self, from_ = 0 , to = 10, width = 2,
                 textvariable = Order_Var)
         L_Order = tk.Label(self, text = 'Low-Pass Filer Order: ')
@@ -821,7 +823,7 @@ class Zi_settings(ttk.Labelframe):
         L_DB = tk.Label(self, text = 'BW 3 dB: ')
 
         Smpl_Rate_Var = tk.IntVar()
-        Smpl_Rate_Var.set(4)
+        Smpl_Rate_Var.set(3)
         Smpl_Rate_SpinB = tk.Spinbox(self, from_ = 0 , to = 16, width = 2,
                 textvariable = Smpl_Rate_Var)
         Smpl_Rate = tk.Label(self, text = 'Sampling Rate: ')
@@ -924,7 +926,7 @@ class Zi_settings(ttk.Labelframe):
         # Try out take a single shot of scope (Make it a 60Hz_Graph refresh rate)
         # 0 - continous Shot
         # 1 - Single Shot
-        Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
+#        Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
         DATA['DAQ'].set(Input_setting)
         DATA['DAQ'].sync()
         time.sleep(1)
@@ -938,7 +940,7 @@ class Zi_settings(ttk.Labelframe):
 
         DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
         DATA['DAQ'].sync()
-        DATA['POLL'] = DATA['DAQ'].poll( 0.05, 500, 0, True)
+        DATA['POLL'] = DATA['DAQ'].poll( 0.05, 500)
         time.sleep(1)
         print(DATA['POLL'])
         DATA['SC_PATH'] = '/%s/scopes/0/wave' % DATA['Device_id']
