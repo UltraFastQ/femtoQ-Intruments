@@ -432,17 +432,13 @@ class Graphic(ttk.Labelframe):
         show_frame(Frames[Graph_Name])
 
     def Animate_Graph(self, i, Frame_Info, ZI_DATA1, GlOB_ZI, Status):
-#        print('Hell')
-#        if Status == True:
-#            print('This is')
-        if Frame_Info != None:
+        if (self.ZI_DATA == None) or (Frame_Info == None) or (ZI_DATA1 != GlOB_ZI) or (self.ZI_DATA['DAQ'] == None):
+            self.ZI_DATA1 != GlOB_ZI
+            pass
+        else:
             canvas = Frame_Info[0]
             Figure = Frame_Info[1]
             Axes = Frame_Info[2]
-        if ZI_DATA1 != GlOB_ZI:
-            self.ZI_DATA = GlOB_ZI
-        if self.ZI_DATA['DAQ'] !=  None:
-            print('or Heaven')
             daq = self.ZI_DATA['DAQ']
             device = self.ZI_DATA['Device_id']
             poll_lenght = 0.05 # [s]
@@ -450,7 +446,16 @@ class Graphic(ttk.Labelframe):
             poll_flags = 0
             poll_return_flat_dict = True
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
-            print(Data_Set)
+            Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
+            for index, shot in enumerate(Scope_Shots):
+                Nb_Smple = shot['totalsamples']
+                time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
+                wave = shot['channeloffset'][self.ZI_DATA['Input'].get()] + \
+                        shot['channelscaling'][self.ZI_DATA['Input'].get()]]*shot['wave'][:, self.ZI_DATA['Input'].get()]
+                if (not shot['flags']) and (len(wave) == Nb_Smple):
+                    Axes.clear()
+                    Axes.plot(1e6*time, wave)
+
 
 
 class File_interaction(ttk.Labelframe):

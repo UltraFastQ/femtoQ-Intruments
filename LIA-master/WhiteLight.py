@@ -193,7 +193,6 @@ def Refresh(app, Frame, receiver):
             app.Zi_Data = app.ZI_Control.Zi_Setting_List
             app.ZiFrame.First = False
 
-
 app = White_Light_Inteferometer()
 app.frame.CbmBox.bind("<<ComboboxSelected>>",app.frame.Meth_show)
 
