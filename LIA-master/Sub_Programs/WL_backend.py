@@ -469,8 +469,8 @@ class Graphic(ttk.Labelframe):
             for index, shot in enumerate(Scope_Shots):
                 Nb_Smple = shot['totalsamples']
                 time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
-                wave = shot['channeloffset'][self.ZI_DATA['Input'].get()] + \
-                        shot['channelscaling'][self.ZI_DATA['Input'].get()]*shot['wave'][:, self.ZI_DATA['Input'].get()]
+
+                wave = shot['channeloffset'][self.ZI_DATA['Input'].get()] + shot['channelscaling'][ self.ZI_DATA['Input'].get()]*shot['wave'][:, self.ZI_DATA['Input'].get()]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
                     Axes.clear()
                     Axes.plot(1e6*time, wave)
