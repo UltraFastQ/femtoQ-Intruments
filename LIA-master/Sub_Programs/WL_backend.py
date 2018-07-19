@@ -448,11 +448,13 @@ class Graphic(ttk.Labelframe):
 
         show_frame(Frames[Graph_Name])
 
-    def Animate_Graph(self, i, Frame_Info, ZI_DATA1, GlOB_ZI, Status):
-        if (self.ZI_DATA == None) or (Frame_Info == None) or (ZI_DATA1 != GlOB_ZI) or (self.ZI_DATA['DAQ'] == None):
-            self.ZI_DATA != GlOB_ZI
+    def Animate_Graph(self, Frame_Info, GlOB_ZI, Status):
+        print(Status)
+        if (self.ZI_DATA == None) or (Frame_Info == None) :
+            self.ZI_DATA = GlOB_ZI
             pass
-        else:
+        elif (self.ZI_DATA['DAQ'] != None) and (Status == True):
+            print('Hello')
             canvas = Frame_Info[0]
             Figure = Frame_Info[1]
             Axes = Frame_Info[2]
@@ -467,8 +469,8 @@ class Graphic(ttk.Labelframe):
             for index, shot in enumerate(Scope_Shots):
                 Nb_Smple = shot['totalsamples']
                 time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
-                wave = shot['channeloffset'][self.ZI_DATA['Input'].get()] + \
-                        shot['channelscaling'][self.ZI_DATA['Input'].get()]*shot['wave'][:, self.ZI_DATA['Input'].get()]
+
+                wave = shot['channeloffset'][self.ZI_DATA['Input'].get()] + shot['channelscaling'][ self.ZI_DATA['Input'].get()]*shot['wave'][:, self.ZI_DATA['Input'].get()]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
                     Axes.clear()
                     Axes.plot(1e6*time, wave)
@@ -968,7 +970,6 @@ class Zi_settings(ttk.Labelframe):
         DATA['BC_Smp_PATH'] = '/%s/boxcars/0/sample' % DATA['Device_id']
         DATA['BC_Period_PATH'] = '/%s/boxcars/0/periods' % DATA['Device_id']
         self.Ready = True
-
 
 
 
