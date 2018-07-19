@@ -56,6 +56,7 @@ class PI_Connection_Method(ttk.Labelframe):
         self.INList = {}
         ####
         USBVar = tk.StringVar()
+        USBVar.set('C-891')
         IPVar = tk.StringVar()
         DevNameLabel = ttk.Label(self.Container, text =
                 "Device Name")
@@ -75,8 +76,8 @@ class PI_Connection_Method(ttk.Labelframe):
                 variable = self.varIP2)
         USBLabel = ttk.Label(self.Container, text = "USB")
         TCPIPLabel = ttk.Label(self.Container, text = "IP adress")
-        EnumUSB = ttk.Entry(self.Container, textvariable = USBVar)
-        EnumTCPIP = ttk.Entry(self.Container, textvariable = IPVar)
+        EnumUSB = tk.Entry(self.Container, textvariable = USBVar)
+        EnumTCPIP = tk.Entry(self.Container, textvariable = IPVar)
 
         SNLabel = ttk.Label(self.InFrame, text = 'Serial number: ')
         SNInput = ttk.Entry(self.InFrame, width = 20)
@@ -305,6 +306,7 @@ class Zi_Connection_Method(ttk.Labelframe):
         self.device_id = ''
         self.proprieties = {}
 
+
         def Call_device(TxtVariable):
             Called_id = TxtVariable.get()
             # Make it variables
@@ -364,8 +366,13 @@ class Graphic(ttk.Labelframe):
 
         # BOXCAR Graph
 
-        BC_fig = Figure(figsize = (2,2), dpi = 100)
+        BC_fig = Figure(figsize = (6, 3.75), dpi = 100)
         BC_axes = BC_fig.add_subplot(111)
+        BC_axes.set_title('BOXCAR', fontsize = 12)
+        BC_axes.set_xlabel('time', fontsize = 10)
+        BC_axes.set_ylabel('Tension', fontsize = 10)
+        BC_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
+        BC_axes.grid(True)
         BC_axes.plot(BC_X, BC_Y)
 
         BC_canvas = FigureCanvasTkAgg(BC_fig, BOX_Frame)
@@ -378,8 +385,13 @@ class Graphic(ttk.Labelframe):
         BOX_List = [BC_canvas, BC_fig, BC_axes]
         # SCOPE Graph
 
-        SP_fig = Figure(figsize = (2,2), dpi = 100)
+        SP_fig = Figure(figsize = (6 , 3.75), dpi = 100)
         SP_axes = SP_fig.add_subplot(111)
+        SP_axes.set_title('Scope', fontsize = 12)
+        SP_axes.set_xlabel('time', fontsize = 10)
+        SP_axes.set_ylabel('Tension', fontsize = 10)
+        SP_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
+        SP_axes.grid(True)
         SP_axes.plot(SP_X, SP_Y)
 
         SP_canvas = FigureCanvasTkAgg(SP_fig, Scope_Frame)
@@ -392,8 +404,13 @@ class Graphic(ttk.Labelframe):
         Scope_List = [SP_canvas, SP_fig, SP_axes]
         # PLOTTER Graph
 
-        PLT_fig = Figure(figsize = (2,2), dpi = 100)
+        PLT_fig = Figure(figsize = (6, 3.75), dpi = 100)
         PLT_axes = PLT_fig.add_subplot(111)
+        PLT_axes.set_title('Plotter', fontsize = 12)
+        PLT_axes.set_xlabel('time', fontsize = 10)
+        PLT_axes.set_ylabel('Something', fontsize = 10)
+        PLT_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
+        PLT_axes.grid(True)
         PLT_axes.plot(PLT_X, PLT_Y)
 
         PLT_canvas = FigureCanvasTkAgg(PLT_fig, PLOT_Frame)
@@ -433,7 +450,7 @@ class Graphic(ttk.Labelframe):
 
     def Animate_Graph(self, i, Frame_Info, ZI_DATA1, GlOB_ZI, Status):
         if (self.ZI_DATA == None) or (Frame_Info == None) or (ZI_DATA1 != GlOB_ZI) or (self.ZI_DATA['DAQ'] == None):
-            self.ZI_DATA1 != GlOB_ZI
+            self.ZI_DATA != GlOB_ZI
             pass
         else:
             canvas = Frame_Info[0]
@@ -451,11 +468,10 @@ class Graphic(ttk.Labelframe):
                 Nb_Smple = shot['totalsamples']
                 time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
                 wave = shot['channeloffset'][self.ZI_DATA['Input'].get()] + \
-                        shot['channelscaling'][self.ZI_DATA['Input'].get()]]*shot['wave'][:, self.ZI_DATA['Input'].get()]
+                        shot['channelscaling'][self.ZI_DATA['Input'].get()]*shot['wave'][:, self.ZI_DATA['Input'].get()]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
                     Axes.clear()
                     Axes.plot(1e6*time, wave)
-
 
 
 class File_interaction(ttk.Labelframe):
@@ -851,7 +867,7 @@ class Zi_settings(ttk.Labelframe):
         for item in Item_List:
             item.grid( row = rw, column = clm, padx = 2, pady = 2,
                     sticky = 'w')
-            if clm == 3 :
+            if clm == 5 :
                 clm = 0
                 rw += 1
             else : clm += 1

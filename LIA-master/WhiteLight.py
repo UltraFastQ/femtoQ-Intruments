@@ -62,29 +62,31 @@ class White_Light_Inteferometer(tk.Tk):
         height = self.winfo_screenheight()
         #Initialisation of different elements
         Mainframe = ttk.Frame(self, padding = (6,6,6,6))
+        SubFrame = ttk.Frame(Mainframe, padding = (6,6,6,6))
+        ConFrame = ttk.Frame(Mainframe, padding = (6,6,6,6))
         GCBox = ttk.Combobox(Mainframe, textvariable = '',
                 state = 'readonly')
         GCBox.grid(row = 0, column = 1,sticky = 'nw')
         GCBox['value'] = ('SCOPE','PLOTTER','BOXCAR')
         self.GraphBox = backend.Graphic( Mainframe, GCBox,
                 self.Zi_Data)
-        CCBox = ttk.Combobox(Mainframe, textvariable = '',
+        CCBox = ttk.Combobox(ConFrame, textvariable = '',
                 state = 'readonly')
         CCBox.grid(row = 0, column = 0,sticky = 'nw')
         CCBox['value'] = ('PI Module Connection','ZI Module connection')
         CCBox.current(0)
-        SCBox = ttk.Combobox(Mainframe, textvariable = '',
+        SCBox = ttk.Combobox(SubFrame, textvariable = '',
                 state = 'readonly')
         SCBox.grid(row = 0, column = 0,sticky = 'nw')
         SCBox['value'] = ('PI Module Settings','ZI Module Settings')
         SCBox.current(0)
-        File_Dialog = backend.File_interaction(Mainframe,
+        File_Dialog = backend.File_interaction(SubFrame,
                 "File interaction")
-        self.ZiFrame = backend.Zi_Connection_Method(Mainframe,CCBox)
-        self.frame = backend.PI_Connection_Method(Mainframe,
+        self.ZiFrame = backend.Zi_Connection_Method(ConFrame,CCBox)
+        self.frame = backend.PI_Connection_Method(ConFrame,
                 CCBox)
-        self.PI_Control = backend.PI_control(Mainframe,SCBox)
-        self.ZI_Control = backend.Zi_settings(Mainframe, SCBox)
+        self.PI_Control = backend.PI_control(SubFrame,SCBox)
+        self.ZI_Control = backend.Zi_settings(SubFrame, SCBox)
         Flist1 = {'PI Module Connection': self.frame,
                 'ZI Module connection' : self.ZiFrame}
         Flist2 = {'PI Module Settings': self.PI_Control,
@@ -92,17 +94,19 @@ class White_Light_Inteferometer(tk.Tk):
         CCBox.bind("<<ComboboxSelected>>",
             lambda x : Switch_Frame(Flist1,CCBox,0,0))
         SCBox.bind("<<ComboboxSelected>>",
-            lambda x : Switch_Frame(Flist2,SCBox,1,0))
+            lambda x : Switch_Frame(Flist2,SCBox,0,0))
         Switch_Frame(Flist1,CCBox,0,0)
-        Switch_Frame(Flist2,SCBox,1,0)
+        Switch_Frame(Flist2,SCBox,0,0)
         #Mainframe configuration
         Mainframe.grid(row = 0, column = 0)
+        ConFrame.grid(row = 0, column = 0, sticky = 'nw')
+        SubFrame.grid(row = 1, column = 0,columnspan = 2, sticky = 'nsew')
         #GraphBox configuration
 #        GraphBox.create_text(150, 100, text = "Awesome Graph",font
 #            = LARGE_FONT, fill = "black")
         self.GraphBox.grid(row = 0, column = 1, padx = 5, pady = 5)
         #File location/reading configuration
-        File_Dialog.grid(row = 1, column = 1, padx = 2, pady = 2)
+        File_Dialog.grid(row = 0, column = 1, padx = 2, pady = 2, sticky = 'w')
 
         File_Dialog.Start.bind('<Button-1>',
                     lambda : self.Start( self.PI_Data, self.Zi_Data))
@@ -122,7 +126,6 @@ class White_Light_Inteferometer(tk.Tk):
                     lambda : self.Stop_Measurement(
                         self.PI_Data,
                         self.Zi_Data))
-
 
     def Start(self, File_List, Dir,PI_Data, Zi_Data):
         print('hello')
