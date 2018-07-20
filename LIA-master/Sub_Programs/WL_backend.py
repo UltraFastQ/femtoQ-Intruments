@@ -477,8 +477,10 @@ class Graphic(ttk.Labelframe):
                 #Scope Input channel is 0 but we can add up to 3 if im correct
                 wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
+                    print('pt')
                     Axes.plot(1e6*time, wave)
             print('updated')
+            canvas.show()
 
 class File_interaction(ttk.Labelframe):
     def __init__(self, parent, text):

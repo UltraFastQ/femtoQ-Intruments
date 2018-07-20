@@ -186,6 +186,8 @@ class White_Light_Inteferometer(tk.Tk):
     def Animate_Graph(self, time):
         self.GraphBox.Animate_Graph(self.GraphBox.Actual_Graph, self.ZI_Control.Zi_Setting_List, app.ZI_Control.Ready)
         self.after(time, self.Animate_Graph, 1000)
+#        Anim = animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
+#                app.GraphBox.Animate_Graph, interval = 1000)
         print('As it')
 
 def Refresh(app, Frame, receiver):
@@ -212,13 +214,6 @@ app.ZiFrame.CButton.bind('<Button-1>', lambda x : Refresh(app, app.ZiFrame, app.
 app.geometry("+{}+{}".format(int(width/5),int(height/5)))
 #NOTE : This line might cause an error in the future
 # P.S. : The Future is NOW :(
-#Anim = animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
-#        app.GraphBox.Animate_Graph,
-#        fargs = (app.GraphBox.Actual_Graph,
-#        app.GraphBox.ZI_DATA,
-#        app.ZI_Control.Zi_Setting_List,
-#        app.ZI_Control.Ready),
-#        interval = 1000)
 app.after(1000, app.Animate_Graph, 1000)
 app.mainloop()
 
