@@ -464,7 +464,7 @@ class Graphic(ttk.Labelframe):
             Axes = Frame_Info[2]
             daq = self.ZI_DATA['DAQ']
             device = self.ZI_DATA['Device_id']
-            poll_lenght = 0.05 # [s]
+            poll_lenght = 0.01 # [s]
             poll_timeout = 500 # [ms]
             poll_flags = 0
             poll_return_flat_dict = True
@@ -477,9 +477,7 @@ class Graphic(ttk.Labelframe):
                 #Scope Input channel is 0 but we can add up to 3 if im correct
                 wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
-                    print('pt')
                     Axes.plot(1e6*time, wave)
-            print('updated')
             canvas.show()
 
 class File_interaction(ttk.Labelframe):
