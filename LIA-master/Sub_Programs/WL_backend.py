@@ -478,6 +478,7 @@ class Graphic(ttk.Labelframe):
                 wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
                     Axes.plot(1e6*time, wave)
+            print('updated')
 
 class File_interaction(ttk.Labelframe):
     def __init__(self, parent, text):
