@@ -186,9 +186,6 @@ class White_Light_Inteferometer(tk.Tk):
     def Animate_Graph(self, time):
         self.GraphBox.Animate_Graph(self.GraphBox.Actual_Graph, self.ZI_Control.Zi_Setting_List, app.ZI_Control.Ready)
         self.after(time, self.Animate_Graph, 1000)
-#        Anim = animation.FuncAnimation(app.GraphBox.Actual_Graph[1],
-#                app.GraphBox.Animate_Graph, interval = 1000)
-        print('As it')
 
 def Refresh(app, Frame, receiver):
     if Frame.connected==False:
