@@ -470,7 +470,7 @@ class Graphic(ttk.Labelframe):
             poll_return_flat_dict = True
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
-            axes.clear()
+            Axes.clear()
             for index, shot in enumerate(Scope_Shots):
                 Nb_Smple = shot['totalsamples']
                 time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
