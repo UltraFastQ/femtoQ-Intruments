@@ -31,11 +31,10 @@ from pathlib import PurePath
 #Zurich Instruments
 import zhinst.utils as utils
 import zhinst.ziPython as ziPython
-#
-# import subprocess
-# subprocess.run('ziDataServer',shell = True)
-#####
 
+
+#####
+#####
 class PI_Connection_Method(ttk.Labelframe):
     def __init__(self, parent, name):
         ttk.Labelframe.__init__(self, parent)
@@ -305,7 +304,10 @@ class Zi_Connection_Method(ttk.Labelframe):
         self.DAQ = ()
         self.device_id = ''
         self.proprieties = {}
-
+        self.photo = tk.PhotoImage(file = 'Sub_Programs/zilogo.png')
+        Photo_Frame = tk.Canvas(self, width = 200, height = 200)
+        Photo_Frame.grid( row = 0, column = 2, rowspan = 2, sticky = 'nsew')
+        Photo_Frame.create_image(100, 100, image = self.photo)
 
         def Call_device(TxtVariable):
             Called_id = TxtVariable.get()
@@ -368,6 +370,10 @@ class Graphic(ttk.Labelframe):
 
         BC_fig = Figure(figsize = (6, 3.75), dpi = 100)
         BC_axes = BC_fig.add_subplot(111)
+        BC_axes2 = BC_fig.add_subplot(111)
+        BC_axes3 = BC_fig.add_subplot(111)
+        BC_axes2.axvline(2, animated = 1)
+        BC_axes3.axvline(4, animated = 1)
         BC_axes.set_title('BOXCAR', fontsize = 12)
         BC_axes.set_xlabel('time', fontsize = 10)
         BC_axes.set_ylabel('Tension', fontsize = 10)
@@ -449,12 +455,10 @@ class Graphic(ttk.Labelframe):
         show_frame(Frames[Graph_Name])
 
     def Animate_Graph(self, Frame_Info, GlOB_ZI, Status):
-        print(Status)
         if (self.ZI_DATA == None) or (Frame_Info == None) :
             self.ZI_DATA = GlOB_ZI
             pass
         elif (self.ZI_DATA['DAQ'] != None) and (Status == True):
-            print('Hello')
             canvas = Frame_Info[0]
             Figure = Frame_Info[1]
             Axes = Frame_Info[2]
@@ -466,15 +470,15 @@ class Graphic(ttk.Labelframe):
             poll_return_flat_dict = True
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
+            axes.clear()
             for index, shot in enumerate(Scope_Shots):
                 Nb_Smple = shot['totalsamples']
                 time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
-
-                wave = shot['channeloffset'][self.ZI_DATA['Input'].get()] + shot['channelscaling'][ self.ZI_DATA['Input'].get()]*shot['wave'][:, self.ZI_DATA['Input'].get()]
+                #Scope Input channel is 0 but we can add up to 3 if im correct
+                wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
-                    Axes.clear()
-                    Axes.plot(1e6*time, wave)
-
+                    Axes.draw(1e6*time, wave)
+            Axes.show()
 
 class File_interaction(ttk.Labelframe):
     def __init__(self, parent, text):
