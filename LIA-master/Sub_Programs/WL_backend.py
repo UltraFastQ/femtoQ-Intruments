@@ -23,6 +23,8 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+plt.ion()
 # Numpy :
 import numpy as np
 # Pathlib :
@@ -350,7 +352,7 @@ class Graphic(ttk.Labelframe):
     def __init__(self,parent, Spin_Box, ZI_Data):
 
         self.ZI_DATA = ZI_Data
-#        self.Actual_Graph = None
+        self.Activate = False
 
         ttk.Labelframe.__init__(self,parent)
         tk.Canvas.configure(self, labelwidget = Spin_Box)
@@ -398,7 +400,7 @@ class Graphic(ttk.Labelframe):
         SP_axes.set_ylabel('Tension', fontsize = 10)
         SP_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         SP_axes.grid(True)
-        SP_axes.plot(SP_X, SP_Y)
+        SP_L1, = SP_axes.plot(SP_X, SP_Y)
 
         SP_canvas = FigureCanvasTkAgg(SP_fig, Scope_Frame)
         SP_canvas.show()
@@ -407,7 +409,7 @@ class Graphic(ttk.Labelframe):
         SP_toolbar.update()
         SP_canvas._tkcanvas.pack()
 
-        Scope_List = [SP_canvas, SP_fig, SP_axes]
+        Scope_List = [SP_canvas, SP_fig, SP_axes, SP_L1]
         # PLOTTER Graph
 
         PLT_fig = Figure(figsize = (6, 3.75), dpi = 100)
@@ -437,6 +439,12 @@ class Graphic(ttk.Labelframe):
         Spin_Box.current(0)
         self.Graph_switch(Spin_Box.get(),Graph_Lst)
 
+        TextVar = tk.StringVar()
+        TextVar.set('Start')
+        Button = ttk.Button( self, text = TextVar.get(), command = lambda : self.Activate_anim(TextVar,Button),
+                width = 16)
+        Button.grid(row = 1, column = 0, sticky = 'nw')
+
 
     def Graph_switch(self, Graph_Name, Frames):
 
@@ -455,30 +463,52 @@ class Graphic(ttk.Labelframe):
         show_frame(Frames[Graph_Name])
 
     def Animate_Graph(self, Frame_Info, GlOB_ZI, Status):
-        if (self.ZI_DATA == None) or (Frame_Info == None) :
-            self.ZI_DATA = GlOB_ZI
-            pass
-        elif (self.ZI_DATA['DAQ'] != None) and (Status == True):
-            canvas = Frame_Info[0]
-            Figure = Frame_Info[1]
-            Axes = Frame_Info[2]
-            daq = self.ZI_DATA['DAQ']
-            device = self.ZI_DATA['Device_id']
-            poll_lenght = 0.01 # [s]
-            poll_timeout = 500 # [ms]
-            poll_flags = 0
-            poll_return_flat_dict = True
-            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
-            Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
-            Axes.clear()
-            for index, shot in enumerate(Scope_Shots):
-                Nb_Smple = shot['totalsamples']
-                time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
-                #Scope Input channel is 0 but we can add up to 3 if im correct
-                wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
-                if (not shot['flags']) and (len(wave) == Nb_Smple):
-                    Axes.plot(1e6*time, wave)
-            canvas.show()
+        if self.Activate == True:
+            if (self.ZI_DATA == None) or (Frame_Info == None) :
+                self.ZI_DATA = GlOB_ZI
+                pass
+            elif (self.ZI_DATA['DAQ'] != None) and (Status == True):
+                canvas = Frame_Info[0]
+                Figure = Frame_Info[1]
+                Axes = Frame_Info[2]
+                Line = Frame_Info[3]
+                daq = self.ZI_DATA['DAQ']
+                device = self.ZI_DATA['Device_id']
+                poll_lenght = 0.01 # [s]
+                poll_timeout = 500 # [ms]
+                poll_flags = 0
+                poll_return_flat_dict = True
+                Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+                Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
+                for index, shot in enumerate(Scope_Shots):
+                    Nb_Smple = shot['totalsamples']
+                    time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
+                    #Scope Input channel is 0 but we can add up to 3 if im correct
+                    wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
+                    if (not shot['flags']) and (len(wave) == Nb_Smple):
+                        Line.set_xdata(1e6*time)
+                        Line.set_ydata(wave)
+                        Figure.canvas.draw()
+                        Figure.canvas.flush_events()
+
+    def Activate_anim(self, Text, Button):
+        if Text.get() == 'Start':
+            Button.configure(text = 'Stop')
+            Text.set('Stop')
+            self.Activate = True
+            if self.ZI_DATA != None:
+                if self.ZI_DATA['DAQ'] != None:
+                    #Modify it to be subscribed to the graph needed
+                    self.ZI_DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
+                    self.ZI_DATA['DAQ'].sync()
+        else:
+            Text.set('Start')
+            Button.configure(text = 'Start')
+            self.Activate = False
+            if self.ZI_DATA != None:
+                if self.ZI_DATA['DAQ'] != None:
+                    self.ZI_DATA['DAQ'].unsubscribe('*')
+                    self.ZI_DATA['DAQ'].sync()
 
 class File_interaction(ttk.Labelframe):
     def __init__(self, parent, text):
@@ -855,6 +885,18 @@ class Zi_settings(ttk.Labelframe):
                 textvariable = Smpl_Rate_Var)
         Smpl_Rate = tk.Label(self, text = 'Sampling Rate: ')
 
+        Ampli_Var = tk.DoubleVar()
+        Ampli_Var.set(1)
+        Ampli = tk.Entry(self,  width = 4,
+                textvariable = Ampli_Var)
+        Ampli_Label= tk.Label(self, text = 'Input Amplitude [V]: ')
+
+        BOXCAR_ST_Var = tk.StringVar()
+        BOXCAR_ST_Var.set('Enabled')
+        BOX = ttk.Checkbutton(self, text = 'BOXCAR',
+                variable = BOXCAR_ST_Var, onvalue = 'Enabled',
+                offvalue = 'Disabled')
+
 
         Item_List = [ L_Demod, D_Port_SpinB , AC , Ohm50,
                 L_Input_Channel, I_Port_SpinB,
@@ -867,7 +909,8 @@ class Zi_settings(ttk.Labelframe):
                 L_Out_Offset, Offset, L_Out_Scale, Out_Scale,
                 L_Order, Order_SpinB, L_DB, DB,
                 Trig, T_Port_SpinB, L_Trig, Trig_Entry,
-                Smpl_Rate, Smpl_Rate_SpinB]
+                Smpl_Rate, Smpl_Rate_SpinB, Ampli_Label, Ampli,
+                BOX]
         rw = 0
         clm = 0
         for item in Item_List:
@@ -901,8 +944,9 @@ class Zi_settings(ttk.Labelframe):
                 'Out_Offset': Out_Offset_Var,
                 'LowPassOrder': Order_Var,
                 'LowPassDBValue': DB_Var,
-                'Smpling_Rate': Smpl_Rate_Var}
-
+                'Smpling_Rate': Smpl_Rate_Var,
+                'Ampli': Ampli_Var,
+                'BOXCAR_State': BOXCAR_ST_Var}
 
         Config_Button = ttk.Button(self, text ='Configure Demodulator'
                 +' X', command = lambda : self.Dev_Config_Init(
@@ -915,7 +959,11 @@ class Zi_settings(ttk.Labelframe):
                 ' the oscillator will be automatically disabled for'+
                 ' for this demodulator.', icon = 'info', title =
                 'Information')
-
+        boxcar_index = 0
+        inputpwa_index = 0
+        windowstart = 75 # degrees
+        windowsize = 3e-9 # seconds
+        periods_vals = np.logspace( 0, 9, 10, base = 2)
         out_mixer_channel = utils.default_output_mixer_channel(DATA['Prop'])
         #First desactivate all input,scopes,Demodulator
         if self.First == True:
@@ -927,10 +975,12 @@ class Zi_settings(ttk.Labelframe):
                     ]
             DATA['DAQ'].set(Reset_settings)
             DATA['DAQ'].sync()
-#        print(DATA['DAQ'].listNodes('/%s/' % DATA['Device_id'], 0))
+
+        node_branches = DATA['DAQ'].listNodes('/%s/' % DATA['Device_id'], 0)
         Input_setting = [
-                ['/%s/sigins/%d/ac' % (DATA['Device_id'],DATA['Input'].get()), DATA['AC'].get() == 'Enable' ],
-                ['/%s/sigins/%d/imp50' % (DATA['Device_id'],DATA['Input'].get()), DATA['50 Ohm'].get() == 'Enable' ],
+                ['/%s/sigins/%d/ac' % (DATA['Device_id'],DATA['Input'].get()), DATA['AC'].get() == 'Enabled' ],
+                ['/%s/sigins/%d/imp50' % (DATA['Device_id'],DATA['Input'].get()), DATA['50 Ohm'].get() == 'Enabled' ],
+                ['/%s/sigins/%d/range' % (DATA['Device_id'],DATA['Input'].get()), DATA['Ampli'].get() ],
                 ['/%s/sigins/%d/scaling' % (DATA['Device_id'],DATA['Input'].get()), DATA['Input_Scale'].get() ],
                 ['/%s/demods/%d/enable' % (DATA['Device_id'],DATA['Demodulator'].get()), 1],
                 ['/%s/demods/%d/phaseshift' % (DATA['Device_id'],DATA['Demodulator'].get()), DATA['Phase'].get()],
@@ -944,39 +994,108 @@ class Zi_settings(ttk.Labelframe):
                 ['/%s/oscs/%d/freq' % (DATA['Device_id'],DATA['Oscillator'].get()), DATA['Osc. Freq'].get()],
                 ['/%s/sigouts/%d/on' % (DATA['Device_id'],DATA['Output'].get()), 1],
                 ['/%s/sigouts/%d/enables/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), 1],
+                ['/%s/sigouts/%d/amplitudes/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), DATA['Ampli'].get()],
                 ['/%s/scopes/0/enable' % DATA['Device_id'], 1],
-                ['/%s/scopes/0/trigchannel' % DATA['Device_id'], DATA['Trig_Ch'].get()],
-                ['/%s/scopes/0/trigenable' % DATA['Device_id'], DATA['Trigger state'].get() == 'Enable'],
+                ['/%s/scopes/0/length' % DATA['Device_id'], int(1.0e3)],
+                ['/%s/scopes/0/channel' % DATA['Device_id'], 1 << DATA['Input'].get()],
+                ['/%s/scopes/0/segments/enable' % DATA['Device_id'], 0],
+                ['/%s/scopes/0/channels/%d/bwlimit' % (DATA['Device_id'], 0), 1],
+                ['/%s/scopes/0/channels/%d/inputselect' % (DATA['Device_id'], 0), DATA['Input'].get()],
                 ['/%s/scopes/0/time' % DATA['Device_id'], DATA['Smpling_Rate'].get()],
-                ['/%s/extrefs/0/enable' % DATA['Device_id'], 1]
                 ]
+        if 'DEMODS' in node_branches:
+            Input_setting.append(['/%s/demods/%d/oscselect' % (DATA['Device_id'], out_mixer_channel), DATA['Oscillator'].get()])
         # Try out take a single shot of scope (Make it a 60Hz_Graph refresh rate)
         # 0 - continous Shot
         # 1 - Single Shot
 #        Input_setting.append(['/%s/scopes/0/single' % DATA['Device_id'], 1])
         DATA['DAQ'].set(Input_setting)
-        DATA['DAQ'].sync()
         time.sleep(1)
+        DATA['DAQ'].sync()
         DATA['DAQ'].flush()
         # Scope initialisation
 
         DATA['DAQ'].unsubscribe('*')
         DATA['DAQ'].sync()
 
+#        DATA['POLL'] = DATA['DAQ'].poll( 0.05, 500)
+#        time.sleep(1)
+#        print(DATA['POLL'])
+        DATA['SC_PATH'] = '/%s/scopes/0/wave' % DATA['Device_id']
+        DATA['BC_Smp_PATH'] = '/%s/boxcars/0/sample' % DATA['Device_id']
+        DATA['BC_Period_PATH'] = '/%s/boxcars/0/periods' % DATA['Device_id']
+        DATA['PWA_Wave_PATH'] = '/%s/inputpwas/%d/wave' % (DATA['Device_id'], inputpwa_index)
+        self.Ready = True
+
+        if DATA['Trigger state'].get() == 'Enabled':
+            Trig_Settings = [['/%s/scopes/0/trigenable' % DATA['Device_id'] , 1 ],
+                    ['/%s/scopes/0/trigchannel' % DATA['Device_id'], DATA['Trig_Ch'].get()]]
+            #Trigger on rising edge ?
+            Trig_Settings.append(['/%s/scopes/0/trigrising' % DATA['Device_id'], 1])
+            #Trigger on falling edge ?
+            Trig_Settings.append(['/%s/scopes/0/trigfalling' % DATA['Device_id'], 0])
+            #Trigger on threshold level
+            Trig_Settings.append(['/%s/scopes/0/triglevel' % DATA['Device_id'], 0.00])
+            # Set hysteresis triggering threshold to avoid triggering on noise
+            # 'trighysteresis/mode' :
+            #  0 - absolute, use an absolute value ('scopes/0/trighysteresis/absolute')
+            #  1 - relative, use a relative value ('scopes/0trighysteresis/relative') of the trigchannel's input range
+            #  (0.1=10%).
+            Trig_Settings.append(['/%s/scopes/0/trighysteresis/mode' % DATA['Device_id'], 1])
+            Trig_Settings.append(['/%s/scopes/0/trighysteresis/relative' % DATA['Device_id'], 0.1])
+            # Set the trigger hold-off mode of the scope. After recording a trigger event, this specifies when the scope should
+            # become re-armed and ready to trigger, 'trigholdoffmode':
+            #  0 - specify a hold-off time between triggers in seconds ('scopes/0/trigholdoff'),
+            #  1 - specify a number of trigger events before re-arming the scope ready to trigger ('scopes/0/trigholdcount').
+            Trig_Settings.append(['/%s/scopes/0/trigholdoffmode' % DATA['Device_id'], 0])
+            Trig_Settings.append(['/%s/scopes/0/trigholdoff' % DATA['Device_id'], 0.025])
+            # Set trigdelay to 0.: Start recording from when the trigger is activated.
+            Trig_Settings.append(['/%s/scopes/0/trigdelay' % DATA['Device_id'], 0.0])
+            # Disable trigger gating.
+            Trig_Settings.append(['/%s/scopes/0/triggate/enable' % DATA['Device_id'], 0])
+            # Disable segmented data recording.
+            Trig_Settings.append()
+            Trig_Settings.append(['/%s/extrefs/0/enable' % DATA['Device_id'], 1])
+
+            DATA['DAQ'].set(Trig_Settings)
+            DATA['DAQ'].sync()
+            time.sleep(1)
+
+        if DATA['BOXCAR_State'].get() == 'Enabled':
+            #BOXCAR Settings
+            BOX_Settings = [['/%s/inputpwas/%d/oscselect'    % (DATA['Device_id'], inputpwa_index), DATA['Oscillator'].get()],
+            ['/%s/inputpwas/%d/inputselect'  % (DATA['Device_id'], inputpwa_index), DATA['Input'].get()],
+            ['/%s/inputpwas/%d/mode'         % (DATA['Device_id'], inputpwa_index), 1],
+            ['/%s/inputpwas/%d/shift'        % (DATA['Device_id'], inputpwa_index), 0.0],
+            ['/%s/inputpwas/%d/harmonic'     % (DATA['Device_id'], inputpwa_index), 1],
+            ['/%s/inputpwas/%d/enable'       % (DATA['Device_id'], inputpwa_index), 1],
+            ['/%s/boxcars/%d/oscselect'      % (DATA['Device_id'], boxcar_index), DATA['Oscillator'].get()],
+            ['/%s/boxcars/%d/inputselect'    % (DATA['Device_id'], boxcar_index), DATA['Input'].get()],
+            ['/%s/boxcars/%d/windowstart'    % (DATA['Device_id'], boxcar_index), windowstart],
+            ['/%s/boxcars/%d/windowsize'     % (DATA['Device_id'], boxcar_index), windowsize],
+            ['/%s/boxcars/%d/limitrate'      % (DATA['Device_id'], boxcar_index), 1e3],
+            ['/%s/boxcars/%d/periods'        % (DATA['Device_id'], boxcar_index), periods_vals[0]],
+            ['/%s/boxcars/%d/enable'         % (DATA['Device_id'], boxcar_index), 1],
+            ]
+            DATA['DAQ'].set(BOX_Settings)
+            DATA.sync()
+            # Get the values that were actually set on the device
+            frequency_set = DATA['DAQ'].getDouble('/%s/oscs/%d/freq' % ( DATA['Device_id'], DATA['Oscillator'].get()))
+            windowstart_set = DATA['DAQ'].getDouble('/%s/boxcars/%d/windowstart' % (DATA['Device_id'], boxcar_index))
+            windowsize_set = DATA['DAQ'].getDouble('/%s/boxcars/%d/windowsize' % (DATA['Device_id'], boxcar_index))
+            # Those two line not tabbed are necessary but not here I need to find the right spot
+            #daq.subscribe([DATA['BC_Smp_PATH'], DATA['BC_Period_PATH'], DATA['PWA_Wave_PATH'])
+                # We use getAsEvent() to ensure we obtain the first ``periods`` value; if
+                # its value didn't change, the server won't report the first value.
+            #daq.getAsEvent(DATA['BC_Period_PATH'])
+            for periods in periods_vals:
+                time.sleep(0.5)
+                daq.setInt(DATA['BC_Period_PATH'], int(periods))
+        time.sleep(periods_vals[0]/DATA['Osc. Freq'].get())
         # Subscribe to the scope DATA
 
         DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
         DATA['DAQ'].sync()
-        DATA['POLL'] = DATA['DAQ'].poll( 0.05, 500)
-        time.sleep(1)
-        print(DATA['POLL'])
-        DATA['SC_PATH'] = '/%s/scopes/0/wave' % DATA['Device_id']
-        DATA['BC_Smp_PATH'] = '/%s/boxcars/0/sample' % DATA['Device_id']
-        DATA['BC_Period_PATH'] = '/%s/boxcars/0/periods' % DATA['Device_id']
-        self.Ready = True
-
-
-
 
 
 
