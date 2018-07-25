@@ -463,44 +463,46 @@ class Graphic(ttk.Labelframe):
         show_frame(Frames[Graph_Name])
 
     def Animate_Graph(self, Frame_Info, GlOB_ZI, Status):
-        if self.Activate == True:
-            if (self.ZI_DATA == None) or (Frame_Info == None) :
-                self.ZI_DATA = GlOB_ZI
-                pass
-            elif (self.ZI_DATA['DAQ'] != None) and (Status == True):
-                canvas = Frame_Info[0]
-                Figure = Frame_Info[1]
-                Axes = Frame_Info[2]
-                Line = Frame_Info[3]
-                daq = self.ZI_DATA['DAQ']
-                device = self.ZI_DATA['Device_id']
-                poll_lenght = 0.05 # [s]
-                poll_timeout = 500 # [ms]
-                poll_flags = 0
-                poll_return_flat_dict = True
-                Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
-                Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
-                for index, shot in enumerate(Scope_Shots):
-                    Nb_Smple = shot['totalsamples']
-                    time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
-                    #Scope Input channel is 0 but we can add up to 3 if im correct
-                    wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
-                    if (not shot['flags']) and (len(wave) == Nb_Smple):
-                        Line.set_xdata(1e6*time)
-                        Line.set_ydata(wave)
-                        Figure.canvas.draw()
-                        Figure.canvas.flush_events()
+
+        if (self.ZI_DATA == None) or (Frame_Info == None) :
+            self.ZI_DATA = GlOB_ZI
+            pass
+        elif (self.ZI_DATA['DAQ'] != None) and (Status == True) and (self.Activate == True):
+            canvas = Frame_Info[0]
+            Figure = Frame_Info[1]
+            Axes = Frame_Info[2]
+            Line1 = Frame_Info[3]
+            daq = self.ZI_DATA['DAQ']
+            device = self.ZI_DATA['Device_id']
+            poll_lenght = 0.1 # [s]
+            poll_timeout = 500 # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
+            for index, shot in enumerate(Scope_Shots):
+                Nb_Smple = shot['totalsamples']
+                time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
+                #Scope Input channel is 0 but we can add up to 3 if im correct
+                wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
+                if (not shot['flags']) and (len(wave) == Nb_Smple):
+                    Line1.set_xdata(1e6*time)
+                    Line1.set_ydata(wave)
+                    Figure.canvas.draw()
+                    Figure.canvas.flush_events()
 
     def Activate_anim(self, Text, Button):
         if Text.get() == 'Start':
             Button.configure(text = 'Stop')
             Text.set('Stop')
-            self.Activate = True
             if self.ZI_DATA != None:
                 if self.ZI_DATA['DAQ'] != None:
                     #Modify it to be subscribed to the graph needed
-                    self.ZI_DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
+                    self.ZI_DATA['DAQ'].subscribe('/%s/scopes/0/wave' % self.ZI_DATA['Device_id'])
+                    self.Activate = True
                     self.ZI_DATA['DAQ'].sync()
+            else: print("Error")
+
         else:
             Text.set('Start')
             Button.configure(text = 'Start')
@@ -996,9 +998,8 @@ class Zi_settings(ttk.Labelframe):
                 ['/%s/sigouts/%d/enables/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), 1],
                 ['/%s/sigouts/%d/amplitudes/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), DATA['Ampli'].get()],
                 ['/%s/scopes/0/enable' % DATA['Device_id'], 1],
-                ['/%s/scopes/0/length' % DATA['Device_id'], int(1.0e3)],
-                ['/%s/scopes/0/channel' % DATA['Device_id'], 1 << DATA['Input'].get()],
-                ['/%s/scopes/0/segments/enable' % DATA['Device_id'], 0],
+                ['/%s/scopes/0/length' % DATA['Device_id'], int(1.0e4)],
+                ['/%s/scopes/0/channel' % DATA['Device_id'], DATA['Input'].get() << 0],
                 ['/%s/scopes/0/channels/%d/bwlimit' % (DATA['Device_id'], 0), 1],
                 ['/%s/scopes/0/channels/%d/inputselect' % (DATA['Device_id'], 0), DATA['Input'].get()],
                 ['/%s/scopes/0/time' % DATA['Device_id'], DATA['Smpling_Rate'].get()],
