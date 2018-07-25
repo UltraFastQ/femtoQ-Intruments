@@ -474,7 +474,7 @@ class Graphic(ttk.Labelframe):
                 Line = Frame_Info[3]
                 daq = self.ZI_DATA['DAQ']
                 device = self.ZI_DATA['Device_id']
-                poll_lenght = 0.01 # [s]
+                poll_lenght = 0.05 # [s]
                 poll_timeout = 500 # [ms]
                 poll_flags = 0
                 poll_return_flat_dict = True
@@ -892,7 +892,7 @@ class Zi_settings(ttk.Labelframe):
         Ampli_Label= tk.Label(self, text = 'Input Amplitude [V]: ')
 
         BOXCAR_ST_Var = tk.StringVar()
-        BOXCAR_ST_Var.set('Enabled')
+        BOXCAR_ST_Var.set('Disabled')
         BOX = ttk.Checkbutton(self, text = 'BOXCAR',
                 variable = BOXCAR_ST_Var, onvalue = 'Enabled',
                 offvalue = 'Disabled')
@@ -1054,7 +1054,8 @@ class Zi_settings(ttk.Labelframe):
             # Disable trigger gating.
             Trig_Settings.append(['/%s/scopes/0/triggate/enable' % DATA['Device_id'], 0])
             # Disable segmented data recording.
-            Trig_Settings.append()
+            Trig_Settings.append(['/%s/scopes/0/segments/enable' % DATA['Device_id'], 0])
+            #External Trigger
             Trig_Settings.append(['/%s/extrefs/0/enable' % DATA['Device_id'], 1])
 
             DATA['DAQ'].set(Trig_Settings)
