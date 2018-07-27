@@ -24,6 +24,7 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 plt.ion()
 # Numpy :
 import numpy as np
@@ -34,8 +35,6 @@ from pathlib import PurePath
 import zhinst.utils as utils
 import zhinst.ziPython as ziPython
 
-
-#####
 #####
 class PI_Connection_Method(ttk.Labelframe):
     def __init__(self, parent, name):
@@ -349,39 +348,35 @@ class Zi_Connection_Method(ttk.Labelframe):
 
 ###########
 class Graphic(ttk.Labelframe):
+
     def __init__(self,parent, Spin_Box, ZI_Data):
 
         self.ZI_DATA = ZI_Data
         self.Activate = False
+        self.Spin_Box = Spin_Box
 
         ttk.Labelframe.__init__(self,parent)
         tk.Canvas.configure(self, labelwidget = Spin_Box)
         BOX_Frame = tk.Frame(self, relief = 'groove')
         PLOT_Frame = tk.Frame(self, relief = 'groove')
         Scope_Frame = tk.Frame(self, relief = 'groove')
-        if self.ZI_DATA == None:
-            BC_X = np.linspace(0, 2*np.pi, 50)
-            BC_Y = np.cos(BC_X)
-            SP_X = np.linspace(0, 2*np.pi, 50)
-            SP_Y = np.sin(SP_X)
-            PLT_X = np.linspace(0, 2*np.pi, 50)
-            PLT_Y = np.exp(PLT_X)
 
 
         # BOXCAR Graph
-
+        self.Line_List = []
         BC_fig = Figure(figsize = (6, 3.75), dpi = 100)
         BC_axes = BC_fig.add_subplot(111)
-        BC_axes2 = BC_fig.add_subplot(111)
-        BC_axes3 = BC_fig.add_subplot(111)
-        BC_axes2.axvline(2, animated = 1)
-        BC_axes3.axvline(4, animated = 1)
-        BC_axes.set_title('BOXCAR', fontsize = 12)
+        BC_axes.set_xlim(0)
+        BC_Laxis = BC_axes.twiny()
+        BC_Laxis.set_xlim(0,180)
+        BC_Laxis.set_xlabel('Phase', fontsize = 8)
+        BC_Laxis.tick_params(axis = 'both', which ='major', labelsize = 8)
         BC_axes.set_xlabel('time', fontsize = 10)
         BC_axes.set_ylabel('Tension', fontsize = 10)
         BC_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         BC_axes.grid(True)
-        BC_axes.plot(BC_X, BC_Y)
+        BC_axes.plot([], [])
+
 
         BC_canvas = FigureCanvasTkAgg(BC_fig, BOX_Frame)
         BC_canvas.show()
@@ -390,17 +385,20 @@ class Graphic(ttk.Labelframe):
         BC_toolbar.update()
         BC_canvas._tkcanvas.pack()
 
-        BOX_List = [BC_canvas, BC_fig, BC_axes]
+        BOX_List = [BC_canvas, BC_fig, BC_axes, BC_Laxis]
+        self.Line_List.append(self.Draggable_Line(self, Frame_Info = BOX_List ))
+        self.Line_List.append(self.Draggable_Line(self, x = 150, Frame_Info = BOX_List))
+        BOX_List.append(self.Line_List)
+
         # SCOPE Graph
 
         SP_fig = Figure(figsize = (6 , 3.75), dpi = 100)
         SP_axes = SP_fig.add_subplot(111)
-        SP_axes.set_title('Scope', fontsize = 12)
         SP_axes.set_xlabel('time', fontsize = 10)
         SP_axes.set_ylabel('Tension', fontsize = 10)
         SP_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         SP_axes.grid(True)
-        SP_L1, = SP_axes.plot(SP_X, SP_Y)
+        SP_L1, = SP_axes.plot([], [])
 
         SP_canvas = FigureCanvasTkAgg(SP_fig, Scope_Frame)
         SP_canvas.show()
@@ -414,12 +412,11 @@ class Graphic(ttk.Labelframe):
 
         PLT_fig = Figure(figsize = (6, 3.75), dpi = 100)
         PLT_axes = PLT_fig.add_subplot(111)
-        PLT_axes.set_title('Plotter', fontsize = 12)
         PLT_axes.set_xlabel('time', fontsize = 10)
         PLT_axes.set_ylabel('Something', fontsize = 10)
         PLT_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         PLT_axes.grid(True)
-        PLT_axes.plot(PLT_X, PLT_Y)
+        PLT_axes.plot([], [])
 
         PLT_canvas = FigureCanvasTkAgg(PLT_fig, PLOT_Frame)
         PLT_canvas.show()
@@ -444,6 +441,115 @@ class Graphic(ttk.Labelframe):
         Button = ttk.Button( self, text = TextVar.get(), command = lambda : self.Activate_anim(TextVar,Button),
                 width = 16)
         Button.grid(row = 1, column = 0, sticky = 'nw')
+    class Draggable_Line:
+
+        Lock = None
+
+        def __init__(self, parent = None, x = 30, Frame_Info = None):
+
+            self.parent = parent
+            self.press = None
+            self.background = None
+            self.x = x
+            self.line = Frame_Info[3].axvline(x)
+            self.connect()
+            if len(self.parent.Line_List) == 1:
+
+                self.BOX = Frame_Info[3].axvspan( self.parent.Line_List[0].x, self.x, alpha = 0.15)
+
+
+        def connect(self):
+
+            'connect to all the events we need'
+
+            self.cidpress1 = self.line.figure.canvas.mpl_connect('button_press_event', self.on_press)
+            self.cidrelease1 = self.line.figure.canvas.mpl_connect('button_release_event', self.on_release)
+            self.cidmotion1 = self.line.figure.canvas.mpl_connect('motion_notify_event',  self.on_motion)
+
+        def on_press(self, event):
+
+            if event.inaxes != self.line.axes: return
+            if self.Lock is not None: return
+            contains, attrd = self.line.contains(event)
+            if contains != True : return
+            self.press = (self.line.get_xydata()), event.xdata, event.ydata
+            self.Lock = self
+
+            canvas = self.line.figure.canvas
+            axes = self.line.axes
+            self.line.set_animated(True)
+            if self == self.parent.Line_List[1]:
+                self.BOX.set_animated(True)
+            else:
+                self.parent.Line_List[1].BOX.set_animated(True)
+
+            canvas.draw()
+            self.background = canvas.copy_from_bbox(self.line.axes.bbox)
+            axes.draw_artist(self.line)
+
+            canvas.blit(axes.bbox)
+
+
+
+        def on_release(self, event):
+
+            if self.Lock is not self: return
+
+            self.press = None
+            self.Lock = None
+
+            self.line.set_animated(False)
+            if self == self.parent.Line_List[1]:
+                self.BOX.set_animated(False)
+            else:
+                self.parent.Line_List[1].BOX.set_animated(False)
+
+            self.background = None
+            self.line.figure.canvas.draw()
+
+            self.x = self.line.get_xdata()
+
+
+
+        def on_motion(self, event):
+            if self.Lock is not self: return
+            if event.inaxes != self.line.axes: return
+            array , xpress, ypress = self.press
+            x0 = array[0][0]
+            dx = event.xdata - xpress
+            self.line.set_xdata(x0 + dx)
+
+            canvas = self.line.figure.canvas
+            axes = self.line.axes
+            canvas.restore_region(self.background)
+
+            axes.draw_artist(self.line)
+            if self == self.parent.Line_List[1]:
+                axes.draw_artist(self.BOX)
+            else:
+                self.parent.Line_List[1].BOX.set_animated(True)
+                axes.draw_artist(self.parent.Line_List[1].BOX)
+            self.x = self.line.get_xdata()
+
+            if self == self.parent.Line_List[1]:
+                xmin = self.parent.Line_List[0].x
+                width = self.x - self.parent.Line_List[0].x
+                array = [ [xmin,0], [xmin,1], [xmin+width,1], [xmin+width,0], [xmin,0]]
+                self.BOX.set_xy(array)
+            else:
+                xmin = self.x
+                width = self.parent.Line_List[1].x - self.x
+                array = [ [xmin,0], [xmin,1], [xmin+width,1], [xmin+width,0], [xmin,0]]
+                self.parent.Line_List[1].BOX.set_xy(array)
+
+
+            canvas.blit(axes.bbox)
+
+        def disconnect(self):
+
+            self.cidpress1 = self.line.figure.canvas.mpl_disconnect('button_press_event', self.on_press)
+            self.cidrelease1 = self.line.figure.canvas.mpl_disconnect('button_release_event', self.on_release)
+            self.cidmotion1 = self.line.figure.canvas.mpl_disconnect('motion_notify_event',  self.on_motion)
 
 
     def Graph_switch(self, Graph_Name, Frames):
@@ -463,11 +569,7 @@ class Graphic(ttk.Labelframe):
         show_frame(Frames[Graph_Name])
 
     def Animate_Graph(self, Frame_Info, GlOB_ZI, Status):
-
-        if (self.ZI_DATA == None) or (Frame_Info == None) :
-            self.ZI_DATA = GlOB_ZI
-            pass
-        elif (self.ZI_DATA['DAQ'] != None) and (Status == True) and (self.Activate == True):
+        def Scope(Frame_Info):
             canvas = Frame_Info[0]
             Figure = Frame_Info[1]
             Axes = Frame_Info[2]
@@ -491,7 +593,67 @@ class Graphic(ttk.Labelframe):
                     Figure.canvas.draw()
                     Figure.canvas.flush_events()
 
+        def PLOTTER(Frame_Info):
+            canvas = Frame_Info[0]
+            Figure = Frame_Info[1]
+            Axes = Frame_Info[2]
+            Line1 = Frame_Info[3]
+            daq = self.ZI_DATA['DAQ']
+            device = self.ZI_DATA['Device_id']
+            poll_lenght = 0.1 # [s]
+            poll_timeout = 500 # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
+            for index, shot in enumerate(Scope_Shots):
+                Nb_Smple = shot['totalsamples']
+                time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
+                #Scope Input channel is 0 but we can add up to 3 if im correct
+                wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
+                if (not shot['flags']) and (len(wave) == Nb_Smple):
+                    Line1.set_xdata(1e6*time)
+                    Line1.set_ydata(wave)
+                    Figure.canvas.draw()
+                    Figure.canvas.flush_events()
+
+        def BOXCAR(Frame_Info):
+            canvas = Frame_Info[0]
+            Figure = Frame_Info[1]
+            Axes = Frame_Info[2]
+            Line1 = Frame_Info[3]
+            daq = self.ZI_DATA['DAQ']
+            device = self.ZI_DATA['Device_id']
+            poll_lenght = 0.1 # [s]
+            poll_timeout = 500 # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
+            for index, shot in enumerate(Scope_Shots):
+                Nb_Smple = shot['totalsamples']
+                time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
+                #Scope Input channel is 0 but we can add up to 3 if im correct
+                wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
+                if (not shot['flags']) and (len(wave) == Nb_Smple):
+                    Line1.set_xdata(1e6*time)
+                    Line1.set_ydata(wave)
+                    Figure.canvas.draw()
+                    Figure.canvas.flush_events()
+
+
+        if (self.ZI_DATA == None) or (Frame_Info == None) :
+            self.ZI_DATA = GlOB_ZI
+            pass
+        elif (self.ZI_DATA['DAQ'] != None) and (Status == True) and (self.Activate == True):
+            if self.Spin_Box.get() == 'SCOPE' : Scope(Frame_Info)
+            elif self.Spin_Box.get() == 'PLOTTER' : PLOTTER(Frame_Info)
+            elif self.Spin_Box.get() == 'BOXCAR' : BOXCAR(Frame_Info)
+
+
+
     def Activate_anim(self, Text, Button):
+
         if Text.get() == 'Start':
             Button.configure(text = 'Stop')
             Text.set('Stop')
@@ -501,8 +663,10 @@ class Graphic(ttk.Labelframe):
                     self.ZI_DATA['DAQ'].subscribe('/%s/scopes/0/wave' % self.ZI_DATA['Device_id'])
                     self.Activate = True
                     self.ZI_DATA['DAQ'].sync()
-            else: print("Error")
-
+                else:
+                    messagebox.showinfo(message = 'There is no DataServer connected', icon = 'error', title = 'ERROR')
+                    Button.configure(text = 'Start')
+                    Text.set('Start')
         else:
             Text.set('Start')
             Button.configure(text = 'Start')
@@ -511,6 +675,7 @@ class Graphic(ttk.Labelframe):
                 if self.ZI_DATA['DAQ'] != None:
                     self.ZI_DATA['DAQ'].unsubscribe('*')
                     self.ZI_DATA['DAQ'].sync()
+
 
 class File_interaction(ttk.Labelframe):
     def __init__(self, parent, text):
@@ -1098,7 +1263,6 @@ class Zi_settings(ttk.Labelframe):
 
         DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
         DATA['DAQ'].sync()
-
 
 
 
