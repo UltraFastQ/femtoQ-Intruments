@@ -354,9 +354,16 @@ class Graphic(ttk.Labelframe):
         self.ZI_DATA = ZI_Data
         self.Activate = False
         self.Spin_Box = Spin_Box
-
         ttk.Labelframe.__init__(self,parent)
         tk.Canvas.configure(self, labelwidget = Spin_Box)
+        ##########
+        self.TextVar = tk.StringVar()
+        self.TextVar.set('Start')
+        self.Button = tk.Button( self, text = self.TextVar, command = lambda : self.Activate_anim( self.TextVar ,self.Button)
+                , width = 16)
+        self.Button.grid(row = 1, column = 0, sticky = 'nw')
+        ##########
+
         BOX_Frame = tk.Frame(self, relief = 'groove')
         PLOT_Frame = tk.Frame(self, relief = 'groove')
         Scope_Frame = tk.Frame(self, relief = 'groove')
@@ -426,7 +433,6 @@ class Graphic(ttk.Labelframe):
         PLT_canvas._tkcanvas.pack()
 
         PLOT_List = [PLT_canvas, PLT_fig, PLT_axes]
-        ##########
         Graph_Lst = { 'BOXCAR' : [BOX_Frame,BOX_List],
                 'SCOPE' : [Scope_Frame,Scope_List],
                 'PLOTTER' : [PLOT_Frame,PLOT_List]}
@@ -436,11 +442,6 @@ class Graphic(ttk.Labelframe):
         Spin_Box.current(0)
         self.Graph_switch(Spin_Box.get(),Graph_Lst)
 
-        self.TextVar = tk.StringVar()
-        self.TextVar.set('Start')
-        self.Button = ttk.Button( self, text = TextVar.get(), command = lambda : self.Activate_anim(self.TextVar,self.Button),
-                width = 16)
-        self.Button.grid(row = 1, column = 0, sticky = 'nw')
     class Draggable_Line:
 
         Lock = None
