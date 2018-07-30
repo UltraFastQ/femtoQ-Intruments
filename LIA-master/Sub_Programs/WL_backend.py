@@ -1168,7 +1168,7 @@ class Zi_settings(ttk.Labelframe):
                 ['/%s/sigouts/%d/amplitudes/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), DATA['Ampli'].get()],
                 ['/%s/scopes/0/enable' % DATA['Device_id'], 1],
                 ['/%s/scopes/0/length' % DATA['Device_id'], int(1.0e4)],
-                ['/%s/scopes/0/channel' % DATA['Device_id'], DATA['Input'].get() << 0],
+                ['/%s/scopes/0/channel' % DATA['Device_id'], DATA['Input'].get()],
                 ['/%s/scopes/0/channels/%d/bwlimit' % (DATA['Device_id'], 0), 1],
                 ['/%s/scopes/0/channels/%d/inputselect' % (DATA['Device_id'], 0), DATA['Input'].get()],
                 ['/%s/scopes/0/time' % DATA['Device_id'], DATA['Smpling_Rate'].get()],
