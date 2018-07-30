@@ -436,11 +436,11 @@ class Graphic(ttk.Labelframe):
         Spin_Box.current(0)
         self.Graph_switch(Spin_Box.get(),Graph_Lst)
 
-        TextVar = tk.StringVar()
-        TextVar.set('Start')
-        Button = ttk.Button( self, text = TextVar.get(), command = lambda : self.Activate_anim(TextVar,Button),
+        self.TextVar = tk.StringVar()
+        self.TextVar.set('Start')
+        self.Button = ttk.Button( self, text = TextVar.get(), command = lambda : self.Activate_anim(self.TextVar,self.Button),
                 width = 16)
-        Button.grid(row = 1, column = 0, sticky = 'nw')
+        self.Button.grid(row = 1, column = 0, sticky = 'nw')
     class Draggable_Line:
 
         Lock = None
@@ -567,6 +567,8 @@ class Graphic(ttk.Labelframe):
             Frames[frame][1][0]._tkcanvas.pack_forget()
 
         show_frame(Frames[Graph_Name])
+        self.TextVar.set('Stop')
+        self.Activate_anim(self.TextVar, self.Button)
 
     def Animate_Graph(self, Frame_Info, GlOB_ZI, Status):
         def Scope(Frame_Info):
@@ -588,11 +590,12 @@ class Graphic(ttk.Labelframe):
                 #Scope Input channel is 0 but we can add up to 3 if im correct
                 wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
+                    Axes.set_xlim(0,1e6*time)
                     Line1.set_xdata(1e6*time)
                     Line1.set_ydata(wave)
                     Figure.canvas.draw()
                     Figure.canvas.flush_events()
-
+        # Look the Demods and what you can output from the BOXCAR
         def PLOTTER(Frame_Info):
             canvas = Frame_Info[0]
             Figure = Frame_Info[1]
@@ -1126,6 +1129,7 @@ class Zi_settings(ttk.Labelframe):
                 ' the oscillator will be automatically disabled for'+
                 ' for this demodulator.', icon = 'info', title =
                 'Information')
+        #Look at the BOXCAR example
         boxcar_index = 0
         inputpwa_index = 0
         windowstart = 75 # degrees
