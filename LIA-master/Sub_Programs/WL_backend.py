@@ -758,17 +758,30 @@ class Graphic(ttk.Labelframe):
             self.Fig.canvas.flush_events()
 
 
-    class Demods_Plot:
+    class Demods_PLOT:
         def __init__(self, Figure, PATH, Axes, Line , Line_list, ZI_DATA):
             self.PATH = PATH
             self.Fig = Figure
             self.L = Line
             self.Axis = Axes
             self.ZI_DATA = ZI_DATA
-            self.Value = { 'vals' : [], 't': []}
+            self.Value = { 'vals' : { 'R' : [] , 'phi' : []}, 't': []}
 
         def Measure():
-            print('bitch')
+            poll_lenght = 0.1 # [s]
+            poll_timeout = 500 # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Sample = DATA_Set[self.ZI_DATA['DEMOD_Smp_PATH']]
+            clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
+            self.Value['vals']['R'].append(abs(Sample['x'] +1j*Sample['y']))
+            self.Value['vals']['phi'].append(np.angle(Sample['x'] +1j*Sample['y']))
+            self.Value['t'].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase)
+            self.L.set_xdata(self.BOX_Value['vals']['R'])
+            self.L.set_ydata(self.BOX_Value['t'])
+            self.Fig.canvas.draw()
+            self.Fig.canvas.flush_events()
 
 
 class File_interaction(ttk.Labelframe):
@@ -1286,6 +1299,8 @@ class Zi_settings(ttk.Labelframe):
         DATA['BC_Smp_PATH'] = '/%s/boxcars/0/sample' % DATA['Device_id']
         DATA['BC_Period_PATH'] = '/%s/boxcars/0/periods' % DATA['Device_id']
         DATA['PWA_Wave_PATH'] = '/%s/inputpwas/%d/wave' % (DATA['Device_id'], inputpwa_index)
+        DATA['DEMOD_Smp_PATH'] = '/%s/demods/%d/sample' % (DATA['Device_id'],DATA['Demodulator'].get())
+
         self.Ready = True
 
         if DATA['Trigger state'].get() == 'Enabled':
