@@ -351,6 +351,7 @@ class Graphic(ttk.Labelframe):
 
     def __init__(self,parent, Spin_Box, ZI_Data):
 
+        self.subscribed = False
         self.ZI_DATA = ZI_Data
         self.Activate = False
         self.Spin_Box = Spin_Box
@@ -367,22 +368,18 @@ class Graphic(ttk.Labelframe):
         BOX_Frame = tk.Frame(self, relief = 'groove')
         PLOT_Frame = tk.Frame(self, relief = 'groove')
         Scope_Frame = tk.Frame(self, relief = 'groove')
-
+        Config_Frame_Plotter = tk.Frame(self, relief = 'groove')
 
         # BOXCAR Graph
         self.Line_List = []
         BC_fig = Figure(figsize = (6, 3.75), dpi = 100)
         BC_axes = BC_fig.add_subplot(111)
-        BC_axes.set_xlim(0)
-        BC_Laxis = BC_axes.twiny()
-        BC_Laxis.set_xlim(0,180)
-        BC_Laxis.set_xlabel('Phase', fontsize = 8)
-        BC_Laxis.tick_params(axis = 'both', which ='major', labelsize = 8)
-        BC_axes.set_xlabel('time', fontsize = 10)
-        BC_axes.set_ylabel('Tension', fontsize = 10)
+        BC_axes.set_xlim(0, 360)
+        BC_axes.set_xlabel('Phase [Deg]', fontsize = 10)
+        BC_axes.set_ylabel('Amplitude [V]', fontsize = 10)
         BC_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         BC_axes.grid(True)
-        BC_axes.plot([], [])
+        Box_lines, = BC_axes.plot([], [])
 
 
         BC_canvas = FigureCanvasTkAgg(BC_fig, BOX_Frame)
@@ -392,7 +389,7 @@ class Graphic(ttk.Labelframe):
         BC_toolbar.update()
         BC_canvas._tkcanvas.pack()
 
-        BOX_List = [BC_canvas, BC_fig, BC_axes, BC_Laxis]
+        BOX_List = [BC_canvas, BC_fig, BC_axes, Box_lines]
         self.Line_List.append(self.Draggable_Line(self, Frame_Info = BOX_List ))
         self.Line_List.append(self.Draggable_Line(self, x = 150, Frame_Info = BOX_List))
         BOX_List.append(self.Line_List)
@@ -401,8 +398,9 @@ class Graphic(ttk.Labelframe):
 
         SP_fig = Figure(figsize = (6 , 3.75), dpi = 100)
         SP_axes = SP_fig.add_subplot(111)
-        SP_axes.set_xlabel('time', fontsize = 10)
-        SP_axes.set_ylabel('Tension', fontsize = 10)
+        SP_axes.set_xlim(0,1000)
+        SP_axes.set_xlabel('Time \mu s', fontsize = 10)
+        SP_axes.set_ylabel('Amplitude [V]', fontsize = 10)
         SP_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         SP_axes.grid(True)
         SP_L1, = SP_axes.plot([], [])
@@ -419,11 +417,12 @@ class Graphic(ttk.Labelframe):
 
         PLT_fig = Figure(figsize = (6, 3.75), dpi = 100)
         PLT_axes = PLT_fig.add_subplot(111)
+        PLT_axes.set_xlim(0,1000)
         PLT_axes.set_xlabel('time', fontsize = 10)
-        PLT_axes.set_ylabel('Something', fontsize = 10)
+        PLT_axes.set_ylabel('Amplitude [V]', fontsize = 10)
         PLT_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         PLT_axes.grid(True)
-        PLT_axes.plot([], [])
+        PLT_Line, = PLT_axes.plot([], [])
 
         PLT_canvas = FigureCanvasTkAgg(PLT_fig, PLOT_Frame)
         PLT_canvas.show()
@@ -432,10 +431,20 @@ class Graphic(ttk.Labelframe):
         PLT_toolbar.update()
         PLT_canvas._tkcanvas.pack()
 
-        PLOT_List = [PLT_canvas, PLT_fig, PLT_axes]
+        PLOT_List = [PLT_canvas, PLT_fig, PLT_axes, PLT_Line]
+
+        Config_List = []
+        # Demods/Boxcar/Math
+        Demod_Var = tk.IntVar()
+        L_Demod = tk.Label(self, text = 'Demodulator: ')
+        Demod_SpinB = tk.Spinbox(self, from_ = 0, to = 7 , width = 2,
+                textvariable = Demod_Var)
+        Config_List.append(L_Demod)
+        Config_List.append(Demod_SpinB)
         Graph_Lst = { 'BOXCAR' : [BOX_Frame,BOX_List],
                 'SCOPE' : [Scope_Frame,Scope_List],
-                'PLOTTER' : [PLOT_Frame,PLOT_List]}
+                'PLOTTER' : [PLOT_Frame,PLOT_List],
+                'PLOTTER CONFIG.' : [Config_Frame_Plotter,Config_List] }
         Spin_Box.bind("<<ComboboxSelected>>",
                 lambda x : self.Graph_switch(Spin_Box.get(),
                     Graph_Lst))
@@ -452,11 +461,11 @@ class Graphic(ttk.Labelframe):
             self.press = None
             self.background = None
             self.x = x
-            self.line = Frame_Info[3].axvline(x)
+            self.line = Frame_Info[2].axvline(x)
             self.connect()
             if len(self.parent.Line_List) == 1:
 
-                self.BOX = Frame_Info[3].axvspan( self.parent.Line_List[0].x, self.x, alpha = 0.15)
+                self.BOX = Frame_Info[2].axvspan( self.parent.Line_List[0].x, self.x, alpha = 0.15)
 
 
         def connect(self):
@@ -556,16 +565,34 @@ class Graphic(ttk.Labelframe):
     def Graph_switch(self, Graph_Name, Frames):
 
         def show_frame(Frame):
-            Frame[0].grid(row = 0, column = 0, padx = 2, pady = 2,
+            if self.Spin_Box.get() != 'PLOTTER CONFIG.':
+                Frame[0].grid(row = 0, column = 0, padx = 2, pady = 2,
                     sticky = 'nsew')
-            Frame[1][0].get_tk_widget().pack()
-            Frame[1][0]._tkcanvas.pack()
-            self.Actual_Graph = Frame[1]
+                Frame[1][0].get_tk_widget().pack()
+                Frame[1][0]._tkcanvas.pack()
+                self.Actual_Graph = Frame[1]
+            else:
+                Frame[0].grid(row = 0, column = 0, padx = 2, pady = 2,
+                        sticky = 'nsew')
+                rw = 0
+                clm = 0
+                for element in Frame[1]:
+                    element.grid(row = rw, column = clm, padx = 2, pady = 2,
+                            sticky = 'nsew')
+                    clm+= 1
+                    if clm == 4:
+                        rw +=1
 
         for frame in Frames:
-            Frames[frame][0].grid_forget()
-            Frames[frame][1][0].get_tk_widget().pack_forget()
-            Frames[frame][1][0]._tkcanvas.pack_forget()
+            if frame != 'PLOTTER CONFIG.':
+                Frames[frame][0].grid_forget()
+                Frames[frame][1][0].get_tk_widget().pack_forget()
+                Frames[frame][1][0]._tkcanvas.pack_forget()
+            else:
+                Frames[frame][0].grid_forget()
+                for elements in Frames[frame][1]:
+                    elements.grid_forget()
+
 
         show_frame(Frames[Graph_Name])
         self.TextVar.set('Stop')
@@ -597,6 +624,8 @@ class Graphic(ttk.Labelframe):
                     Figure.canvas.flush_events()
         # Look the Demods and what you can output from the BOXCAR
         def PLOTTER(Frame_Info):
+
+
             canvas = Frame_Info[0]
             Figure = Frame_Info[1]
             Axes = Frame_Info[2]
@@ -625,34 +654,43 @@ class Graphic(ttk.Labelframe):
             Figure = Frame_Info[1]
             Axes = Frame_Info[2]
             Line1 = Frame_Info[3]
-            daq = self.ZI_DATA['DAQ']
-            device = self.ZI_DATA['Device_id']
             poll_lenght = 0.1 # [s]
             poll_timeout = 500 # [ms]
             poll_flags = 0
             poll_return_flat_dict = True
-            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
-            Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
+            Data_Set = daq.poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Scope_Shots = Data_Set['PWA_Wave_PATH']
+            Axes.axhline(0, color='k')
             for index, shot in enumerate(Scope_Shots):
-                Nb_Smple = shot['totalsamples']
-                time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
-                #Scope Input channel is 0 but we can add up to 3 if im correct
-                wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
-                if (not shot['flags']) and (len(wave) == Nb_Smple):
-                    Line1.set_xdata(1e6*time)
-                    Line1.set_ydata(wave)
-                    Figure.canvas.draw()
-                    Figure.canvas.flush_events()
+                pwa_wave['binphase'] = pwa_wave['binphase']*360/(2*np.pi)
+                # The inputpwa waveform is stored in 'x', currently 'y' is unused.
+                Line1.set_xdata(pwa_wave['x'])
+                Line1.set_ydata(pwa_wave['binphase'])
+                Figure.canvas.draw()
+                Figure.canvas.flush_events()
 
 
         if (self.ZI_DATA == None) or (Frame_Info == None) :
             self.ZI_DATA = GlOB_ZI
             pass
         elif (self.ZI_DATA['DAQ'] != None) and (Status == True) and (self.Activate == True):
-            if self.Spin_Box.get() == 'SCOPE' : Scope(Frame_Info)
-            elif self.Spin_Box.get() == 'PLOTTER' : PLOTTER(Frame_Info)
-            elif self.Spin_Box.get() == 'BOXCAR' : BOXCAR(Frame_Info)
+            if self.Spin_Box.get() == 'SCOPE' :
+                if self.subscribed == False:
+                    self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['SC_PATH'])
+                    self.subscribed == True
+                Scope(Frame_Info)
+            elif self.Spin_Box.get() == 'PLOTTER' :
+                if self.subscribed == False:
+                    self.ZI_DATA['DAQ'].subscribe('/%s/scopes/0/wave' % self.ZI_DATA['Device_id'])
+                    self.subscribed == True
+                PLOTTER(Frame_Info)
 
+            elif self.Spin_Box.get() == 'BOXCAR' :
+                if self.subscribed == False:
+                    self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['PWA_Wave_PATH'])
+                    self.subscribed == True
+
+                BOXCAR(Frame_Info)
 
 
     def Activate_anim(self, Text, Button):
@@ -663,7 +701,6 @@ class Graphic(ttk.Labelframe):
             if self.ZI_DATA != None:
                 if self.ZI_DATA['DAQ'] != None:
                     #Modify it to be subscribed to the graph needed
-                    self.ZI_DATA['DAQ'].subscribe('/%s/scopes/0/wave' % self.ZI_DATA['Device_id'])
                     self.Activate = True
                     self.ZI_DATA['DAQ'].sync()
                 else:
@@ -677,7 +714,61 @@ class Graphic(ttk.Labelframe):
             if self.ZI_DATA != None:
                 if self.ZI_DATA['DAQ'] != None:
                     self.ZI_DATA['DAQ'].unsubscribe('*')
+                    self.subscribed == False
                     self.ZI_DATA['DAQ'].sync()
+
+    class BOXCAR_PLOT:
+        def __init__(self, Figure, PATH, Axes, Line , Line_list, ZI_DATA):
+            self.PATH = PATH
+            self.Fig = Figure
+            self.L = Line
+            self.Axis = Axes
+            self.Window_Start = min(Line_list[0].x, Line_list[1].x)
+            self.Window_width = abs(Line_list[0].x - Line_list[1].x)
+            self.ZI_DATA = ZI_DATA
+            self.Value = { 'vals' : [], 't': []}
+
+        def Refresh_BOX(self):
+            frequency_set = daq.getDouble('/%s/oscs/%d/freq' % (self.ZI_DATA['Device_id'], self.ZI_DATA['Oscillator'].get()))
+            self.Window_Start = min(Line_list[0].x, Line_list[1].x)
+            self.Window_width = abs(Line_list[0].x - Line_list[1].x)/(2*np.pi*360*frequency_set)
+            self.ZI_DATA['DAQ'].unsubscribe('*')
+            Box_Window = [['/%s/boxcars/%d/windowstart' % (DATA['Device_id'], 0), self.Window_Start],
+                ['/%s/boxcars/%d/windowsize' % (DATA['Device_id'], 0), self.Window_width]
+            self.ZI_DATA['DAQ'].set(Box_Window)
+            self.ZI_DATA['DAQ'].sync()
+            self.subscribe(self.ZI_DATA['BC_Smp_PATH'])
+
+
+        def Measure(self):
+            if (self.Window_Start != min(Line_list[0].x, Line_list[1].x)) or (self.Window_width != abs(Line_list[0].x - Line_list[1].x)):
+                self.Refresh_BOX()
+            poll_lenght = 0.1 # [s]
+            poll_timeout = 500 # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            Sample = DATA_Set[self.ZI_DATA['BC_Smp_PATH']]
+            clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
+            self.Value['vals'].append(Sample['value'])
+            self.Value['t'].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase)
+            self.L.set_xdata(self.BOX_Value['vals'])
+            self.L.set_ydata(self.BOX_Value['t'])
+            self.Fig.canvas.draw()
+            self.Fig.canvas.flush_events()
+
+
+    class Demods_Plot:
+        def __init__(self, Figure, PATH, Axes, Line , Line_list, ZI_DATA):
+            self.PATH = PATH
+            self.Fig = Figure
+            self.L = Line
+            self.Axis = Axes
+            self.ZI_DATA = ZI_DATA
+            self.Value = { 'vals' : [], 't': []}
+
+        def Measure():
+            print('bitch')
 
 
 class File_interaction(ttk.Labelframe):
@@ -1167,8 +1258,8 @@ class Zi_settings(ttk.Labelframe):
                 ['/%s/sigouts/%d/enables/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), 1],
                 ['/%s/sigouts/%d/amplitudes/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), DATA['Ampli'].get()],
                 ['/%s/scopes/0/enable' % DATA['Device_id'], 1],
-                ['/%s/scopes/0/length' % DATA['Device_id'], int(1.0e4)],
-                ['/%s/scopes/0/channel' % DATA['Device_id'], DATA['Input'].get()],
+                ['/%s/scopes/0/length' % DATA['Device_id'], int(1e4)],
+                ['/%s/scopes/0/channel' % DATA['Device_id'], 1 << DATA['Input'].get()],
                 ['/%s/scopes/0/channels/%d/bwlimit' % (DATA['Device_id'], 0), 1],
                 ['/%s/scopes/0/channels/%d/inputselect' % (DATA['Device_id'], 0), DATA['Input'].get()],
                 ['/%s/scopes/0/time' % DATA['Device_id'], DATA['Smpling_Rate'].get()],
@@ -1238,7 +1329,7 @@ class Zi_settings(ttk.Labelframe):
             ['/%s/inputpwas/%d/inputselect'  % (DATA['Device_id'], inputpwa_index), DATA['Input'].get()],
             ['/%s/inputpwas/%d/mode'         % (DATA['Device_id'], inputpwa_index), 1],
             ['/%s/inputpwas/%d/shift'        % (DATA['Device_id'], inputpwa_index), 0.0],
-            ['/%s/inputpwas/%d/harmonic'     % (DATA['Device_id'], inputpwa_index), 1],
+            ['/%s/inputpwas/%d/harmonic'     % (DATA['Device_id'], inputpwa_index), DATA['Harmonics'].get()],
             ['/%s/inputpwas/%d/enable'       % (DATA['Device_id'], inputpwa_index), 1],
             ['/%s/boxcars/%d/oscselect'      % (DATA['Device_id'], boxcar_index), DATA['Oscillator'].get()],
             ['/%s/boxcars/%d/inputselect'    % (DATA['Device_id'], boxcar_index), DATA['Input'].get()],
@@ -1264,8 +1355,6 @@ class Zi_settings(ttk.Labelframe):
                 daq.setInt(DATA['BC_Period_PATH'], int(periods))
         time.sleep(periods_vals[0]/DATA['Osc. Freq'].get())
         # Subscribe to the scope DATA
-
-        DATA['DAQ'].subscribe('/%s/scopes/0/wave' % DATA['Device_id'])
         DATA['DAQ'].sync()
 
 

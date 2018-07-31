@@ -67,7 +67,7 @@ class White_Light_Inteferometer(tk.Tk):
         GCBox = ttk.Combobox(Mainframe, textvariable = '',
                 state = 'readonly')
         GCBox.grid(row = 0, column = 1,sticky = 'nw')
-        GCBox['value'] = ('SCOPE','PLOTTER','BOXCAR')
+        GCBox['value'] = ('SCOPE','PLOTTER','BOXCAR','PLOTTER CONFIG.')
         self.GraphBox = backend.Graphic( Mainframe, GCBox,
                 self.Zi_Data)
         CCBox = ttk.Combobox(ConFrame, textvariable = '',
