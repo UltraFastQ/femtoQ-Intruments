@@ -368,7 +368,7 @@ class Graphic(ttk.Labelframe):
         BOX_Frame = tk.Frame(self, relief = 'groove')
         PLOT_Frame = tk.Frame(self, relief = 'groove')
         Scope_Frame = tk.Frame(self, relief = 'groove')
-        Config_Frame_Plotter = tk.Frame(self, relief = 'groove')
+        Config_Frame_Plotter = tk.Frame(self, relief = 'groove', width = '6i', height = '3.75i')
 
         # BOXCAR Graph
         self.Line_List = []
@@ -422,7 +422,7 @@ class Graphic(ttk.Labelframe):
         PLT_axes.set_ylabel('Amplitude [V]', fontsize = 10)
         PLT_axes.tick_params(axis = 'both', which ='major', labelsize = 8)
         PLT_axes.grid(True)
-        PLT_Line, = PLT_axes.plot([], [])
+        self.Plotter_List = {'Boxcar' : {}, 'Demodulator' : {}}
 
         PLT_canvas = FigureCanvasTkAgg(PLT_fig, PLOT_Frame)
         PLT_canvas.show()
@@ -431,16 +431,63 @@ class Graphic(ttk.Labelframe):
         PLT_toolbar.update()
         PLT_canvas._tkcanvas.pack()
 
-        PLOT_List = [PLT_canvas, PLT_fig, PLT_axes, PLT_Line]
+        PLOT_List = [PLT_canvas, PLT_fig, PLT_axes, self.Plotter_List]
 
-        Config_List = []
         # Demods/Boxcar/Math
-        Demod_Var = tk.IntVar()
-        L_Demod = tk.Label(self, text = 'Demodulator: ')
-        Demod_SpinB = tk.Spinbox(self, from_ = 0, to = 7 , width = 2,
-                textvariable = Demod_Var)
-        Config_List.append(L_Demod)
-        Config_List.append(Demod_SpinB)
+        def Add_Graph( Plot, Index, Frame_Info, snd_List):
+            if self.ZI_DATA == None:
+                messagebox.showinfo(icon = 'error', title = 'ERROR', message = 'The Server is not connected')
+                return
+            if self.ZI_DATA['DAQ'] == None :
+                messagebox.showinfo(icon = 'error', title = 'ERROR', message = 'The Server is not connected')
+                return
+            if (Plot.get() == 'Boxcar') and (Index.get() > 0):
+                messagebox.showinfo(icon = 'error', title = 'ERROR', message = 'The Boxcar index as not been configured for more than'+
+                ' the 0 index.')
+            else:
+                if Plot.get() == 'Boxcar':
+                    self.Plotter_List[Plot.get()][str(Index.get())].append(self.BOXCAR_PLOT(Frame_Info[1],Frame_Info[2],
+                        self.Line_List, self.ZI_DATA))
+                    snd_List.insert(END, '{} : Index {}'.format(Plot.get(),Index.get()))
+                else:
+                    ###### I haven't programmed the part for the angular plotting system
+                    self.Plotter_List[Plot.get()][str(Index.get())].append(self.Demods_PLOT(Frame_Info[1], Frame_Info[2],
+                        self.ZI_DATA))
+                    snd_List.insert(END, '{} : Index {}'.format(Plot.get(),Index.get()))
+
+        def Supress(Plot):
+            if self.ZI_DATA == None:
+                messagebox.showinfo(icon = 'error', title = 'ERROR', message = 'The Server is not connected')
+                return
+            if self.ZI_DATA['DAQ'] == None :
+                messagebox.showinfo(icon = 'error', title = 'ERROR', message = 'The Server is not connected')
+                return
+            String = Plot.get()
+            Str_List = String.split()
+            if Str_List[0] == 'Boxcar':
+                self.Plotter_List[Str_List[0]][Str_List[3]][0].Delete_Plot()
+                self.Plotter_List[Str_List[0]][Str_List[3]].pop(0)
+                snd_List.delete(String)
+            else:
+                ###### I haven't programmed the part for the angular plotting system
+                self.Plotter_List[Str_List[0]][Str_List[3]][0].Delete_Plot()
+                self.Plotter_List[Str_List[0]][Str_List[3]].pop(0)
+                snd_List.delete(String)
+
+
+        Plot_Names = ('Demodulator', 'Boxcar')
+        CPlot = tk.StringVar(value = Plot_Names)
+        LPlot = tk.StringVar()
+        C_Label = tk.Label(Config_Frame_Plotter, text = 'Plot you desire to add to the plotter')
+        Cl_Box = tk.Listbox(Config_Frame_Plotter, listvariable = CPlot, height = 2)
+        Index_Var = tk.IntVar()
+        C_SpB = tk.Spinbox(Config_Frame_Plotter, from_ = 0, to = 7, textvariable = Index_Var, width = 2)
+        L_Label = tk.Label(Config_Frame_Plotter, text = 'Plot that will be displayed')
+        Lst_Box = tk.Listbox(Config_Frame_Plotter, listvariable = LPlot, height = 1)
+        Add_B = ttk.Button(Config_Frame_Plotter, text = 'Add', command = lambda : Add_Graph( CPlot, Index_Var, PLOT_List, Lst_Box))
+        Sup_B = ttk.Button(Config_Frame_Plotter, text = 'Suppress', command = lambda : Supress(LPlot))
+
+        Config_List = [ C_Label, L_Label, Cl_Box, C_SpB, Lst_Box, Add_B, Sup_B]
         Graph_Lst = { 'BOXCAR' : [BOX_Frame,BOX_List],
                 'SCOPE' : [Scope_Frame,Scope_List],
                 'PLOTTER' : [PLOT_Frame,PLOT_List],
@@ -577,11 +624,16 @@ class Graphic(ttk.Labelframe):
                 rw = 0
                 clm = 0
                 for element in Frame[1]:
+
                     element.grid(row = rw, column = clm, padx = 2, pady = 2,
                             sticky = 'nsew')
-                    clm+= 1
-                    if clm == 4:
-                        rw +=1
+                    if clm == 2:
+                        rw += 1
+                        clm = 0
+                    elif clm != 2:
+                        clm+=1
+                    if (clm == 1) and ((rw == 0) or (rw == 2)):
+                        clm+=1
 
         for frame in Frames:
             if frame != 'PLOTTER CONFIG.':
@@ -624,30 +676,10 @@ class Graphic(ttk.Labelframe):
                     Figure.canvas.flush_events()
         # Look the Demods and what you can output from the BOXCAR
         def PLOTTER(Frame_Info):
+            for Element in self.Plotter_List:
+                for Index in self.Plotter_List[Element]:
+                    self.Plotter_List[Element][Index].Measure()
 
-
-            canvas = Frame_Info[0]
-            Figure = Frame_Info[1]
-            Axes = Frame_Info[2]
-            Line1 = Frame_Info[3]
-            daq = self.ZI_DATA['DAQ']
-            device = self.ZI_DATA['Device_id']
-            poll_lenght = 0.1 # [s]
-            poll_timeout = 500 # [ms]
-            poll_flags = 0
-            poll_return_flat_dict = True
-            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
-            Scope_Shots = Data_Set['/%s/scopes/0/wave' % device]
-            for index, shot in enumerate(Scope_Shots):
-                Nb_Smple = shot['totalsamples']
-                time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
-                #Scope Input channel is 0 but we can add up to 3 if im correct
-                wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
-                if (not shot['flags']) and (len(wave) == Nb_Smple):
-                    Line1.set_xdata(1e6*time)
-                    Line1.set_ydata(wave)
-                    Figure.canvas.draw()
-                    Figure.canvas.flush_events()
 
         def BOXCAR(Frame_Info):
             canvas = Frame_Info[0]
@@ -718,15 +750,14 @@ class Graphic(ttk.Labelframe):
                     self.ZI_DATA['DAQ'].sync()
 
     class BOXCAR_PLOT:
-        def __init__(self, Figure, PATH, Axes, Line , Line_list, ZI_DATA):
-            self.PATH = PATH
+        def __init__(self, Figure, Axes , Line_list, ZI_DATA):
             self.Fig = Figure
-            self.L = Line
             self.Axis = Axes
             self.Window_Start = min(Line_list[0].x, Line_list[1].x)
             self.Window_width = abs(Line_list[0].x - Line_list[1].x)
             self.ZI_DATA = ZI_DATA
             self.Value = { 'vals' : [], 't': []}
+            self.L = self.Axis.plot(self.Value['vals'],self.Value['t'])
 
         def Refresh_BOX(self):
             frequency_set = daq.getDouble('/%s/oscs/%d/freq' % (self.ZI_DATA['Device_id'], self.ZI_DATA['Oscillator'].get()))
@@ -734,7 +765,7 @@ class Graphic(ttk.Labelframe):
             self.Window_width = abs(Line_list[0].x - Line_list[1].x)/(2*np.pi*360*frequency_set)
             self.ZI_DATA['DAQ'].unsubscribe('*')
             Box_Window = [['/%s/boxcars/%d/windowstart' % (DATA['Device_id'], 0), self.Window_Start],
-                ['/%s/boxcars/%d/windowsize' % (DATA['Device_id'], 0), self.Window_width]
+                ['/%s/boxcars/%d/windowsize' % (DATA['Device_id'], 0), self.Window_width]]
             self.ZI_DATA['DAQ'].set(Box_Window)
             self.ZI_DATA['DAQ'].sync()
             self.subscribe(self.ZI_DATA['BC_Smp_PATH'])
@@ -757,15 +788,16 @@ class Graphic(ttk.Labelframe):
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
 
+        def Delete_Plot():
+            self.L.set_data([],[])
 
     class Demods_PLOT:
-        def __init__(self, Figure, PATH, Axes, Line , Line_list, ZI_DATA):
-            self.PATH = PATH
+        def __init__(self, Figure, Axes, ZI_DATA):
             self.Fig = Figure
-            self.L = Line
             self.Axis = Axes
             self.ZI_DATA = ZI_DATA
             self.Value = { 'vals' : { 'R' : [] , 'phi' : []}, 't': []}
+            self.L = self.Axis.plot(self.Value['vals']['R'],self.Value['vals']['t'])
 
         def Measure():
             poll_lenght = 0.1 # [s]
@@ -782,6 +814,9 @@ class Graphic(ttk.Labelframe):
             self.L.set_ydata(self.BOX_Value['t'])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
+
+        def Delete_Plot():
+            self.L.set_data([],[])
 
 
 class File_interaction(ttk.Labelframe):
