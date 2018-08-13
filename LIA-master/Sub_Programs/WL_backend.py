@@ -1408,8 +1408,23 @@ class Zi_settings(ttk.Labelframe):
         DATA['DAQ'].sync()
 
 
+class Measure():
+    def __init__(self, Folder, PI_DATA, ZI_DATA):
+        self.Folder = Folder
+        self.PI_DATA = PI_DATA
+        self.ZI_DATA = ZI_DATA
+        self.DelayZero = 0
+
+    def Do(self):
+        self.Find_Delay()
+
+    def Find_Delay(self):
+
+        self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
 
 
+
+        self.DelayZero = None
 
 
 

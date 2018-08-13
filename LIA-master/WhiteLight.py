@@ -128,7 +128,28 @@ class White_Light_Inteferometer(tk.Tk):
                         self.Zi_Data))
 
     def Start(self, File_List, Dir,PI_Data, Zi_Data):
-        print('hello')
+        if Zi_Data == None:
+            messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
+            pass
+        if PI_DATA == None:
+            messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
+            pass
+        if Zi_Data['DAQ'] == None:
+            messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
+            pass
+
+        Zi_Data['DAQ'].unsubscribe('*')
+        y = messagebox.askyesno( icon = 'question', title = 'Settings', message = 'Is all your parameters'+
+                'set up for the experiment')
+        if y == 'yes':
+            x = messagebox.askyesno( icon = 'warning', title = 'Monochromator', message = 'Is the monochromator'+
+                    'set to 400 on the dial. If not close the 12V Power source and reset the dial to 400')
+            if x == 'yes':
+                messagebox.showinfo( title = 'Experiment', message = 'The experiment will now start.'+
+                        ' Do not interfere with the devices.')
+                Mesure = backend.Measure(Dir, PI_DATA, Zi_DATA)
+                Mesure.Do()
+
 
     def Save_Setting(self, Folder, PI_Data, ZI_Data):
 
