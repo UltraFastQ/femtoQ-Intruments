@@ -783,8 +783,8 @@ class Graphic(ttk.Labelframe):
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
             self.Value['vals'].append(Sample['value'])
             self.Value['t'].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase)
-            self.L.set_xdata(self.BOX_Value['vals'])
-            self.L.set_ydata(self.BOX_Value['t'])
+            self.L.set_xdata(self.Value['vals'])
+            self.L.set_ydata(self.Value['t'])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
 
@@ -810,8 +810,8 @@ class Graphic(ttk.Labelframe):
             self.Value['vals']['R'].append(abs(Sample['x'] +1j*Sample['y']))
             self.Value['vals']['phi'].append(np.angle(Sample['x'] +1j*Sample['y']))
             self.Value['t'].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase)
-            self.L.set_xdata(self.BOX_Value['vals']['R'])
-            self.L.set_ydata(self.BOX_Value['t'])
+            self.L.set_xdata(self.Value['vals']['R'])
+            self.L.set_ydata(self.Value['t'])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
 
@@ -1420,8 +1420,47 @@ class Measure():
 
     def Find_Delay(self):
 
-        self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
+        # First, we take measurements, then we find the mean value for a given delay. Then we move the stage and do it again
+        # We create a vector of the mean values to find the interference pattern
+        poll_length = 0.1 # [s]
+        poll_timeout = 500 # [ms]
+        poll_flags = 0
+        poll_return_flat_dict = True
+        Intensity = np.array()
 
+        i = 40
+
+        while (i > -40):
+            PI_DATA['Device_id'].MOV(PI_DATA['Axes'],i)
+            self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
+            time.sleep(1)
+            Data_Set = self.ZI_DATA['DAQ'].poll( poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
+            self.ZI_DATA['DAQ'].unsubscribe(self.ZI_DATA['BC_Smp_PATH'])
+            i -= 2
+            Sample = DATA_Set[self.ZI_DATA['BC_Smp_PATH']]
+            PI_DATA['Device_id'].MOV(PI_DATA['Axes'],i)
+            pitools.waitontarget(PI_DATA['Device_id'])
+            Intensity.append([PI_DATA["Device_id"].qPOS(),np.mean(Sample['value'])])
+
+        # Find the interference pattern
+        l = Intensity.size
+        left = Intensity[0][0]
+        right = Intensity [l][0]
+        # Intensity is the array of measurements, the format is couples of values, stage position and intensity
+        # thresh is the threshold value for the interference pattern detection, when the intensity drops, it means we reached the delay where the interferences are happening
+        thresh = 100
+        i = 0
+        # We start from left and right and detect a significant change in intensity
+        while (abs(Intensity[i+1][1]-Intensity[i][1])<thresh):
+            i+=1
+        left_lim = i
+
+        i = l
+        while (abs(Intensity[i][1]-Intensity[i-1][1])<thresh):
+            i-=1
+        right_lim = i
+        # The interference happens between the positions left_lim and right_lim
+        # We have to swipe again in this area to get the position of the maximum
 
 
         self.DelayZero = None
