@@ -2,9 +2,10 @@ import sys
 import glob
 import serial
 import struct
+import time
 
 class MonoChrom():
-    def __init__():
+    def __init__(self):
         self.Port = None
         self.Arduino = None
         self.TotStep = 0
@@ -43,16 +44,30 @@ class MonoChrom():
         self.Arduino = serial.Serial(self.Port[0], 9600)
 
     def RollDial(self, Nbr_nm):
-        Factor = 12 #Experimental value
+        Factor = 1 #Experimental values
         NbrStep =  Nbr_nm*Factor
-        self.Arduino.write(struct.pack('>B', NbrStep))
+        Modulo = NbrStep%255
+        Step_Left = NbrStep
+        StepTaken = 255
+        self.Arduino.write(b'f')
+        while (Step_Left != Modulo):
+            print('hello')
+            self.Arduino.write(struct.pack('>B', StepTaken))
+            Step_Left -= StepTaken
+        self.Arduino.write(struct.pack('>B',Step_Left))
         self.TotStep += NbrStep
 
     def Reset(self):
-        NbrStep = 0-self.TotStep
-        self.Arduino.write(struct.pack('>B', NbrStep))
+        NbrStep =  self.TotStep
+        Modulo = NbrStep%255
+        Step_Left = NbrStep
+        StepTaken = 255
+        self.Arduino.write(b'r')
+        while (Step_Left != Modulo):
+            self.Arduino.write(struct.pack('>B', StepTaken))
+            Step_Left -= StepTaken
+        self.Arduino.write(struct.pack('>B',Step_Left))
+        self.TotStep = 0
 
 
-
-if __name__ == '__main__':
 
