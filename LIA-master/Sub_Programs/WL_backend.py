@@ -34,7 +34,8 @@ from pathlib import PurePath
 #Zurich Instruments
 import zhinst.utils as utils
 import zhinst.ziPython as ziPython
-
+# Monochrom_Control
+import Serial_Coms as Coms
 #####
 class PI_Connection_Method(ttk.Labelframe):
     def __init__(self, parent, name):
@@ -1206,6 +1207,12 @@ class Zi_settings(ttk.Labelframe):
                 variable = BOXCAR_ST_Var, onvalue = 'Enabled',
                 offvalue = 'Disabled')
 
+        AVG_P_Var = tk.IntVar()
+        AVG_P_Var.set(1e3)
+        AVG_P = tk.Entry(self, width = 4,
+                textvariable = AVG_P_Var)
+        AVG_P_L = tk.Label(self, text = '#Averaging Periods: ')
+
 
         Item_List = [ L_Demod, D_Port_SpinB , AC , Ohm50,
                 L_Input_Channel, I_Port_SpinB,
@@ -1219,7 +1226,7 @@ class Zi_settings(ttk.Labelframe):
                 L_Order, Order_SpinB, L_DB, DB,
                 Trig, T_Port_SpinB, L_Trig, Trig_Entry,
                 Smpl_Rate, Smpl_Rate_SpinB, Ampli_Label, Ampli,
-                BOX]
+                BOX, AVG_P_L, AVG_P]
         rw = 0
         clm = 0
         for item in Item_List:
@@ -1255,7 +1262,8 @@ class Zi_settings(ttk.Labelframe):
                 'LowPassDBValue': DB_Var,
                 'Smpling_Rate': Smpl_Rate_Var,
                 'Ampli': Ampli_Var,
-                'BOXCAR_State': BOXCAR_ST_Var}
+                'BOXCAR_State': BOXCAR_ST_Var,
+                'Avr.Periods': AVG_P_Var}
 
         Config_Button = ttk.Button(self, text ='Configure Demodulator'
                 +' X', command = lambda : self.Dev_Config_Init(
@@ -1273,7 +1281,6 @@ class Zi_settings(ttk.Labelframe):
         inputpwa_index = 0
         windowstart = 75 # degrees
         windowsize = 3e-9 # seconds
-        periods_vals = np.logspace( 0, 9, 10, base = 2)
         out_mixer_channel = utils.default_output_mixer_channel(DATA['Prop'])
         #First desactivate all input,scopes,Demodulator
         if self.First == True:
@@ -1304,7 +1311,7 @@ class Zi_settings(ttk.Labelframe):
                 ['/%s/oscs/%d/freq' % (DATA['Device_id'],DATA['Oscillator'].get()), DATA['Osc. Freq'].get()],
                 ['/%s/sigouts/%d/on' % (DATA['Device_id'],DATA['Output'].get()), 1],
                 ['/%s/sigouts/%d/enables/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), 1],
-                ['/%s/sigouts/%d/amplitudes/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), DATA['Ampli'].get()],
+                ['/%s/sigouts/%d/amplitudes/%d' % (DATA['Device_id'],DATA['Output'].get(),out_mixer_channel), 2*DATA['Ampli'].get()],
                 ['/%s/scopes/0/enable' % DATA['Device_id'], 1],
                 ['/%s/scopes/0/length' % DATA['Device_id'], int(1e4)],
                 ['/%s/scopes/0/channel' % DATA['Device_id'], 1 << DATA['Input'].get()],
@@ -1386,7 +1393,7 @@ class Zi_settings(ttk.Labelframe):
             ['/%s/boxcars/%d/windowstart'    % (DATA['Device_id'], boxcar_index), windowstart],
             ['/%s/boxcars/%d/windowsize'     % (DATA['Device_id'], boxcar_index), windowsize],
             ['/%s/boxcars/%d/limitrate'      % (DATA['Device_id'], boxcar_index), 1e3],
-            ['/%s/boxcars/%d/periods'        % (DATA['Device_id'], boxcar_index), periods_vals[0]],
+            ['/%s/boxcars/%d/periods'        % (DATA['Device_id'], boxcar_index), DATA['AVG.Periods'].get()],
             ['/%s/boxcars/%d/enable'         % (DATA['Device_id'], boxcar_index), 1],
             ]
             DATA['DAQ'].set(BOX_Settings)
@@ -1414,9 +1421,47 @@ class Measure():
         self.PI_DATA = PI_DATA
         self.ZI_DATA = ZI_DATA
         self.DelayZero = 0
+        self.Coms = Coms.MonoChrom()
+        self.Coms.serial_ports()
+        self.Coms.Connect()
+
 
     def Do(self):
+        poll_length = 0.1 # [s]
+        poll_timeout = 500 # [ms]
+        poll_flags = 0
+        poll_return_flat_dict = True
+
         self.Find_Delay()
+        Full_sweep = False
+        Full_sweep_state = 0
+        Full_sweep_lim = 1400
+        Nbr_nm_perstep = 10
+        Position = self.DelayZero
+        Pi_dev = self.PI_DATA['Device_id']
+        Pi_Axe = self.PI_DATA['Axes']
+        Zi_Daq = self.ZI_DATA['DAQ']
+
+        #Full sweep nm
+        while Full_sweep == False:
+            Pi_dev.MOV(Pi_Axe,Position)
+            pitools.waitontarget(Pi_dev)
+            Zi_Daq.subscribe(self.ZI_DATA['BC_Smp_PATH'])
+            time.sleep(0.1)
+            Data_Set = Zi_Daq.poll( poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
+            Zi_Daq.unsubscribe(self.ZI_DATA['BC_Smp_PATH'])
+            Position -= 1
+            Sample = DATA_Set[self.ZI_DATA['BC_Smp_PATH']]
+            Intensity.append([Pi_dev.qPOS(),np.mean(Sample['value'])])
+            if Position == -40:
+                Position = self.DelayZero
+                self.Coms.RollDial(Nbr_nm_perstep)
+                Full_sweep_state += Nbr_nm_perstep
+                if Full_sweep_state == Full_sweep_lim:
+                    Full_sweep = True
+        self.Coms.Reset()
+
+
 
     def Find_Delay(self):
 
@@ -1430,17 +1475,16 @@ class Measure():
 
         i = 40
 
-        while (i > -40):
-            PI_DATA['Device_id'].MOV(PI_DATA['Axes'],i)
+        while (i >= -40):
+            self.PI_DATA['Device_id'].MOV(self.PI_DATA['Axes'],i)
+            pitools.waitontarget(self.PI_DATA['Device_id'])
             self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
-            time.sleep(1)
+            time.sleep(0.1)
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
             self.ZI_DATA['DAQ'].unsubscribe(self.ZI_DATA['BC_Smp_PATH'])
             i -= 2
             Sample = DATA_Set[self.ZI_DATA['BC_Smp_PATH']]
-            PI_DATA['Device_id'].MOV(PI_DATA['Axes'],i)
-            pitools.waitontarget(PI_DATA['Device_id'])
-            Intensity.append([PI_DATA["Device_id"].qPOS(),np.mean(Sample['value'])])
+            Intensity.append([self.PI_DATA["Device_id"].qPOS(),np.mean(Sample['value'])])
 
         # Find the interference pattern
         l = Intensity.size

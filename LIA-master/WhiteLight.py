@@ -149,6 +149,7 @@ class White_Light_Inteferometer(tk.Tk):
                         ' Do not interfere with the devices.')
                 Mesure = backend.Measure(Dir, PI_DATA, Zi_DATA)
                 Mesure.Do()
+                ### Do Plot for the measurements
 
 
     def Save_Setting(self, Folder, PI_Data, ZI_Data):

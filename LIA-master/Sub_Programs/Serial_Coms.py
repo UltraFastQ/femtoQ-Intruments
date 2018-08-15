@@ -38,17 +38,22 @@ class MonoChrom():
                 pass
 
         self.Port = result
-        print(self.Port)
 
     def Connect(self):
-        self.Arduino = serial.Serial(self.Port[0], 9600)
+        for port in self.Port:
+            #This will only work on linux (Not sure if important)
+            if port == '/dev/tty/ACM0':
+                self.Port = port
+
+        self.Arduino = serial.Serial(self.Port, 9600)
+
 
     def RollDial(self, Nbr_nm):
         # Number of nanometer as to be a even index for the motor
         if ((Nbr_nm%2) == 1): return
         if (self.side == '') or (self.side == 'r'): self.Correction('f')
         self.side = 'f'
-        Factor = 0.5 #Experimental values
+        Factor = 2 #Experimental values
         NbrStep =  Nbr_nm*Factor
         Modulo = NbrStep%255
         Step_Left = NbrStep
