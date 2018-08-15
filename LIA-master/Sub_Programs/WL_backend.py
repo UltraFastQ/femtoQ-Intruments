@@ -35,7 +35,7 @@ from pathlib import PurePath
 import zhinst.utils as utils
 import zhinst.ziPython as ziPython
 # Monochrom_Control
-import Serial_Coms as Coms
+import Sub_Programs.Serial_Coms as Coms
 #####
 class PI_Connection_Method(ttk.Labelframe):
     def __init__(self, parent, name):
@@ -1230,9 +1230,10 @@ class Zi_settings(ttk.Labelframe):
         rw = 0
         clm = 0
         for item in Item_List:
+            if (item == Item_List[len(Item_List)-2]):clm+=1
             item.grid( row = rw, column = clm, padx = 2, pady = 2,
                     sticky = 'w')
-            if clm == 5 :
+            if clm == 7 :
                 clm = 0
                 rw += 1
             else : clm += 1

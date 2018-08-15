@@ -89,7 +89,7 @@ class MonoChrom():
 
         if side == 'r':
             self.Arduino.write(b'r')
-        else if side == 'f':
+        elif side == 'f':
             self.Arduino.write(b'f')
 
         while (Step_Left != Modulo):
