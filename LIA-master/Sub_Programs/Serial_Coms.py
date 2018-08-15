@@ -9,7 +9,7 @@ class MonoChrom():
         self.Port = None
         self.Arduino = None
         self.TotStep = 0
-
+        self.side = ''
     def serial_ports(self):
         """ Lists serial port names
 
@@ -44,7 +44,11 @@ class MonoChrom():
         self.Arduino = serial.Serial(self.Port[0], 9600)
 
     def RollDial(self, Nbr_nm):
-        Factor = 1 #Experimental values
+        # Number of nanometer as to be a even index for the motor
+        if ((Nbr_nm%2) == 1): return
+        if (self.side == '') or (self.side == 'r'): self.Correction('f')
+        self.side = 'f'
+        Factor = 0.5 #Experimental values
         NbrStep =  Nbr_nm*Factor
         Modulo = NbrStep%255
         Step_Left = NbrStep
@@ -58,6 +62,8 @@ class MonoChrom():
         self.TotStep += NbrStep
 
     def Reset(self):
+        if (self.side == '') or (self.side == 'f'): self.Correction('r')
+        self.side = 'r'
         NbrStep =  self.TotStep
         Modulo = NbrStep%255
         Step_Left = NbrStep
@@ -68,6 +74,23 @@ class MonoChrom():
             Step_Left -= StepTaken
         self.Arduino.write(struct.pack('>B',Step_Left))
         self.TotStep = 0
+
+    def Correction(self,side):
+        Correction = 2 # Correction for the motor flip
+        NbrStep =  Correction
+        Modulo = NbrStep%255
+        Step_Left = NbrStep
+        StepTaken = 255
+
+        if side == 'r':
+            self.Arduino.write(b'r')
+        else if side == 'f':
+            self.Arduino.write(b'f')
+
+        while (Step_Left != Modulo):
+            self.Arduino.write(struct.pack('>B', StepTaken))
+            Step_Left -= StepTaken
+        self.Arduino.write(struct.pack('>B',Step_Left))
 
 
 
