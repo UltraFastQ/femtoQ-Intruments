@@ -36,7 +36,7 @@ class MonoChrom():
                 result.append(port)
             except (OSError, serial.SerialException):
                 pass
-
+        print(result)
         self.Port = result
 
     def Connect(self):
@@ -46,7 +46,7 @@ class MonoChrom():
                 self.Port = port
 
         self.Arduino = serial.Serial(self.Port, 9600)
-
+        self.connected = True
 
     def RollDial(self, Nbr_nm):
         # Number of nanometer as to be a even index for the motor

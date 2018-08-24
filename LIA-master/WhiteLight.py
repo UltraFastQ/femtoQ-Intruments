@@ -39,7 +39,7 @@ class White_Light_Inteferometer(tk.Tk):
         self.Zi_Data = None
         # Frame Initialisation
         Ima = tk.PhotoImage(file = Dir/'FMQ3.gif')
-        tk.Tk.wm_title(self, "White Light Interferometer V0.2")
+        tk.Tk.wm_title(self, "White Light Interferometer V1.0")
         tk.Tk.wm_iconphoto(self, '-default' ,Ima)
         # Frame switching function:
         def Switch_Frame(lst, Box, rw, clm):
