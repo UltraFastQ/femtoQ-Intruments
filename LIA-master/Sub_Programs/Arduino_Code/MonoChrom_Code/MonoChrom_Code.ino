@@ -15,39 +15,67 @@ char Side;
 long Step2;
 byte BYTES;
 long  TotStep2;
+long TotStep3;
 
 void setup() {
   //put your setup code here, to run once:
   Serial.begin(9600);
   myStepper.setSpeed(20);
   pinMode(Lw_Pin, INPUT_PULLUP);
-  pinMode(H_Pin,INPUT_PULLUP);
+  pinMode(H_Pin, INPUT_PULLUP);
 }
 
 void loop() {
 
-  if (Serial.available() > 0){
+  if (Serial.available() > 0) {
+    delay(100);
     Side = Serial.read();
-    if (Side == 102){
+    if (Side == 102) {
       TotStep2 = 0;
+      delay(100);
       while (Serial.available() > 0) {
-      Step = Serial.read();
-      TotStep2 = TotStep2 + Step;
+        Step = Serial.read();
+        TotStep2 = TotStep2 + Step;
       }
       myStepper.step(-TotStep2);
       TotStep = TotStep + TotStep2;
       delay(100);
     }
-    else if (Side == 114){
+    else if (Side == 114) {
+      delay(100);
       myStepper.step(TotStep);
       delay(100);
       while (Serial.available() > 0) {
-      Step = Serial.read();
-      TotStep = TotStep - Step;
-
+        Step = Serial.read();
+        TotStep = TotStep - Step;
+      }
+    }
+    else if (Side == 67) {
+      delay(100);
+      Side = Serial.read();
+      if (Side == 102) {
+        delay(100);
+        while (Serial.available() > 0) {
+          Step = Serial.read();
+          TotStep3 = Step;
+        }
+        myStepper.step(-TotStep3);
+        TotStep3 = 0;
+        delay(100);
+      }
+      else if (Side == 114) {
+        delay(100);
+        while (Serial.available() > 0) {
+          Step = Serial.read();
+          TotStep3 = Step;
+        }
+        myStepper.step(TotStep3);
+        TotStep3 = 0;
+        delay(100);
       }
     }
   }
-
-  delay(500);
+  delay(250);
 }
+
+

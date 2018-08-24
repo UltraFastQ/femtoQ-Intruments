@@ -10,6 +10,8 @@ class MonoChrom():
         self.Arduino = None
         self.TotStep = 0
         self.side = ''
+        self.Done = True
+
     def serial_ports(self):
         """ Lists serial port names
 
@@ -36,23 +38,21 @@ class MonoChrom():
                 result.append(port)
             except (OSError, serial.SerialException):
                 pass
-        print(result)
         self.Port = result
 
     def Connect(self):
-        for port in self.Port:
-            #This will only work on linux (Not sure if important)
-            if port == '/dev/tty/ACM0':
-                self.Port = port
 
-        self.Arduino = serial.Serial(self.Port, 9600)
+        self.Arduino = serial.Serial(self.Port[0], 9600)
         self.connected = True
 
     def RollDial(self, Nbr_nm):
+        if self.Done == False : return
         # Number of nanometer as to be a even index for the motor
-        if ((Nbr_nm%2) == 1): return
-        if (self.side == '') or (self.side == 'r'): self.Correction('f')
+        if (self.side == '') or (self.side == 'r'):
+            self.Correction('f')
+            time.sleep(1)
         self.side = 'f'
+        self.Done  = False
         Factor = 2 #Experimental values
         NbrStep =  Nbr_nm*Factor
         Modulo = NbrStep%255
@@ -60,33 +60,42 @@ class MonoChrom():
         StepTaken = 255
         self.Arduino.write(b'f')
         while (Step_Left != Modulo):
-            print('hello')
             self.Arduino.write(struct.pack('>B', StepTaken))
             Step_Left -= StepTaken
         self.Arduino.write(struct.pack('>B',Step_Left))
         self.TotStep += NbrStep
+        self.Done = True
 
     def Reset(self):
-        if (self.side == '') or (self.side == 'f'): self.Correction('r')
+        if self.Done == False : return
+        if (self.side == '') or (self.side == 'f'):
+            self.Correction('r')
+            time.sleep(1)
         self.side = 'r'
+        self.Done = False
         NbrStep =  self.TotStep
         Modulo = NbrStep%255
         Step_Left = NbrStep
         StepTaken = 255
+        if self.TotStep == 0 :
+            self.Done = True
+            return
         self.Arduino.write(b'r')
         while (Step_Left != Modulo):
             self.Arduino.write(struct.pack('>B', StepTaken))
             Step_Left -= StepTaken
         self.Arduino.write(struct.pack('>B',Step_Left))
         self.TotStep = 0
+        self.Done = True
 
     def Correction(self,side):
-        Correction = 2 # Correction for the motor flip
+        Correction = 6 # Correction for the motor flip
         NbrStep =  Correction
         Modulo = NbrStep%255
         Step_Left = NbrStep
         StepTaken = 255
-
+        self.Arduino.write(b'C')
+        time.sleep(0.1)
         if side == 'r':
             self.Arduino.write(b'r')
         elif side == 'f':
