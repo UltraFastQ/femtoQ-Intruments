@@ -682,6 +682,7 @@ class Graphic(ttk.Labelframe):
                 time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
                 #Scope Input channel is 0 but we can add up to 3 if im correct
                 wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
+                Axes.set_ylim([min(wave)-min(wave)*15/100,max(wave)+max(wave)*15/100])
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
                     Line1.set_xdata(1e6*time)
                     Line1.set_ydata(wave)
@@ -736,7 +737,6 @@ class Graphic(ttk.Labelframe):
                     self.subscribed == True
 
                 BOXCAR(Frame_Info)
-
 
     def Activate_anim(self, Text, Button):
 
@@ -819,6 +819,7 @@ class Graphic(ttk.Labelframe):
         def __init__(self, Figure, Axes, ZI_DATA):
             self.Fig = Figure
             self.Axis = Axes
+            self.Axis.set_xlim([0,1000])
             self.ZI_DATA = ZI_DATA
             self.Value = { 'vals' : { 'R' : [] , 'phi' : []}, 't': []}
             self.L, = self.Axis.plot(self.Value['vals']['R'],self.Value['t'])
@@ -834,11 +835,12 @@ class Graphic(ttk.Labelframe):
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Sample = Data_Set[self.ZI_DATA['DEMOD_Smp_PATH']]
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
-            self.Value['vals']['R'].append(np.abs(Sample['x'] +1j*Sample['y']))
-            self.Value['vals']['phi'].append(np.angle(Sample['x'] +1j*Sample['y']))
-            self.Value['t'].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase)
+            self.Value['vals']['R'][0].append(np.abs(Sample['x'] +1j*Sample['y']))
+            self.Value['vals']['phi'][0].append(np.angle(Sample['x'] +1j*Sample['y']))
+            self.Value['t'][0].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase+max(self.Value['t'][0]))
             self.L.set_ydata(self.Value['vals']['R'][0])
             self.L.set_xdata(self.Value['t'][0])
+            self.Axis([0,max(self.Value['vals']['R'][0])+max(self.Value['vals']['R'][0])*15/100])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
 
