@@ -682,7 +682,7 @@ class Graphic(ttk.Labelframe):
                 time = np.linspace( 0, shot['dt']*Nb_Smple, Nb_Smple)
                 #Scope Input channel is 0 but we can add up to 3 if im correct
                 wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
-                Axes.set_ylim([min(wave)-min(wave)*15/100,max(wave)+max(wave)*15/100])
+                Axes.set_ylim([min(wave)-abs(min(wave)*15/100),max(wave)+max(wave)*15/100])
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
                     Line1.set_xdata(1e6*time)
                     Line1.set_ydata(wave)
@@ -778,6 +778,7 @@ class Graphic(ttk.Labelframe):
             self.Value = { 'vals' : [], 't': []}
             self.L, = self.Axis.plot(self.Value['vals'],self.Value['t'])
             self.subscribed = False
+            self.offset = self.Draggable_Line( self, Axis = self.Axis)
 
         def Refresh_BOX(self):
             frequency_set = daq.getDouble('/%s/oscs/%d/freq' % (self.ZI_DATA['Device_id'], self.ZI_DATA['Oscillator'].get()))
@@ -805,24 +806,112 @@ class Graphic(ttk.Labelframe):
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Sample = Data_Set[self.ZI_DATA['BC_Smp_PATH']]
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
-            self.Value['vals'].append(Sample['value'])
-            self.Value['t'].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase)
-            self.L.set_ydata(self.Value['vals'][0])
-            self.L.set_xdata(self.Value['t'][0])
+            self.Value['vals'] = np.append(self.Value['vals'],Sample['value'])
+            if not self.Value['t']:
+                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
+            else:
+                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
+                        min(self.Value['t'][0]))
+            self.L.set_ydata(self.Value['vals'])
+            self.L.set_xdata(self.Value['t'])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
 
         def Delete_Plot(self):
             self.L.set_data([],[])
+        class Draggable_Line:
+
+            Lock = None
+
+            def __init__(self, parent = None, y = .2, Axis = None):
+
+                self.parent = parent
+                self.press = None
+                self.background = None
+                self.y = y
+                self.line = Axis.axhline(x)
+                self.connect()
+
+            def connect(self):
+
+                'connect to all the events we need'
+
+                self.cidpress1 = self.line.figure.canvas.mpl_connect('button_press_event', self.on_press)
+                self.cidrelease1 = self.line.figure.canvas.mpl_connect('button_release_event', self.on_release)
+                self.cidmotion1 = self.line.figure.canvas.mpl_connect('motion_notify_event',  self.on_motion)
+
+            def on_press(self, event):
+
+                if event.inaxes != self.line.axes: return
+                if self.Lock is not None: return
+                contains, attrd = self.line.contains(event)
+                if contains != True : return
+                self.press = (self.line.get_xydata()), event.xdata, event.ydata
+                self.Lock = self
+
+                canvas = self.line.figure.canvas
+                axes = self.line.axes
+                self.line.set_animated(True)
+                if self == self.parent.offset:
+                    self.BOX.set_animated(True)
+
+                canvas.draw()
+                self.background = canvas.copy_from_bbox(self.line.axes.bbox)
+                axes.draw_artist(self.line)
+
+                canvas.blit(axes.bbox)
+
+
+
+            def on_release(self, event):
+
+                if self.Lock is not self: return
+
+                self.press = None
+                self.Lock = None
+
+                self.line.set_animated(False)
+                if self == self.parent.offset:
+                    self.BOX.set_animated(False)
+
+                self.background = None
+                self.line.figure.canvas.draw()
+
+                self.y = self.line.get_ydata()
+
+
+
+            def on_motion(self, event):
+                if self.Lock is not self: return
+                if event.inaxes != self.line.axes: return
+                array , xpress, ypress = self.press
+                y0 = array[0][0]
+                dy = event.ydata - ypress
+                self.line.set_ydata(y0 + dy)
+
+                canvas = self.line.figure.canvas
+                axes = self.line.axes
+                canvas.restore_region(self.background)
+
+                axes.draw_artist(self.line)
+                self.y = self.line.get_ydata()
+
+                canvas.blit(axes.bbox)
+
+            def disconnect(self):
+
+                self.cidpress1 = self.line.figure.canvas.mpl_disconnect('button_press_event', self.on_press)
+                self.cidrelease1 = self.line.figure.canvas.mpl_disconnect('button_release_event', self.on_release)
+                self.cidmotion1 = self.line.figure.canvas.mpl_disconnect('motion_notify_event',  self.on_motion)
 
     class Demods_PLOT:
         def __init__(self, Figure, Axes, ZI_DATA):
             self.Fig = Figure
             self.Axis = Axes
-            self.Axis.set_xlim([0,1000])
             self.ZI_DATA = ZI_DATA
             self.Value = { 'vals' : { 'R' : [] , 'phi' : []}, 't': []}
             self.L, = self.Axis.plot(self.Value['vals']['R'],self.Value['t'])
+            self.offset = self.Draggable_Line(self, Axis = self.Axis)
 
         def Measure(self):
             if self.subscribed == False:
@@ -835,17 +924,106 @@ class Graphic(ttk.Labelframe):
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Sample = Data_Set[self.ZI_DATA['DEMOD_Smp_PATH']]
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
-            self.Value['vals']['R'][0].append(np.abs(Sample['x'] +1j*Sample['y']))
-            self.Value['vals']['phi'][0].append(np.angle(Sample['x'] +1j*Sample['y']))
-            self.Value['t'][0].append((Sample['timestamp']- Sample['timestamp'][0])/clockbase+max(self.Value['t'][0]))
+            self.Value = np.append(self.Value['vals']['R'], np.abs(Sample['x'] +1j*Sample['y']))
+            self.Value = np.append(self.Value['vals']['phi'], np.angle(Sample['x'] +1j*Sample['y']))
+            if not self.Value['t']:
+                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
+            else:
+                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
+                        min(self.Value['t'][0]))
             self.L.set_ydata(self.Value['vals']['R'][0])
             self.L.set_xdata(self.Value['t'][0])
-            self.Axis([0,max(self.Value['vals']['R'][0])+max(self.Value['vals']['R'][0])*15/100])
+            self.Axis.set_ylim([0,max(self.Value['vals']['R'][0])+max(self.Value['vals']['R'][0])*15/100])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
 
         def Delete_Plot(self):
             self.L.set_data([],[])
+
+        class Draggable_Line:
+
+            Lock = None
+
+            def __init__(self, parent = None, y = .2, Axis = None):
+
+                self.parent = parent
+                self.press = None
+                self.background = None
+                self.y = y
+                self.line = Axis.axhline(x)
+                self.connect()
+
+            def connect(self):
+
+                'connect to all the events we need'
+
+                self.cidpress1 = self.line.figure.canvas.mpl_connect('button_press_event', self.on_press)
+                self.cidrelease1 = self.line.figure.canvas.mpl_connect('button_release_event', self.on_release)
+                self.cidmotion1 = self.line.figure.canvas.mpl_connect('motion_notify_event',  self.on_motion)
+
+            def on_press(self, event):
+
+                if event.inaxes != self.line.axes: return
+                if self.Lock is not None: return
+                contains, attrd = self.line.contains(event)
+                if contains != True : return
+                self.press = (self.line.get_xydata()), event.xdata, event.ydata
+                self.Lock = self
+
+                canvas = self.line.figure.canvas
+                axes = self.line.axes
+                self.line.set_animated(True)
+                if self == self.parent.offset:
+                    self.BOX.set_animated(True)
+
+                canvas.draw()
+                self.background = canvas.copy_from_bbox(self.line.axes.bbox)
+                axes.draw_artist(self.line)
+
+                canvas.blit(axes.bbox)
+
+
+
+            def on_release(self, event):
+
+                if self.Lock is not self: return
+
+                self.press = None
+                self.Lock = None
+
+                self.line.set_animated(False)
+                if self == self.parent.offset:
+                    self.BOX.set_animated(False)
+
+                self.background = None
+                self.line.figure.canvas.draw()
+
+                self.y = self.line.get_ydata()
+
+
+
+            def on_motion(self, event):
+                if self.Lock is not self: return
+                if event.inaxes != self.line.axes: return
+                array , xpress, ypress = self.press
+                y0 = array[0][0]
+                dy = event.ydata - ypress
+                self.line.set_ydata(y0 + dy)
+
+                canvas = self.line.figure.canvas
+                axes = self.line.axes
+                canvas.restore_region(self.background)
+
+                axes.draw_artist(self.line)
+                self.y = self.line.get_ydata()
+
+                canvas.blit(axes.bbox)
+
+            def disconnect(self):
+
+                self.cidpress1 = self.line.figure.canvas.mpl_disconnect('button_press_event', self.on_press)
+                self.cidrelease1 = self.line.figure.canvas.mpl_disconnect('button_release_event', self.on_release)
+                self.cidmotion1 = self.line.figure.canvas.mpl_disconnect('motion_notify_event',  self.on_motion)
 
 
 class File_interaction(ttk.Labelframe):
