@@ -464,7 +464,6 @@ class Graphic(ttk.Labelframe):
 
         def Supress(Enum, Plot):
             Enum = self.Plot_Showed
-            print(Enum)
 
             if self.ZI_DATA == None:
                 messagebox.showinfo(icon = 'error', title = 'ERROR', message = 'The Server is not connected')
@@ -781,16 +780,15 @@ class Graphic(ttk.Labelframe):
             self.offset = self.Draggable_Line( self, Axis = self.Axis)
 
         def Refresh_BOX(self):
-            frequency_set = daq.getDouble('/%s/oscs/%d/freq' % (self.ZI_DATA['Device_id'], self.ZI_DATA['Oscillator'].get()))
-            self.Window_Start = min(Line_list[0].x, Line_list[1].x)
-            self.Window_width = abs(Line_list[0].x - Line_list[1].x)/(2*np.pi*360*frequency_set)
+            frequency_set = self.ZI_DATA['DAQ'].getDouble('/%s/oscs/%d/freq' % (self.ZI_DATA['Device_id'], self.ZI_DATA['Oscillator'].get()))
+            self.Window_Start = min(self.Line_list[0].x, self.Line_list[1].x)
+            self.Window_width = abs(self.Line_list[0].x - self.Line_list[1].x)/(2*np.pi*360*frequency_set)
             self.ZI_DATA['DAQ'].unsubscribe('*')
-            self.subscribed = False
-            Box_Window = [['/%s/boxcars/%d/windowstart' % (DATA['Device_id'], 0), self.Window_Start],
-                ['/%s/boxcars/%d/windowsize' % (DATA['Device_id'], 0), self.Window_width]]
+            Box_Window = [['/%s/boxcars/%d/windowstart' % (self.ZI_DATA['Device_id'], 0), self.Window_Start],
+                ['/%s/boxcars/%d/windowsize' % (self.ZI_DATA['Device_id'], 0), self.Window_width]]
             self.ZI_DATA['DAQ'].set(Box_Window)
             self.ZI_DATA['DAQ'].sync()
-            self.subscribe(self.ZI_DATA['BC_Smp_PATH'])
+            self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
 
 
         def Measure(self):
@@ -806,19 +804,25 @@ class Graphic(ttk.Labelframe):
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Sample = Data_Set[self.ZI_DATA['BC_Smp_PATH']]
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
-            self.Value['vals'] = np.append(self.Value['vals'],Sample['value'])
             if not self.Value['t']:
-                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
+                self.Value['vals'].append(Sample['value'])
+                self.Value['t'].append(((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
             else:
-                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
-                        min(self.Value['t'][0]))
-            self.L.set_ydata(self.Value['vals'])
-            self.L.set_xdata(self.Value['t'])
+                self.Value['vals'][0] = np.append(self.Value['vals'][0],Sample['value'])
+                self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
+                        max(self.Value['t'][0]))
+            self.L.set_ydata(self.Value['vals'][0])
+            self.L.set_xdata(self.Value['t'][0])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
 
         def Delete_Plot(self):
             self.L.set_data([],[])
+            self.Fig.canvas.draw()
+            self.Fig.canvas.flush_events()
+            self.ZI_DATA['DAQ'].unsubscribe(self.ZI_DATA['BC_Smp_PATH'])
+            self.subscrided = False
+
         class Draggable_Line:
 
             Lock = None
@@ -829,7 +833,7 @@ class Graphic(ttk.Labelframe):
                 self.press = None
                 self.background = None
                 self.y = y
-                self.line = Axis.axhline(x)
+                self.line = Axis.axhline(y)
                 self.connect()
 
             def connect(self):
@@ -852,8 +856,6 @@ class Graphic(ttk.Labelframe):
                 canvas = self.line.figure.canvas
                 axes = self.line.axes
                 self.line.set_animated(True)
-                if self == self.parent.offset:
-                    self.BOX.set_animated(True)
 
                 canvas.draw()
                 self.background = canvas.copy_from_bbox(self.line.axes.bbox)
@@ -871,8 +873,6 @@ class Graphic(ttk.Labelframe):
                 self.Lock = None
 
                 self.line.set_animated(False)
-                if self == self.parent.offset:
-                    self.BOX.set_animated(False)
 
                 self.background = None
                 self.line.figure.canvas.draw()
@@ -924,13 +924,14 @@ class Graphic(ttk.Labelframe):
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Sample = Data_Set[self.ZI_DATA['DEMOD_Smp_PATH']]
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
-            self.Value = np.append(self.Value['vals']['R'], np.abs(Sample['x'] +1j*Sample['y']))
-            self.Value = np.append(self.Value['vals']['phi'], np.angle(Sample['x'] +1j*Sample['y']))
+            #self.Value = np.append(self.Value['vals']['phi'], np.angle(Sample['x'] +1j*Sample['y']))
             if not self.Value['t']:
-                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
+                self.Value['vals']['R'].append(np.abs(Sample['x'] +1j*Sample['y']))
+                self.Value['t'].append(((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
             else:
-                self.Value['t'] = np.append(self.Value['t'],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
-                        min(self.Value['t'][0]))
+                self.Value['vals']['R'][0] = np.append(self.Value['vals']['R'][0], np.abs(Sample['x'] +1j*Sample['y']))
+                self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
+                        max(self.Value['t'][0]))
             self.L.set_ydata(self.Value['vals']['R'][0])
             self.L.set_xdata(self.Value['t'][0])
             self.Axis.set_ylim([0,max(self.Value['vals']['R'][0])+max(self.Value['vals']['R'][0])*15/100])
@@ -939,6 +940,11 @@ class Graphic(ttk.Labelframe):
 
         def Delete_Plot(self):
             self.L.set_data([],[])
+            self.Fig.canvas.draw()
+            self.Fig.canvas.flush_events()
+            self.ZI_DATA['DAQ'].unsubscribe(self.ZI_DATA['DEMOD_Smp_PATH'])
+            self.subscrided = False
+
 
         class Draggable_Line:
 
@@ -950,7 +956,7 @@ class Graphic(ttk.Labelframe):
                 self.press = None
                 self.background = None
                 self.y = y
-                self.line = Axis.axhline(x)
+                self.line = Axis.axhline(y)
                 self.connect()
 
             def connect(self):
@@ -973,8 +979,6 @@ class Graphic(ttk.Labelframe):
                 canvas = self.line.figure.canvas
                 axes = self.line.axes
                 self.line.set_animated(True)
-                if self == self.parent.offset:
-                    self.BOX.set_animated(True)
 
                 canvas.draw()
                 self.background = canvas.copy_from_bbox(self.line.axes.bbox)
@@ -992,8 +996,6 @@ class Graphic(ttk.Labelframe):
                 self.Lock = None
 
                 self.line.set_animated(False)
-                if self == self.parent.offset:
-                    self.BOX.set_animated(False)
 
                 self.background = None
                 self.line.figure.canvas.draw()
