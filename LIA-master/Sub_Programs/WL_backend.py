@@ -451,8 +451,8 @@ class Graphic(ttk.Labelframe):
                 ' the 0 index.')
             else:
                 if Plot_Name == 'Boxcar':
-                    self.Plotter_List[Plot_Name][str(Index.get())].append(self.BOXCAR_PLOT(Frame_Info[1],Frame_Info[2],
-                        self.Line_List, self.ZI_DATA))
+                    self.Plotter_List[Plot_Name][str(Index.get())].append(self.BOXCAR_PLOT( self.Plotter_List,
+                        Frame_Info[1],Frame_Info[2], self.Line_List, self.ZI_DATA))
                     self.Plot_Showed.append('{} : Index {}'.format(Plot_Name ,Index.get()))
                     snd_List.insert('end', '{} : Index {}'.format(Plot_Name,Index.get()))
                 else:
@@ -461,6 +461,19 @@ class Graphic(ttk.Labelframe):
                         self.ZI_DATA))
                     self.Plot_Showed.append('{} : Index {}'.format(Plot_Name ,Index.get()))
                     snd_List.insert('end', '{} : Index {}'.format(Plot_Name ,Index.get()))
+            indice = 0
+            for Element in self.Plotter_List:
+                for Index in self.Plotter_List[Element]:
+                    if not self.Plotter_List[Element][Index] : pass
+                    else:
+                        if indice < self.Plotter_List[Element][Index][0].nb_Plot_Listed
+                        indice = self.Plotter_List[Element][Index][0].nb_Plot_Listed
+            for Element in self.Plotter_List:
+                for Index in self.Plotter_List[Element]:
+                    if not self.Plotter_List[Element][Index] : pass
+                    else:
+                        self.Plotter_List[Element][Index][0].nb_Plot_Listed = indice
+
 
         def Supress(Enum, Plot):
             Enum = self.Plot_Showed
@@ -682,6 +695,7 @@ class Graphic(ttk.Labelframe):
                 #Scope Input channel is 0 but we can add up to 3 if im correct
                 wave = shot['channeloffset'][0] + shot['channelscaling'][0]*shot['wave'][:,0]
                 Axes.set_ylim([min(wave)-abs(min(wave)*15/100),max(wave)+max(wave)*15/100])
+                Axes.set_xlim([min(1e6*time)-abs(min(1e6*time)*15/100),max(1e6*time)+max(1e6*time)*15/100])
                 if (not shot['flags']) and (len(wave) == Nb_Smple):
                     Line1.set_xdata(1e6*time)
                     Line1.set_ydata(wave)
@@ -767,7 +781,13 @@ class Graphic(ttk.Labelframe):
                         self.Plotter_List[Element][Index][0].subscribed = False
 
     class BOXCAR_PLOT:
-        def __init__(self, Figure, Axes , Line_list, ZI_DATA):
+        def __init__(self, Graph_in_plotter, Figure, Axes , Line_list, ZI_DATA):
+            for Element in Graph_in_plotter:
+                for Index in Graph_in_plotter[Element]:
+                    if not Graph_in_plotter[Element][Index] : pass
+                    else:
+                        index += 1
+            self.nb_Plot_Listed = index
             self.Fig = Figure
             self.Axis = Axes
             self.Line_list = Line_list
@@ -802,6 +822,9 @@ class Graphic(ttk.Labelframe):
             poll_flags = 0
             poll_return_flat_dict = True
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            if not Data_Set:
+                self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
+                Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Sample = Data_Set[self.ZI_DATA['BC_Smp_PATH']]
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
             if not self.Value['t']:
@@ -811,7 +834,10 @@ class Graphic(ttk.Labelframe):
                 self.Value['vals'][0] = np.append(self.Value['vals'][0],Sample['value'])
                 self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
                         max(self.Value['t'][0]))
-            self.L.set_ydata(self.Value['vals'][0])
+            if self.nb_Plot_Listed == 1:
+                self.Graph_adjustment(max(self.Value['vals'][0]),min(self.Value['vals'][0]),max(self.Value['t'][0]),
+                        min(self.Value['t'][0]))
+            self.L.set_ydata(self.Value['vals'][0] + self.offset.y)
             self.L.set_xdata(self.Value['t'][0])
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
@@ -823,17 +849,22 @@ class Graphic(ttk.Labelframe):
             self.ZI_DATA['DAQ'].unsubscribe(self.ZI_DATA['BC_Smp_PATH'])
             self.subscrided = False
 
+        def Graph_adjustment(self, miny, maxy, minx, maxx):
+            self.Axis.set_ylim([min(miny)-abs(min(miny)*15/100),max(maxy)+max(maxy)*15/100])
+            self.Axis.set_xlim([min(minx)-abs(min(minx)*15/100),max(maxx)+max(maxx)*15/100])
+
         class Draggable_Line:
 
             Lock = None
 
-            def __init__(self, parent = None, y = .2, Axis = None):
+            def __init__(self, parent = None, y = 0, Axis = None):
 
                 self.parent = parent
                 self.press = None
                 self.background = None
                 self.y = y
                 self.line = Axis.axhline(y)
+                self.line.set_linewidth(.2)
                 self.connect()
 
             def connect(self):
@@ -922,6 +953,9 @@ class Graphic(ttk.Labelframe):
             poll_flags = 0
             poll_return_flat_dict = True
             Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+            if not Data_Set:
+                self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['DEMOD_Smp_PATH'])
+                Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
             Sample = Data_Set[self.ZI_DATA['DEMOD_Smp_PATH']]
             clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
             #self.Value = np.append(self.Value['vals']['phi'], np.angle(Sample['x'] +1j*Sample['y']))
@@ -932,7 +966,7 @@ class Graphic(ttk.Labelframe):
                 self.Value['vals']['R'][0] = np.append(self.Value['vals']['R'][0], np.abs(Sample['x'] +1j*Sample['y']))
                 self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
                         max(self.Value['t'][0]))
-            self.L.set_ydata(self.Value['vals']['R'][0])
+            self.L.set_ydata(self.Value['vals']['R'][0] + self.offset.y)
             self.L.set_xdata(self.Value['t'][0])
             self.Axis.set_ylim([0,max(self.Value['vals']['R'][0])+max(self.Value['vals']['R'][0])*15/100])
             self.Fig.canvas.draw()
@@ -950,13 +984,14 @@ class Graphic(ttk.Labelframe):
 
             Lock = None
 
-            def __init__(self, parent = None, y = .2, Axis = None):
+            def __init__(self, parent = None, y = 0, Axis = None):
 
                 self.parent = parent
                 self.press = None
                 self.background = None
                 self.y = y
                 self.line = Axis.axhline(y)
+                self.line.set_linewidth(.2)
                 self.connect()
 
             def connect(self):
