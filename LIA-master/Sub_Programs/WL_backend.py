@@ -466,8 +466,8 @@ class Graphic(ttk.Labelframe):
                 for Index in self.Plotter_List[Element]:
                     if not self.Plotter_List[Element][Index] : pass
                     else:
-                        if indice < self.Plotter_List[Element][Index][0].nb_Plot_Listed
-                        indice = self.Plotter_List[Element][Index][0].nb_Plot_Listed
+                        if indice < self.Plotter_List[Element][Index][0].nb_Plot_Listed:
+                            indice = self.Plotter_List[Element][Index][0].nb_Plot_Listed
             for Element in self.Plotter_List:
                 for Index in self.Plotter_List[Element]:
                     if not self.Plotter_List[Element][Index] : pass
@@ -1076,6 +1076,10 @@ class File_interaction(ttk.Labelframe):
         DirBut = ttk.Button(self, text = "Choose Directory",
                 command = lambda :
                 self.Dir_Interaction(self.DirVar,self.File_InDir))
+        Explbl = tk.Label(self, text = 'Experiment : ')
+        self.Expcbb_var = tk.StringVar()
+        self.Expcbb = ttk.Combobox(self, textvariable = self.Expcbb_var, state = 'readonly',
+                value = ('Whitelight'))
         self.OpBut = ttk.Button(self, text = "Load Settings")
         self.SvBut = ttk.Button(self, text = "Save Settings")
         self.Start = ttk.Button(self, text = 'Start')
@@ -1089,6 +1093,9 @@ class File_interaction(ttk.Labelframe):
                 sticky = 'ew', padx = 2, pady = 2)
         self.SvBut.grid(row = 2, column = 1, columnspan = 1,
                 sticky = 'ew', padx = 2, pady = 2)
+        Explbl.grid(row = 3, column = 0, sticky = 'ew', padx = 2, pady = 2)
+        self.Expcbb.grid(row = 3, column = 1, sticky = 'ew', padx = 2, pady = 2)
+        self.Expcbb.current(0)
         self.Start.grid(row = 6, column = 0, columnspan = 1,
                 sticky = 'ew', padx = 2, pady = 2)
         self.Stop.grid(row = 6, column = 1, columnspan = 1,
@@ -1666,7 +1673,7 @@ class Measure():
         self.Coms.Connect()
 
 
-    def Do(self):
+    def Do(self,Experience):
         poll_length = 0.1 # [s]
         poll_timeout = 500 # [ms]
         poll_flags = 0

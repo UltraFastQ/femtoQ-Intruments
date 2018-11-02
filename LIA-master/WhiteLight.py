@@ -88,7 +88,7 @@ class White_Light_Inteferometer(tk.Tk):
         SCBox.current(0)
         # Those frame are all based on the classes on the backend
         # File_Interaction Frame
-        File_Dialog = backend.File_interaction(SubFrame,
+        self.File_Dialog = backend.File_interaction(ConFrame,
                 "File interaction")
         # Zurich Instrument Connection Frame
         self.ZiFrame = backend.Zi_Connection_Method(ConFrame,CCBox)
@@ -121,23 +121,23 @@ class White_Light_Inteferometer(tk.Tk):
         #GraphBox configuration
         self.GraphBox.grid(row = 0, column = 1, padx = 5, pady = 5)
         #File location/reading configuration
-        File_Dialog.grid(row = 0, column = 1, padx = 2, pady = 2, sticky = 'w')
+        self.File_Dialog.grid(row = 1, column = 0, padx = 2, pady = 2, sticky = 'w')
         # Binding File_Interaction frame to different methods
-        File_Dialog.Start.bind('<Button-1>',
-                    lambda : self.Start( self.PI_Data, self.Zi_Data))
+        self.File_Dialog.Start.bind('<Button-1>',
+                    lambda x : self.Start( self.PI_Data, self.Zi_Data))
 
-        File_Dialog.OpBut.bind('<Button-1>',
+        self.File_Dialog.OpBut.bind('<Button-1>',
                     lambda : self.Load_Setting(
                         File_Dialog.DirVar, self.PI_Data,
                         self.Zi_Data))
 
-        File_Dialog.SvBut.bind('<Button-1>',
+        self.File_Dialog.SvBut.bind('<Button-1>',
                     lambda : self.Save_Setting(
                         File_Dialog.DirVar,
                         File_Dialog.File_InDir, self.PI_Data,
                         self.Zi_Data))
 
-        File_Dialog.Stop.bind('<Button-1>',
+        self.File_Dialog.Stop.bind('<Button-1>',
                     lambda : self.Stop_Measurement(
                         self.PI_Data,
                         self.Zi_Data))
@@ -165,7 +165,7 @@ class White_Light_Inteferometer(tk.Tk):
                         ' Do not interfere with the devices.')
                 #Do the mesurement for the whitelight
                 Mesure = backend.Measure(Dir, PI_DATA, Zi_DATA)
-                Mesure.Do()
+                Mesure.Do(self.File_Dialog.Expcbb_var.get())
                 ### Do Plot for the measurements
 
     # Create files for saved settings
