@@ -346,10 +346,8 @@ class Zi_Connection_Method(ttk.Labelframe):
                 pady = 2)
         self.CButton.grid(row = 1, column = 0, sticky = 'n',
                 columnspan = 2, padx = 2, pady = 2)
-
 ###########
 class Graphic(ttk.Labelframe):
-
     def __init__(self,parent, Spin_Box, ZI_Data):
 
         self.subscribed = False
@@ -457,8 +455,8 @@ class Graphic(ttk.Labelframe):
                     snd_List.insert('end', '{} : Index {}'.format(Plot_Name,Index.get()))
                 else:
                     ###### I haven't programmed the part for the angular plotting system
-                    self.Plotter_List[Plot_Name][str(Index.get())].append(self.Demods_PLOT(Frame_Info[1], Frame_Info[2],
-                        self.ZI_DATA))
+                    self.Plotter_List[Plot_Name][str(Index.get())].append(self.Demods_PLOT(self.Plotter_List,
+                        Frame_Info[1], Frame_Info[2], self.ZI_DATA))
                     self.Plot_Showed.append('{} : Index {}'.format(Plot_Name ,Index.get()))
                     snd_List.insert('end', '{} : Index {}'.format(Plot_Name ,Index.get()))
             indice = 0
@@ -782,6 +780,7 @@ class Graphic(ttk.Labelframe):
 
     class BOXCAR_PLOT:
         def __init__(self, Graph_in_plotter, Figure, Axes , Line_list, ZI_DATA):
+            index = 0
             for Element in Graph_in_plotter:
                 for Index in Graph_in_plotter[Element]:
                     if not Graph_in_plotter[Element][Index] : pass
@@ -830,13 +829,15 @@ class Graphic(ttk.Labelframe):
             if not self.Value['t']:
                 self.Value['vals'].append(Sample['value'])
                 self.Value['t'].append(((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
+                #Work needs to be done to optimize the offset
+                self.offset.y = mean(self.Value['vals'][0])
             else:
                 self.Value['vals'][0] = np.append(self.Value['vals'][0],Sample['value'])
                 self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
                         max(self.Value['t'][0]))
-            if self.nb_Plot_Listed == 1:
-                self.Graph_adjustment(max(self.Value['vals'][0]),min(self.Value['vals'][0]),max(self.Value['t'][0]),
-                        min(self.Value['t'][0]))
+            if self.nb_Plot_Listed == 0:
+                self.Graph_adjustment(max(self.Value['vals'][0]) + self.offset.y ,min(self.Value['vals'][0]) - self.offset.y,
+                        max(self.Value['t'][0]), min(self.Value['t'][0]))
             self.L.set_ydata(self.Value['vals'][0] + self.offset.y)
             self.L.set_xdata(self.Value['t'][0])
             self.Fig.canvas.draw()
@@ -849,9 +850,9 @@ class Graphic(ttk.Labelframe):
             self.ZI_DATA['DAQ'].unsubscribe(self.ZI_DATA['BC_Smp_PATH'])
             self.subscrided = False
 
-        def Graph_adjustment(self, miny, maxy, minx, maxx):
-            self.Axis.set_ylim([min(miny)-abs(min(miny)*15/100),max(maxy)+max(maxy)*15/100])
-            self.Axis.set_xlim([min(minx)-abs(min(minx)*15/100),max(maxx)+max(maxx)*15/100])
+        def Graph_adjustment(self, maxy, miny, maxx, minx):
+            self.Axis.set_ylim([miny-abs(miny*15/100),maxy+abs(maxy*15/100)])
+            self.Axis.set_xlim([maxx+abs(maxx*15/100),minx-abs(minx*15/100)])
 
         class Draggable_Line:
 
@@ -936,7 +937,14 @@ class Graphic(ttk.Labelframe):
                 self.cidmotion1 = self.line.figure.canvas.mpl_disconnect('motion_notify_event',  self.on_motion)
 
     class Demods_PLOT:
-        def __init__(self, Figure, Axes, ZI_DATA):
+        def __init__(self, Graph_in_plotter, Figure, Axes, ZI_DATA):
+            index = 0
+            for Element in Graph_in_plotter:
+                for Index in Graph_in_plotter[Element]:
+                    if not Graph_in_plotter[Element][Index] : pass
+                    else:
+                        index += 1
+            self.nb_Plot_Listed = index
             self.Fig = Figure
             self.Axis = Axes
             self.ZI_DATA = ZI_DATA
@@ -962,15 +970,22 @@ class Graphic(ttk.Labelframe):
             if not self.Value['t']:
                 self.Value['vals']['R'].append(np.abs(Sample['x'] +1j*Sample['y']))
                 self.Value['t'].append(((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
+                self.offset.y = mean(self.Value['vals']['R'][0])
             else:
                 self.Value['vals']['R'][0] = np.append(self.Value['vals']['R'][0], np.abs(Sample['x'] +1j*Sample['y']))
                 self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
                         max(self.Value['t'][0]))
             self.L.set_ydata(self.Value['vals']['R'][0] + self.offset.y)
             self.L.set_xdata(self.Value['t'][0])
-            self.Axis.set_ylim([0,max(self.Value['vals']['R'][0])+max(self.Value['vals']['R'][0])*15/100])
+            if self.nb_Plot_Listed == 0:
+                self.Graph_adjustment(max(self.Value['vals']['R'][0])+ self.offset.y, min(self.Value['vals']['R'][0]) + self.offset.y,
+                        max(self.Value['t'][0]), min(self.Value['t'][0]))
             self.Fig.canvas.draw()
             self.Fig.canvas.flush_events()
+
+        def Graph_adjustment(self, maxy, miny, maxx, minx):
+            self.Axis.set_ylim([miny+abs(miny*15/100),maxy-abs(maxy*15/100)])
+            self.Axis.set_xlim([maxx+abs(maxx*15/100),minx-abs(minx*15/100)])
 
         def Delete_Plot(self):
             self.L.set_data([],[])
@@ -1062,7 +1077,6 @@ class Graphic(ttk.Labelframe):
                 self.cidrelease1 = self.line.figure.canvas.mpl_disconnect('button_release_event', self.on_release)
                 self.cidmotion1 = self.line.figure.canvas.mpl_disconnect('motion_notify_event',  self.on_motion)
 
-
 class File_interaction(ttk.Labelframe):
     def __init__(self, parent, text):
         self.File_InDir = []
@@ -1079,7 +1093,7 @@ class File_interaction(ttk.Labelframe):
         Explbl = tk.Label(self, text = 'Experiment : ')
         self.Expcbb_var = tk.StringVar()
         self.Expcbb = ttk.Combobox(self, textvariable = self.Expcbb_var, state = 'readonly',
-                value = ('Whitelight'))
+                value = ('Whitelight','Etienne'))
         self.OpBut = ttk.Button(self, text = "Load Settings")
         self.SvBut = ttk.Button(self, text = "Save Settings")
         self.Start = ttk.Button(self, text = 'Start')
@@ -1150,7 +1164,6 @@ class File_interaction(ttk.Labelframe):
 
         self.File_InDir = [ item for item in parent.iterdir() if
                 parent.is_file()]
-
 
 class PI_control(ttk.Labelframe):
     def __init__(self, parent, text):
@@ -1311,7 +1324,6 @@ class PI_control(ttk.Labelframe):
 
     def Reset(self,Device):
         Device.grid_forget()
-
 
 class Zi_settings(ttk.Labelframe):
     def __init__(self, parent, text, DAQ = None, Device = None,
@@ -1661,17 +1673,78 @@ class Zi_settings(ttk.Labelframe):
         # Subscribe to the scope DATA
         DATA['DAQ'].sync()
 
-
 class Measure():
-    def __init__(self, Folder, PI_DATA, ZI_DATA):
+    def __init__(self, Folder = None, PI_DATA = None, ZI_DATA = None):
         self.Folder = Folder
         self.PI_DATA = PI_DATA
         self.ZI_DATA = ZI_DATA
         self.DelayZero = 0
-        self.Coms = Coms.MonoChrom()
-        self.Coms.serial_ports()
-        self.Coms.Connect()
+        #self.Coms = Coms.MonoChrom()
+        #self.Coms.serial_ports()
+        #self.Coms.Connect()
+        print(self.Folder)
+    def Etienne(self):
+        #Experiences that saves Data taken from the boxcar over a defined time or the number of points.
+        #You can also chose the number of averaging periods.
+        #Here could be some suggestions : -
+        def Initialization():
+            def Measure(Final_Time,Averaging,Window):
+                Window.destroy()
+                if self.ZI_DATA == None:
+                    pass
+                    print('might work out')
+                else:
+                    #Here I would call a new class I created it is the same as this:
+                    Value = { 'vals' : [], 't': []}
+                    Settings = [['/%s/boxcars/%d/periods'% (DATA['Device_id'], boxcar_index), Averaging]]
+                    self.ZI_DATA['DAQ'].set(Settings)
+                    self.ZI_DATA['DAQ'].sync()
+                    self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
+                    t_0 = time.time()
+                    Time = time.time() - t_0
+                    while Time < Final_Time:
+                        poll_lenght = 0.1 # [s]
+                        poll_timeout = 500 # [ms]
+                        poll_flags = 0
+                        poll_return_flat_dict = True
+                        Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+                        if not Data_Set:
+                            self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
+                            Data_Set = self.ZI_DATA['DAQ'].poll( poll_lenght, poll_timeout, poll_flags, poll_return_flat_dict)
+                        Sample = Data_Set[self.ZI_DATA['BC_Smp_PATH']]
+                        clockbase = float(self.ZI_DATA['DAQ'].getInt('/%s/clockbase' % self.ZI_DATA['Device_id']))
+                        if not Value['t']:
+                            Value['vals'].append(Sample['value'])
+                            Value['t'].append(((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
+                        else:
+                            Value['vals'][0] = np.append(Value['vals'][0],Sample['value'])
+                            Value['t'][0] = np.append(Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
+                                    max(Value['t'][0]))
+                        Time = time.time() - t_0
+                    Value['vals'] = Value['vals'][0]
+                    Value['t'] = Value['t'][0]
+                    df = pd.DataFrame(Value)
+                    df.to_csv(self.Folder + '\Data.txt')
+                    plt.plot(Value['vals'],Value['t'])
+                    plt.show()
 
+            Pop_Up = tk.Tk()
+            Pop_Up.wm_title('Etienne experiment')
+            Pop_Up.wm_geometry('275x135+500+500')
+            T_label = ttk.Label(Pop_Up, text = 'Time of the measurement:[s]', font =('Arial',12) )
+            T_Var = tk.DoubleVar()
+            Time = ttk.Entry(Pop_Up, textvariable = T_Var, width = 12)
+            AV_label = ttk.Label(Pop_Up, text = '#Averaging periods:', font =('Arial',12) )
+            AV_Var = tk.DoubleVar()
+            Averaging = ttk.Entry(Pop_Up, textvariable = AV_Var, width = 12)
+            Start_B = ttk.Button(Pop_Up, text = 'Start', command = lambda : Measure(Time.get(),Averaging.get(),Pop_Up))
+            T_label.grid( row = 0, column = 0, padx = 2, pady = 2, sticky = 'nw')
+            Time.grid( row = 0, column = 1, padx = 2, pady = 2, sticky = 'nw')
+            AV_label.grid( row = 1, column = 0, padx = 2, pady = 2, sticky = 'nw')
+            Averaging.grid( row = 1, column = 1, padx = 2, pady = 2, sticky = 'nw')
+            Start_B.grid( row = 3, column = 0, padx = 2, pady = 2, sticky = 'nwe', columnspan = 2)
+
+        Initialization()
 
     def Do(self,Experience):
         poll_length = 0.1 # [s]

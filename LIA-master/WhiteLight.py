@@ -124,11 +124,11 @@ class White_Light_Inteferometer(tk.Tk):
         self.File_Dialog.grid(row = 1, column = 0, padx = 2, pady = 2, sticky = 'w')
         # Binding File_Interaction frame to different methods
         self.File_Dialog.Start.bind('<Button-1>',
-                    lambda x : self.Start( self.PI_Data, self.Zi_Data))
+                    lambda x : self.Start(self.File_Dialog.DirVar.get()))
 
         self.File_Dialog.OpBut.bind('<Button-1>',
                     lambda : self.Load_Setting(
-                        File_Dialog.DirVar, self.PI_Data,
+                        self.File_Dialog.DirVar, self.PI_Data,
                         self.Zi_Data))
 
         self.File_Dialog.SvBut.bind('<Button-1>',
@@ -142,31 +142,39 @@ class White_Light_Inteferometer(tk.Tk):
                         self.PI_Data,
                         self.Zi_Data))
     # This function is starting a full simulation for the white light interferometer
-    def Start(self, File_List, Dir,PI_Data, Zi_Data):
+    def Start(self, Dir):
+        PI_Data = self.PI_Data
+        Zi_Data = self.Zi_Data
         # Verification if all the elements are all there
-        if Zi_Data == None:
-            messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
-            return
-        if PI_DATA == None:
-            messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
-            return
-        if Zi_Data['DAQ'] == None:
-            messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
-            return
-        # unsubscribing path to receive only the right data
-        Zi_Data['DAQ'].unsubscribe('*')
-        y = messagebox.askyesno( icon = 'question', title = 'Settings', message = 'Is all your parameters'+
-                'set up for the experiment')
-        if y == 'yes':
-            x = messagebox.askyesno( icon = 'warning', title = 'Monochromator', message = 'Is the monochromator'+
-                    'set to 400 on the dial. If not close the 12V Power source and reset the dial to 400')
-            if x == 'yes':
-                messagebox.showinfo( title = 'Experiment', message = 'The experiment will now start.'+
-                        ' Do not interfere with the devices.')
-                #Do the mesurement for the whitelight
-                Mesure = backend.Measure(Dir, PI_DATA, Zi_DATA)
-                Mesure.Do(self.File_Dialog.Expcbb_var.get())
-                ### Do Plot for the measurements
+        Exp_Name = self.File_Dialog.Expcbb_var.get()
+        if Exp_Name == 'Etienne':
+            Mesure = backend.Measure(Folder = Dir, ZI_DATA = Zi_Data)
+            Mesure.Etienne()
+
+        else:
+            if Zi_Data == None:
+                messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
+                return
+            if PI_DATA == None:
+                messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
+                return
+            if Zi_Data['DAQ'] == None:
+                messagebox.showinfo(icon = 'warning', title = 'Status', message = 'Some parameters aren''t set up')
+                return
+            # unsubscribing path to receive only the right data
+            Zi_Data['DAQ'].unsubscribe('*')
+            y = messagebox.askyesno( icon = 'question', title = 'Settings', message = 'Is all your parameters'+
+                    'set up for the experiment')
+            if y == 'yes':
+                x = messagebox.askyesno( icon = 'warning', title = 'Monochromator', message = 'Is the monochromator'+
+                        'set to 400 on the dial. If not close the 12V Power source and reset the dial to 400')
+                if x == 'yes':
+                    messagebox.showinfo( title = 'Experiment', message = 'The experiment will now start.'+
+                            ' Do not interfere with the devices.')
+                    #Do the mesurement for the whitelight
+                    Mesure = backend.Measure(Dir, PI_DATA, Zi_DATA)
+                    Mesure.Do(self.File_Dialog.Expcbb_var.get())
+                    ### Do Plot for the measurements
 
     # Create files for saved settings
     def Save_Setting(self, Folder, PI_Data, ZI_Data):
