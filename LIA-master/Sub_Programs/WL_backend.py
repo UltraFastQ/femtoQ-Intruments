@@ -6,6 +6,7 @@
 # -*- coding: utf-8 -*-
 ###################################################################
 #Package :
+import pandas as pd
 # Python included:
 import time
 #   tkinter :
@@ -830,7 +831,7 @@ class Graphic(ttk.Labelframe):
                 self.Value['vals'].append(Sample['value'])
                 self.Value['t'].append(((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
                 #Work needs to be done to optimize the offset
-                self.offset.y = mean(self.Value['vals'][0])
+                self.offset.y = np.mean(self.Value['vals'][0])
             else:
                 self.Value['vals'][0] = np.append(self.Value['vals'][0],Sample['value'])
                 self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
@@ -970,7 +971,7 @@ class Graphic(ttk.Labelframe):
             if not self.Value['t']:
                 self.Value['vals']['R'].append(np.abs(Sample['x'] +1j*Sample['y']))
                 self.Value['t'].append(((Sample['timestamp']- Sample['timestamp'][0])/clockbase))
-                self.offset.y = mean(self.Value['vals']['R'][0])
+                self.offset.y = np.mean(self.Value['vals']['R'][0])
             else:
                 self.Value['vals']['R'][0] = np.append(self.Value['vals']['R'][0], np.abs(Sample['x'] +1j*Sample['y']))
                 self.Value['t'][0] = np.append(self.Value['t'][0],((Sample['timestamp']- Sample['timestamp'][0])/clockbase)+
@@ -1696,13 +1697,14 @@ class Measure():
                 else:
                     #Here I would call a new class I created it is the same as this:
                     Value = { 'vals' : [], 't': []}
-                    Settings = [['/%s/boxcars/%d/periods'% (DATA['Device_id'], boxcar_index), Averaging]]
+                    Settings = [['/%s/boxcars/%d/periods'% (self.ZI_DATA['Device_id'], 0), Averaging]]
                     self.ZI_DATA['DAQ'].set(Settings)
                     self.ZI_DATA['DAQ'].sync()
                     self.ZI_DATA['DAQ'].subscribe(self.ZI_DATA['BC_Smp_PATH'])
                     t_0 = time.time()
                     Time = time.time() - t_0
-                    while Time < Final_Time:
+                    print(type(Final_Time))
+                    while Time < 1:
                         poll_lenght = 0.1 # [s]
                         poll_timeout = 500 # [ms]
                         poll_flags = 0
@@ -1725,7 +1727,7 @@ class Measure():
                     Value['t'] = Value['t'][0]
                     df = pd.DataFrame(Value)
                     df.to_csv(self.Folder + '\Data.txt')
-                    plt.plot(Value['vals'],Value['t'])
+                    plt.plot(Value['t'],Value['vals'])
                     plt.show()
 
             Pop_Up = tk.Tk()
