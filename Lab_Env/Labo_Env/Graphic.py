@@ -5,7 +5,7 @@ matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
+
 plt.ion()
 
 
@@ -192,6 +192,38 @@ class VerticalDraggableLine:
 
 
 class GraphicFrame:
+
+    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1]):
+        # axis_name is a string tuple of the x and y axis in that order
+        # figsize is a list of two component the first one is the x and the other one is the y axis
+        self.parent = parent
+        self.Fig = Figure(dpi=100, figsize=figsize)
+        self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
+        self.axes.set_aspect('auto', adjustable='box')
+        self.axes.set_adjustable('box')
+        self.Line, = self.axes.plot([], [])
+        self.axes.tick_params(axis='both', which='major', labelsize=8)
+        self.axes.grid()
+        self.axes.set_xlabel(axis_name[0])
+        self.axes.set_ylabel(axis_name[1])
+        self.canvas = FigureCanvasTkAgg(self.Fig, parent)
+        self.canvas.show()
+        self.canvas.get_tk_widget().pack(expand=True, fill='both')
+        toolbar = NavigationToolbar2TkAgg(self.canvas, parent)
+        toolbar.update()
+        self.canvas._tkcanvas.pack()
+
+    def change_dimensions(self, event):
+        width = event.width/self.Fig.get_dpi()
+        height = event.height/self.Fig.get_dpi()
+        self.Fig.set_size_inches(w=width, h=height)
+
+    def update_graph(self):
+        self.Fig.canvas.draw()
+        self.Fig.canvas.flush_events()
+
+
+class SubGraphFrame:
 
     def __init__(self, parent, axis_name=['', ''], figsize=[1, 1]):
         # axis_name is a string tuple of the x and y axis in that order

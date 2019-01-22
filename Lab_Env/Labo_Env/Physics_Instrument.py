@@ -1,8 +1,6 @@
 # Pipython :
-import pipython
 from pipython import GCSDevice
-from pipython import gcscommands
-from pipython import datarectools, pitools
+from pipython import pitools
 # tkinter
 from tkinter import messagebox
 

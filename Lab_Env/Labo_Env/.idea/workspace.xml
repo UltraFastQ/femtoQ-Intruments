@@ -1,7 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="" />
+    <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Graphic.py" beforeDir="false" afterPath="$PROJECT_DIR$/Graphic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Physics_Instrument.py" beforeDir="false" afterPath="$PROJECT_DIR$/Physics_Instrument.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Spectrometer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Spectrometer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/Save_Zi.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/Save_Zi.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_autoranging_impedance.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_autoranging_impedance.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_connect.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_connect.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_connect_config.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_connect_config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_data_acquisition_edge.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_data_acquisition_edge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_data_acquisition_edge_fft.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_data_acquisition_edge_fft.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_data_acquisition_grid.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_data_acquisition_grid.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_data_acquisition_trackingedge.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_data_acquisition_trackingedge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_pid_advisor_pll.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_pid_advisor_pll.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_poll.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_poll.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_save_device_settings_expert.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_save_device_settings_expert.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_save_device_settings_simple.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_save_device_settings_simple.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_scope.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_scope.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_scope_segments.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_scope_segments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/common/example_sweeper.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/common/example_sweeper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/deprecated/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/deprecated/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/deprecated/example_spectrum.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/deprecated/example_spectrum.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/deprecated/example_swtrigger_edge.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/deprecated/example_swtrigger_edge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/deprecated/example_swtrigger_grid.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/deprecated/example_swtrigger_grid.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/deprecated/example_swtrigger_grid_average.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/deprecated/example_swtrigger_grid_average.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/deprecated/example_swtrigger_trackingedge.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/deprecated/example_swtrigger_trackingedge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/hf2/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/hf2/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/hf2/example_pid_advisor_pll.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/hf2/example_pid_advisor_pll.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/hf2/example_scope.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/hf2/example_scope.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/uhf/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/uhf/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/uhf/example_awg.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/uhf/example_awg.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/uhf/example_awg_sourcefile.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/uhf/example_awg_sourcefile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/examples/uhf/example_boxcar.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/examples/uhf/example_boxcar.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/zhinst/ziPython.so" beforeDir="false" afterPath="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/ziPython.so" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -9,7 +48,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/Labo_Env$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548182460179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Labo_Env$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548194061031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -66,47 +105,61 @@
         </counts>
       </usages-collector>
     </session>
+    <session id="-1047379127">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.open.time.1" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="Python" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="Python" value="28" />
+        </counts>
+      </usages-collector>
+    </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main_Frame.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1155">
-              <caret line="1593" column="34" lean-forward="true" selection-start-line="1593" selection-start-column="34" selection-end-line="1593" selection-end-column="34" />
+            <state relative-caret-position="22725">
+              <caret line="1515" column="29" selection-start-line="1515" selection-start-column="29" selection-end-line="1515" selection-end-column="29" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#304#2432#0" />
-                <element signature="e#349#2284#0" />
-                <element signature="e#2508#3214#0" />
-                <element signature="e#3299#68826#0" />
-                <element signature="e#3335#67245#0" />
-                <element signature="e#3718#4625#0" />
-                <element signature="e#4665#11000#0" />
-                <element signature="e#11042#16690#0" />
-                <element signature="e#16737#43701#0" />
-                <element signature="e#43739#44722#0" />
-                <element signature="e#44765#67106#0" />
-                <element signature="e#46683#55643#0" />
-                <element signature="e#55783#62370#0" />
-                <element signature="e#62514#65086#0" />
-                <element signature="e#67307#68826#0" />
-                <element signature="e#68949#90769#0" />
-                <element signature="e#90861#93550#0" />
+                <element signature="e#93652#96118#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Spectrometer.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="810">
+              <caret line="58" selection-start-line="58" selection-end-line="58" />
+              <folding>
+                <element signature="e#0#20#0" expanded="true" />
+                <element signature="e#205#316#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Graphic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="223" lean-forward="true" selection-start-line="223" selection-end-line="223" />
+            <state relative-caret-position="495">
+              <caret line="210" selection-start-line="210" selection-end-line="210" selection-end-column="66" />
               <folding>
                 <element signature="e#299#2624#0" />
                 <element signature="e#2661#6134#0" />
-                <element signature="e#6162#7437#0" />
               </folding>
             </state>
           </provider>
@@ -115,10 +168,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-385">
-              <caret line="16" column="38" selection-start-line="16" selection-start-column="38" selection-end-line="16" selection-end-column="38" />
+            <state relative-caret-position="75">
+              <caret line="5" selection-start-line="5" selection-end-line="5" />
               <folding>
-                <element signature="e#13#28#0" expanded="true" />
+                <element signature="e#13#43#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -127,14 +180,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Experiment_file.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="410">
+            <state relative-caret-position="2400">
               <caret line="160" column="63" selection-start-line="160" selection-start-column="63" selection-end-line="160" selection-end-column="63" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#132#5836#0" />
-                <element signature="e#6119#6253#0" />
-                <element signature="e#6908#8139#0" />
-                <element signature="e#8176#10115#0" />
               </folding>
             </state>
           </provider>
@@ -143,7 +192,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-557">
+            <state relative-caret-position="45">
               <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
               <folding>
                 <element signature="e#0#28#0" expanded="true" />
@@ -179,17 +228,20 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Experiment.py" />
-        <option value="$PROJECT_DIR$/Spectrometer.py" />
         <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
         <option value="$PROJECT_DIR$/Monochromator.py" />
-        <option value="$PROJECT_DIR$/Physics_Instrument.py" />
-        <option value="$PROJECT_DIR$/Graphic.py" />
         <option value="$PROJECT_DIR$/Main_Frame.py" />
         <option value="$PROJECT_DIR$/Experiment_file.py" />
+        <option value="$PROJECT_DIR$/Spectrometer.py" />
+        <option value="$PROJECT_DIR$/Physics_Instrument.py" />
+        <option value="$PROJECT_DIR$/Graphic.py" />
       </list>
     </option>
   </component>
@@ -199,12 +251,13 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="4">
+  <component name="ProjectFrameBounds" extendedState="6">
     <option name="x" value="960" />
     <option name="y" value="-2" />
     <option name="width" value="960" />
     <option name="height" value="1082" />
   </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
@@ -221,7 +274,28 @@
             <path>
               <item name="Labo_Env" type="b2602c69:ProjectViewProjectNode" />
               <item name="Labo_Env" type="462c0819:PsiDirectoryNode" />
-              <item name="zhinst" type="462c0819:PsiDirectoryNode" />
+              <item name="PyCharm" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Labo_Env" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Labo_Env" type="462c0819:PsiDirectoryNode" />
+              <item name="PyCharm" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Labo_Env" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Labo_Env" type="462c0819:PsiDirectoryNode" />
+              <item name="PyCharm" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="python3.6" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Labo_Env" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Labo_Env" type="462c0819:PsiDirectoryNode" />
+              <item name="PyCharm" type="462c0819:PsiDirectoryNode" />
+              <item name="lib" type="462c0819:PsiDirectoryNode" />
+              <item name="python3.6" type="462c0819:PsiDirectoryNode" />
+              <item name="site-packages" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -232,10 +306,15 @@
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///home/nico/Documents/Programs/Python/Labo_Env/zhinst/utils.py" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Simulation-Labo" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -340,15 +419,14 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="960" y="-2" width="960" height="1082" extended-state="4" />
-    <editor active="true" />
+    <frame x="0" y="-2" width="1920" height="1082" extended-state="6" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.37788385" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.14674494" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4972156" visible="true" weight="0.13132401" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4972156" visible="true" weight="0.13052858" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3322034" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -364,7 +442,7 @@
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="SciView" order="3" sideWeight="0.4955357" weight="0.3293556" />
       <window_info anchor="right" id="Database" order="4" weight="0.3293556" />
-      <window_info anchor="right" x="0" y="0" width="275" height="543" id="Documentation" order="5" sideWeight="0.50446427" weight="0.3293556" />
+      <window_info anchor="right" x="0" y="0" width="275" height="543" id="Documentation" order="5" sideWeight="0.50446427" side_tool="true" visible="true" weight="0.32924226" />
     </layout>
     <layout-to-restore>
       <window_info content_ui="combo" id="Project" order="0" weight="0.18297534" />
@@ -409,21 +487,10 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/zhinst/utils.py">
+    <entry file="file://$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-3870">
           <caret line="198" selection-start-line="198" selection-end-line="198" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Spectrometer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="35" column="44" selection-start-line="35" selection-start-column="44" selection-end-line="35" selection-end-column="44" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#205#316#0" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -446,7 +513,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-557">
+        <state relative-caret-position="45">
           <caret line="8" column="13" selection-start-line="8" selection-start-column="13" selection-end-line="8" selection-end-column="13" />
           <folding>
             <element signature="e#0#28#0" expanded="true" />
@@ -472,65 +539,55 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22725">
+          <caret line="1515" column="29" selection-start-line="1515" selection-start-column="29" selection-end-line="1515" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#93652#96118#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Spectrometer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="810">
+          <caret line="58" selection-start-line="58" selection-end-line="58" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#205#316#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/Experiment_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="410">
+        <state relative-caret-position="2400">
           <caret line="160" column="63" selection-start-line="160" selection-start-column="63" selection-end-line="160" selection-end-column="63" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#132#5836#0" />
-            <element signature="e#6119#6253#0" />
-            <element signature="e#6908#8139#0" />
-            <element signature="e#8176#10115#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-385">
-          <caret line="16" column="38" selection-start-line="16" selection-start-column="38" selection-end-line="16" selection-end-column="38" />
+        <state relative-caret-position="75">
+          <caret line="5" selection-start-line="5" selection-end-line="5" />
           <folding>
-            <element signature="e#13#28#0" expanded="true" />
+            <element signature="e#13#43#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Graphic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="223" lean-forward="true" selection-start-line="223" selection-end-line="223" />
+        <state relative-caret-position="495">
+          <caret line="210" selection-start-line="210" selection-end-line="210" selection-end-column="66" />
           <folding>
             <element signature="e#299#2624#0" />
             <element signature="e#2661#6134#0" />
-            <element signature="e#6162#7437#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1155">
-          <caret line="1593" column="34" lean-forward="true" selection-start-line="1593" selection-start-column="34" selection-end-line="1593" selection-end-column="34" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#304#2432#0" />
-            <element signature="e#349#2284#0" />
-            <element signature="e#2508#3214#0" />
-            <element signature="e#3299#68826#0" />
-            <element signature="e#3335#67245#0" />
-            <element signature="e#3718#4625#0" />
-            <element signature="e#4665#11000#0" />
-            <element signature="e#11042#16690#0" />
-            <element signature="e#16737#43701#0" />
-            <element signature="e#43739#44722#0" />
-            <element signature="e#44765#67106#0" />
-            <element signature="e#46683#55643#0" />
-            <element signature="e#55783#62370#0" />
-            <element signature="e#62514#65086#0" />
-            <element signature="e#67307#68826#0" />
-            <element signature="e#68949#90769#0" />
-            <element signature="e#90861#93550#0" />
           </folding>
         </state>
       </provider>

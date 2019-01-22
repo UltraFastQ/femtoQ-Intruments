@@ -57,6 +57,7 @@ class Spectro:
         self.graphic.Line.set_ydata(intensities)
         self.graphic.update_graph()
 
+
 class PopUp(tk.Tk):
     def __init__(self, values=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
