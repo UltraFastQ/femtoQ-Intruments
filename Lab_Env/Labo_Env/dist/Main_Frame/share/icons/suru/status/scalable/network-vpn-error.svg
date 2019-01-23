@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg4874" width="96" height="96" version="1.1" viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata id="metadata4879">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(67.857 -78.505)">
+  <rect id="rect4782-05" transform="rotate(90)" x="78.505" y="-28.143" width="96" height="96" style="color:#000000;fill:none"/>
+  <path id="path4205-0" transform="translate(-67.857 78.505)" d="m19.977 10c-5.0328 0.0582-8.7136-0.12015-11.725 1.541-1.5055 0.83067-2.6968 2.2355-3.3555 3.9902-0.65866 1.7546-0.89648 3.8383-0.89648 6.4688v40c0 2.6304 0.23775 4.7122 0.89648 6.4668 0.65866 1.7546 1.85 3.1596 3.3555 3.9902 3.011 1.6613 6.6918 1.4848 11.725 1.543h0.011719 26.01v8.002h-33.998v3.998h38v-3.998-8.002-4h-4.002-25.977-0.021484c-5.0383-0.0586-8.3519-0.23697-9.8164-1.0449-0.73364-0.40479-1.1508-0.85298-1.541-1.8926-0.39027-1.0396-0.64258-2.6929-0.64258-5.0625v-40c0-2.3696 0.25246-4.0229 0.64258-5.0625 0.39024-1.0396 0.80737-1.4878 1.541-1.8926 1.4643-0.80792 4.7774-0.98613 9.8145-1.0449h0.001953 55.998c5.0382 0.0586 8.3519 0.23697 9.8164 1.0449 0.73365 0.40479 1.1527 0.85298 1.543 1.8926 0.39024 1.0396 0.64062 2.6929 0.64062 5.0625v30h4v-30c0-2.6304-0.23771-4.7141-0.89648-6.4688-0.65866-1.7547-1.85-3.1596-3.3555-3.9902-3.011-1.6613-6.6918-1.4828-11.725-1.541h-0.009765-56.023-0.011719zm13.051 21.76s-9.6441 3.9813-19 10.24c9.3559 6.259 19 10.242 19 10.242l0.005859-8.2422h29.996l0.003906 8h0.55664c1.4217-0.60259 9.8763-4.2674 18.445-10-9.3559-6.259-19.002-10.24-19.002-10.24l-0.003906 8.2402h-29.996l-0.005859-8.2402z" style="color-rendering:auto;color:#000000;fill:#808080;font-feature-settings:normal;font-variant-alternates:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;font-variant-position:normal;image-rendering:auto;isolation:auto;mix-blend-mode:normal;shape-padding:0;shape-rendering:auto;solid-color:#000000;text-decoration-color:#000000;text-decoration-line:none;text-decoration-style:solid;text-indent:0;text-transform:none;white-space:normal"/>
+  <path id="path4156" d="m8.1429 134.51a20 20 0 0 0-20 20 20 20 0 0 0 20 20 20 20 0 0 0 20-20 20 20 0 0 0-20-20z" style="color:#000000;fill:#ed3146"/>
+  <path id="path4153" transform="translate(-67.857 78.505)" d="m73.986 62v7.3926c0 2.1806 0.0627 4.201 0.1875 6.0625 0.12484 1.835 0.29389 3.6834 0.50195 5.5449h2.6816c0.18726-1.8615 0.34393-3.71 0.46875-5.5449 0.12484-1.835 0.1875-3.8553 0.1875-6.0625v-7.3926h-4.0273zm2.0137 23.5c-0.68754 0-1.2812 0.2424-1.7812 0.72461-0.4792 0.46124-0.71875 1.0572-0.71875 1.791 0 0.73382 0.23955 1.3317 0.71875 1.793 0.50005 0.46125 1.0937 0.69141 1.7812 0.69141 0.70838 0 1.302-0.23016 1.7812-0.69141 0.4792-0.46124 0.71875-1.0591 0.71875-1.793 0-0.7338-0.23955-1.3298-0.71875-1.791-0.4792-0.48221-1.0729-0.72461-1.7812-0.72461z" style="color:#000000;fill:#fff"/>
+  <ellipse id="path4221" cx="-19.857" cy="162.51" rx="6" ry="6" style="color:#000000;fill:#808080"/>
+ </g>
+</svg>

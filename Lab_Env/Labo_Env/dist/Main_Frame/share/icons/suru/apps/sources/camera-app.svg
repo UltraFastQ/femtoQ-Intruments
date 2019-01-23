@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg3336" width="512" height="512" style="enable-background:new" version="1.1" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <defs id="defs3338">
+  <radialGradient id="radialGradient4404" cx="-257.7" cy="-256.66" r="96" gradientTransform="matrix(0 -1.3797 -1.3797 0 -97.283 -97.192)" gradientUnits="userSpaceOnUse">
+   <stop id="stop4402" style="stop-opacity:0" offset="0"/>
+   <stop id="stop4408" style="stop-opacity:0" offset=".93072"/>
+   <stop id="stop4410" style="stop-opacity:.26166" offset=".96713"/>
+   <stop id="stop4400" offset="1"/>
+  </radialGradient>
+  <filter id="filter4291" x="-.096" y="-.096" width="1.192" height="1.192" style="color-interpolation-filters:sRGB">
+   <feGaussianBlur id="feGaussianBlur4293" stdDeviation="14.079999"/>
+  </filter>
+  <linearGradient id="linearGradient4301" x1="-434" x2="-82" y1="-256" y2="-256" gradientUnits="userSpaceOnUse">
+   <stop id="stop4365" style="stop-opacity:0" offset="0"/>
+   <stop id="stop4367" offset=".50477"/>
+   <stop id="stop4369" style="stop-opacity:0" offset="1"/>
+  </linearGradient>
+  <filter id="filter4323" x="-.012" y="-.012" width="1.024" height="1.024" style="color-interpolation-filters:sRGB">
+   <feGaussianBlur id="feGaussianBlur4325" stdDeviation="1.7599998"/>
+  </filter>
+ </defs>
+ <metadata id="metadata3341">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer3">
+  <path id="rect4158" d="m0 0v183.9 144.2 183.9h512v-183.9-144.2-183.9h-512z" style="color:#000000;enable-background:accumulate;fill:#dcdcdc"/>
+  <path id="path4269" d="m0 256v72.102 183.9h512v-183.9-72.102h-512z" style="color:#000000;enable-background:accumulate;fill:#fff;opacity:.3"/>
+  <circle id="path5121" cx="428" cy="84" r="12" style="color:#000000;enable-background:accumulate;fill:#df382c"/>
+ </g>
+ <g id="layer4">
+  <circle id="circle4305" transform="matrix(0 -.92105 -.92105 0 20.211 20.211)" cx="-258" cy="-256" r="176" style="color:#000000;enable-background:accumulate;fill-opacity:.99608;filter:url(#filter4323);opacity:.1"/>
+  <circle id="circle4345" transform="matrix(0 -.92105 -.92105 0 20.211 20.211)" cx="-258" cy="-256" r="176" style="color:#000000;enable-background:accumulate;fill:url(#linearGradient4301);filter:url(#filter4291);opacity:.4"/>
+  <circle id="path4389-5" transform="matrix(0,-1,-1,0,0,0)" cx="-256" cy="-256" r="162.1" style="color:#000000;enable-background:accumulate;fill-opacity:.99608;fill:#f8f8f8"/>
+  <circle id="circle4371" transform="matrix(0,-1,-1,0,0,0)" cx="-256" cy="-256.18" r="132.45" style="color:#000000;enable-background:accumulate;fill:#97ddf7"/>
+  <path id="circle4396" d="m256.18 123.55a132.45 132.45 0 0 0-132.45 132.45 132.45 132.45 0 0 0 132.45 132.45 132.45 132.45 0 0 0 132.45-132.45 132.45 132.45 0 0 0-132.45-132.45zm0 47.387a85.061 85.061 0 0 1 85.061 85.061 85.061 85.061 0 0 1-85.061 85.061 85.061 85.061 0 0 1-85.061-85.061 85.061 85.061 0 0 1 85.061-85.061z" style="color:#000000;enable-background:accumulate;fill:url(#radialGradient4404);opacity:.07"/>
+  <circle id="circle4413" transform="matrix(0,-1,-1,0,0,0)" cx="-256" cy="-256.18" r="102.05" style="color:#000000;enable-background:accumulate;fill:#11ace6"/>
+  <circle id="circle4409" transform="matrix(0,-1,-1,0,0,0)" cx="-256" cy="-256.18" r="66.131" style="color:#000000;enable-background:accumulate;fill:#0e78b7"/>
+  <circle id="circle4411" transform="matrix(0,-1,-1,0,0,0)" cx="-256" cy="-256.18" r="36.842" style="color:#000000;enable-background:accumulate;fill:#073265"/>
+  <g id="g4415" transform="matrix(.92105 0 0 .92105 12.843 28.501)" style="enable-background:new">
+   <circle id="path4508" cx="307.39" cy="204.55" r="51.449" style="color:#000000;enable-background:accumulate;fill:#fff;opacity:.233"/>
+  </g>
+  <path id="circle4300" d="m256 93.895a162.1 162.1 0 0 0-162.1 162.1 162.1 162.1 0 0 0 0.037793 0.76455 162.1 162.1 0 0 1 162.07-161.03 162.1 162.1 0 0 1 162.07 161.34 162.1 162.1 0 0 0 0.03777-1.0776 162.1 162.1 0 0 0-162.1-162.1z" style="color:#000000;enable-background:accumulate;fill-opacity:.99608;fill:#fff"/>
+ </g>
+</svg>

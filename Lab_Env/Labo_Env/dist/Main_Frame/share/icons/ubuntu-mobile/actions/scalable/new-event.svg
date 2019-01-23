@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg id="svg3443" width="90" height="90.016" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <metadata id="metadata3448">
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g id="layer1" transform="translate(0 -962.35)">
+  <g id="g4136" transform="matrix(1.875 0 0 1.875 -990 -830.82)">
+   <rect id="rect4134" transform="translate(0 412.36)" x="528" y="544" width="48" height="48" style="color:#000000;fill:none"/>
+  </g>
+  <g id="g3466" transform="translate(-528 48)">
+   <rect id="rect3470" x="594" y="962.36" width="6" height="42" style="color:#000000;fill:#808080"/>
+   <rect id="rect3472" transform="rotate(90)" x="980.36" y="-618" width="6" height="42" style="color:#000000;fill:#808080"/>
+   <rect id="rect3474" x="528" y="914.36" width="90" height="90" style="color:#000000;fill:none"/>
+   <path id="path4093" transform="translate(528 914.35)" d="m20.922 6.0156v6c0 3.2304-2.6915 5.9219-5.9219 5.9219s-5.9219-2.6915-5.9219-5.9219v-5.793c-7.9595 0.58774-9.0781 2.8733-9.0781 11.793v30c0 12 2 12 20 12h20c18 0 20 0 20-12v-30c0-8.9197-1.1186-11.205-9.0781-11.793v5.793c0 3.2304-2.6915 5.9219-5.9219 5.9219s-5.9219-2.6915-5.9219-5.9219v-6h-18.156zm-4.9688 15.031c1.2031-0.008808 2.5469-0.0038 4.0469 0h20c12-0.03036 14-0.03036 13.969 5.9688v21c0.03125 6.0008-1.9688 6.0008-13.969 5.9688h-20c-12 0.03214-14 0.03214-13.969-5.9688v-21c-0.027344-5.2493 1.5004-5.9071 9.9219-5.9688z" style="fill:#808080"/>
+   <rect id="rect4102" x="540" y="914.36" width="6" height="15" ry="3" style="color:#000000;fill:#808080"/>
+   <rect id="rect4110" x="570" y="914.36" width="6" height="15" ry="3" style="color:#000000;fill:#808080"/>
+  </g>
+ </g>
+</svg>
