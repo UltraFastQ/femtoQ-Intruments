@@ -1502,7 +1502,7 @@ class SpectroFrame(tk.Frame):
         graph_frame.grid_rowconfigure(0, weight=1)
         graph_frame.grid_columnconfigure(0, weight=1)
         self.graph = Graphic.GraphicFrame(graph_frame, axis_name=['Wavelength', 'Intensity'], figsize=[9, 6])
-        self.parent.Spectro.graphic = self.graph
+        self.parent.Spectro.wv_graphic = self.graph
         self.bind('<Configure>', self.graph.change_dimensions)
         # Possible option
         dev_lbl = tk.Label(option_frame, text='Specific Device?')
@@ -1514,17 +1514,46 @@ class SpectroFrame(tk.Frame):
         inte_var.set(1000)
         inte_lbl = tk.Label(option_frame, text='Integration time [ms]:')
         inte = tk.Entry(option_frame, textvariable=inte_var, width=6)
+        inte.bind('<Return>', lambda e: self.parent.Spectro.adjust_integration_time(inte_var))
         dev_lbl.grid(row=0, column=0, sticky='nw')
         dev_e.grid(row=1, column=0, sticky='nsew')
         connect.grid(row=2, column=0, sticky='nsew')
         inte_lbl.grid(row=3, column=0, sticky='nw')
         inte.grid(row=4, column=0, sticky='nsew')
+        dark_spectrum_var = tk.StringVar()
+        dark_spectrum_var.set('disable')
+        dark_spectrum = tk.Checkbutton(option_frame, text='Dark Spectrum substraction:', variable=dark_spectrum_var,
+                                       command=lambda: self.parent.Spectro.enable_darkspectrum(dark_spectrum_var),
+                                       onvalue='enable', offvalue='disable')
+        dark_spectrum.grid(row=5, column=0, sticky='nw')
+        eff_var = tk.StringVar()
+        eff_var.set('disable')
+        eff = tk.Checkbutton(option_frame, text='Detector efficiencie divider:', variable=eff_var,
+                             command=lambda: print('Je vais pas tout faire quand même'),
+                             onvalue='enable', offvalue='disable')
+        eff.grid(row=6, column=0, sticky='nw')
+
+        logascale_var = tk.StringVar()
+        logascale_var.set('disable')
+        logascale = tk.Checkbutton(option_frame, text='Logarithmic scale:', variable=logascale_var,
+                                   command=lambda: print('You just got fooled again ;)'),
+                                   onvalue='enable', offvalue='disable')
+        logascale.grid(row=7, column=0, sticky='nw')
+
+        dual_plotting_var = tk.StringVar()
+        dual_plotting_var.set('disable')
+        dual_plotting = tk.Checkbutton(option_frame, text='Wavalenght + FFT:', variable=dual_plotting_var,
+                                       command=lambda: self.parent.Spectro.switch_graphics(dual_plotting_var,
+                                                                                           graph_frame),
+                                       onvalue='enable', offvalue='disable')
+        dual_plotting.grid(row=8, column=0, sticky='nw')
+
         run_var = tk.StringVar()
         run_var.set('disable')
         run = tk.Button(option_frame, text='RUN', width=8, command=lambda: self.measure(run, run_var, inte_var
                         , click=True))
-        run.grid(row=5, column=0, sticky='nsew')
-        for i in range(5):
+        run.grid(row=9, column=0, sticky='nsew')
+        for i in range(1,5):
             self.grid_columnconfigure(i, weight=1)
         self.grid_rowconfigure(0, weight=1)
 

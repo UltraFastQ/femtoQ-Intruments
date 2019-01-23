@@ -209,8 +209,8 @@ class GraphicFrame:
         self.canvas = FigureCanvasTkAgg(self.Fig, parent)
         self.canvas.show()
         self.canvas.get_tk_widget().pack(expand=True, fill='both')
-        toolbar = NavigationToolbar2TkAgg(self.canvas, parent)
-        toolbar.update()
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, parent)
+        self.toolbar.update()
         self.canvas._tkcanvas.pack()
 
     def change_dimensions(self, event):
@@ -222,28 +222,44 @@ class GraphicFrame:
         self.Fig.canvas.draw()
         self.Fig.canvas.flush_events()
 
+    def destroy_graph(self):
+        self.canvas.get_tk_widget().destroy()
+        self.toolbar.destroy()
 
 class SubGraphFrame:
 
-    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1]):
+    def __init__(self, parent, figsize=[1, 1], subplots=None):
+        if not subplots:
+            return
         # axis_name is a string tuple of the x and y axis in that order
         # figsize is a list of two component the first one is the x and the other one is the y axis
         self.parent = parent
         self.Fig = Figure(dpi=100, figsize=figsize)
-        self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
-        self.axes.set_aspect('auto', adjustable='box')
-        self.axes.set_adjustable('box')
-        self.Line, = self.axes.plot([], [])
-        self.axes.tick_params(axis='both', which='major', labelsize=8)
-        self.axes.grid()
-        self.axes.set_xlabel(axis_name[0])
-        self.axes.set_ylabel(axis_name[1])
+        self.axes = []
+        self.line = []
+        self.graph = []
+        nbr_subplots = len(subplots)
+        for i, sub_plot in enumerate(subplots):
+            self.axes.append(self.Fig.add_subplot(nbr_subplots, 1, i+1))
+            self.axes[i].set_aspect('auto', adjustable='box')
+            self.axes[i].set_adjustable('box')
+            self.line.append(self.axes[i].plot([], []))
+            self.axes[i].tick_params(axis='both', which='major', labelsize=8)
+            self.axes[i].grid()
+            self.axes[i].set_xlabel(subplots[sub_plot][0])
+            self.axes[i].set_ylabel(subplots[sub_plot][1])
+            self.axes[i].set_title(sub_plot)
+            self.graph.append([self.Fig, self.axes[i], self.line[i]])
+        self.Fig.subplots_adjust(left=0.0625, right=0.9875, bottom=0.075, top=0.9625, hspace=0.25)
+
+        #self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
         self.canvas = FigureCanvasTkAgg(self.Fig, parent)
         self.canvas.show()
         self.canvas.get_tk_widget().pack(expand=True, fill='both')
-        toolbar = NavigationToolbar2TkAgg(self.canvas, parent)
-        toolbar.update()
+        self.toolbar = NavigationToolbar2TkAgg(self.canvas, parent)
+        self.toolbar.update()
         self.canvas._tkcanvas.pack()
+
 
     def change_dimensions(self, event):
         width = event.width/self.Fig.get_dpi()
@@ -253,3 +269,7 @@ class SubGraphFrame:
     def update_graph(self):
         self.Fig.canvas.draw()
         self.Fig.canvas.flush_events()
+
+    def destroy_graph(self):
+        self.canvas.get_tk_widget().destroy()
+        self.toolbar.destroy()

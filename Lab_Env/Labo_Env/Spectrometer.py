@@ -3,14 +3,19 @@ from pathlib import Path
 import seabreeze
 seabreeze.use('pyseabreeze')
 import seabreeze.spectrometers as sb
+from tkinter import messagebox
+import Graphic
 
 
 class Spectro:
     def __init__(self, graphic=None, parent=None):
         self.spectro = None
-        self.graphic = graphic
+        self.wv_graphic = graphic
+        self.fft_graphic = None
+        self.dual = None
         self.parent = parent
         self.max_intensitie = 0
+        self.dark_spectrum = False
 
     def connect(self, exp_dependencie=False):
 
@@ -43,19 +48,56 @@ class Spectro:
         wavelengths = self.spectro.wavelengths()
         min_wave = min(wavelengths)
         max_wave = max(wavelengths)
-        self.graphic.axes.set_xlim([min_wave, max_wave])
-        self.graphic.Line.set_xdata(wavelengths)
-        self.graphic.update_graph()
+        self.wv_graphic.axes.set_xlim([min_wave, max_wave])
+        self.wv_graphic.Line.set_xdata(wavelengths)
+        self.wv_graphic.update_graph()
 
+    def adjust_integration_time(self, variable):
+        if not self.spectro:
+            return
+        time = variable.get()
+        self.spectro.integration_time_micros(time)
+
+    # Message to PATRICK
+    # ICI doit être modifié pour accomoder les différents options ie les manipualtions/fonction peuvent être écrit
+    # ailleur mais il va être nécessaire de changer cette fonction explicitement pour accomoder les deux possibilités
+    # de graphic. Ce que je propose est de créer différent "style" de mesure qui collecterais les données différements
+    #  selon les options à toi de voir ce qui te plait
     def extract_intensities(self):
         if not self.spectro:
             return
         intensities = self.spectro.intensities()
         if self.max_intensitie < max(intensities):
             self.max_intensitie = max(intensities)
-            self.graphic.Line.set_ylim([0, self.max_intensitie])
-        self.graphic.Line.set_ydata(intensities)
-        self.graphic.update_graph()
+            self.wv_graphic.Line.set_ylim([0, self.max_intensitie])
+        self.wv_graphic.Line.set_ydata(intensities)
+        self.wv_graphic.update_graph()
+
+    def enable_darkspectrum(self, variable):
+        if not self.spectro:
+            messagebox.showinfo(title='Error', message='No spectrometer connected')
+            variable.set('disable')
+        state = variable.get()
+        if state == 'enable':
+            print('do stuff')
+
+    def switch_graphics(self, variable, frame):
+        #if not self.spectro:
+        #    messagebox.showinfo(title='Error', message='No spectrometer connected')
+        #    variable.set('disable')
+        state = variable.get()
+        if state == 'enable':
+            self.wv_graphic.destroy_graph()
+            self.dual = Graphic.SubGraphFrame(parent=frame, subplots={'FFT': ['A', 'B'], 'WV': ['C', 'D']})
+            self.fft_graphic = self.dual.graph[0]
+            self.wv_graphic = self.dual.graph[1]
+        elif state == 'disable':
+            if not self.dual:
+                return
+            self.dual.destroy_graph()
+            self.dual = None
+            self.wv_graphic = Graphic.GraphicFrame(frame, axis_name=['Wavelength', 'Intensity'], figsize=[9, 6])
+            self.fft_graphic = None
 
 
 class PopUp(tk.Tk):
