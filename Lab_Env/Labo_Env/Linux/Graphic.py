@@ -2,7 +2,7 @@
 # Matplotlib :
 import matplotlib
 matplotlib.use("TkAgg")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
@@ -207,9 +207,9 @@ class GraphicFrame:
         self.axes.set_xlabel(axis_name[0])
         self.axes.set_ylabel(axis_name[1])
         self.canvas = FigureCanvasTkAgg(self.Fig, parent)
-        self.canvas.show()
+        self.canvas.draw()
         self.canvas.get_tk_widget().pack(expand=True, fill='both')
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, parent)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, parent)
         self.toolbar.update()
         self.canvas._tkcanvas.pack()
 
@@ -254,9 +254,9 @@ class SubGraphFrame:
 
         #self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
         self.canvas = FigureCanvasTkAgg(self.Fig, parent)
-        self.canvas.show()
+        self.canvas.draw()
         self.canvas.get_tk_widget().pack(expand=True, fill='both')
-        self.toolbar = NavigationToolbar2TkAgg(self.canvas, parent)
+        self.toolbar = NavigationToolbar2Tk(self.canvas, parent)
         self.toolbar.update()
         self.canvas._tkcanvas.pack()
 
