@@ -10,6 +10,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/Labo_Env$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548256099349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Linux$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548368694091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -86,13 +87,27 @@
         </counts>
       </usages-collector>
     </session>
+    <session id="987575890">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="1" />
+          <entry key="project.open.time.1" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="Python" value="391" />
+        </counts>
+      </usages-collector>
+    </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main_Frame.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1380">
+            <state relative-caret-position="116">
               <caret line="1554" column="22" selection-start-line="1554" selection-start-column="22" selection-end-line="1554" selection-end-column="22" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
@@ -100,7 +115,6 @@
                 <element signature="e#2532#3238#0" />
                 <element signature="e#3323#68850#0" />
                 <element signature="e#68973#90793#0" />
-                <element signature="e#93652#96118#0" />
               </folding>
             </state>
           </provider>
@@ -109,25 +123,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Spectrometer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="120">
-              <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+            <state relative-caret-position="450">
+              <caret line="96" column="12" selection-start-line="96" selection-start-column="12" selection-end-line="96" selection-end-column="12" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#1870#3051#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Graphic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="362">
-              <caret line="252" column="83" selection-start-line="252" selection-start-column="83" selection-end-line="252" selection-end-column="83" />
-              <folding>
-                <element signature="e#299#2624#0" />
-                <element signature="e#2661#6134#0" />
-              </folding>
+            <state relative-caret-position="510">
+              <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
             </state>
           </provider>
         </entry>
@@ -147,7 +156,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Experiment_file.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2400">
+            <state relative-caret-position="2370">
               <caret line="160" column="63" selection-start-line="160" selection-start-column="63" selection-end-line="160" selection-end-column="63" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
@@ -195,7 +204,7 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -206,8 +215,8 @@
         <option value="$PROJECT_DIR$/Experiment_file.py" />
         <option value="$PROJECT_DIR$/Physics_Instrument.py" />
         <option value="$PROJECT_DIR$/Main_Frame.py" />
-        <option value="$PROJECT_DIR$/Graphic.py" />
         <option value="$PROJECT_DIR$/Spectrometer.py" />
+        <option value="$PROJECT_DIR$/Graphic.py" />
       </list>
     </option>
   </component>
@@ -217,11 +226,10 @@
     <detection-done>true</detection-done>
     <sorting>DEFINITION_ORDER</sorting>
   </component>
-  <component name="ProjectFrameBounds" extendedState="7">
-    <option name="x" value="1983" />
-    <option name="y" value="587" />
-    <option name="width" value="1303" />
-    <option name="height" value="743" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="y" value="-2" />
+    <option name="width" value="1920" />
+    <option name="height" value="1082" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -229,18 +237,18 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
-              <item name="Labo_Env" type="b2602c69:ProjectViewProjectNode" />
-              <item name="Labo_Env" type="462c0819:PsiDirectoryNode" />
+              <item name="Linux" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Linux" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -381,15 +389,16 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1983" y="587" width="1303" height="743" extended-state="7" />
+    <frame x="0" y="-2" width="1920" height="1082" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.21877486" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14674494" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Messages" weight="0.32901832" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4972156" visible="true" weight="0.19387755" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4972156" weight="0.19309601" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3322034" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -456,20 +465,11 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-3870">
-          <caret line="198" selection-start-line="198" selection-end-line="198" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/utils.py" />
     <entry file="file://$PROJECT_DIR$/Monochromator.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="225">
           <caret line="15" column="35" selection-start-line="15" selection-start-column="35" selection-end-line="15" selection-end-column="35" />
-          <folding>
-            <element signature="e#0#10#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -483,41 +483,23 @@
     <entry file="file://$PROJECT_DIR$/PyCharm/pip-selfcheck.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/Graphic.py">
+    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="362">
-          <caret line="252" column="83" selection-start-line="252" selection-start-column="83" selection-end-line="252" selection-end-column="83" />
-          <folding>
-            <element signature="e#299#2624#0" />
-            <element signature="e#2661#6134#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Spectrometer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
+        <state relative-caret-position="116">
+          <caret line="1554" column="22" selection-start-line="1554" selection-start-column="22" selection-end-line="1554" selection-end-column="22" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#1870#3051#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" selection-start-line="5" selection-end-line="5" />
-          <folding>
-            <element signature="e#13#43#0" expanded="true" />
+            <element signature="e#304#2456#0" />
+            <element signature="e#2532#3238#0" />
+            <element signature="e#3323#68850#0" />
+            <element signature="e#68973#90793#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Experiment_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2400">
+        <state relative-caret-position="2370">
           <caret line="160" column="63" selection-start-line="160" selection-start-column="63" selection-end-line="160" selection-end-column="63" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
@@ -552,18 +534,30 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
+    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1380">
-          <caret line="1554" column="22" selection-start-line="1554" selection-start-column="22" selection-end-line="1554" selection-end-column="22" />
+        <state relative-caret-position="75">
+          <caret line="5" selection-start-line="5" selection-end-line="5" />
+          <folding>
+            <element signature="e#13#43#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Spectrometer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="96" column="12" selection-start-line="96" selection-start-column="12" selection-end-line="96" selection-end-column="12" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#304#2456#0" />
-            <element signature="e#2532#3238#0" />
-            <element signature="e#3323#68850#0" />
-            <element signature="e#68973#90793#0" />
-            <element signature="e#93652#96118#0" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Graphic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
         </state>
       </provider>
     </entry>
