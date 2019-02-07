@@ -1,8 +1,5 @@
 import tkinter as tk
 from pathlib import Path
-import seabreeze
-seabreeze.use('pyseabreeze')
-import seabreeze.spectrometers as sb
 from tkinter import messagebox
 import Graphic
 
@@ -23,6 +20,10 @@ class Spectro:
             device = PopUp(values=items).mainloop()
             device = device.value
             return device
+
+        import seabreeze
+        seabreeze.use('pyseabreeze')
+        import seabreeze.spectrometers as sb
 
         devices = sb.list_devices()
         if type(devices) == list and devices:

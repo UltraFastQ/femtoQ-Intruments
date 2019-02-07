@@ -30,7 +30,7 @@ class MainFrame(tk.Tk):
         # Mini Image and Mainframe title
         directory = Path.cwd()
         image = tk.PhotoImage(file=directory / 'FMQ3.gif')
-        tk.Tk.wm_title(self, "Femtoq Lab")
+        tk.Tk.wm_title(self, "femtoQPy")
         tk.Tk.wm_iconphoto(self, '-default', image)
         # Menubar creation
         menubar = tk.Menu(self)

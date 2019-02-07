@@ -1,6 +1,3 @@
-# Pipython :
-from pipython import GCSDevice
-from pipython import pitools
 # tkinter
 from tkinter import messagebox
 
@@ -14,6 +11,9 @@ class LinearStage:
     def connect_identification(self, dev_name=None, dev_ip=None, exp_dependencie=False):
         if not dev_name and not dev_ip:
             return
+        # Pipython :
+        from pipython import GCSDevice
+        from pipython import pitools
 
         dev_name = dev_name.get()
         dev_ip = dev_ip.get()

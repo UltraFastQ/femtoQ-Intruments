@@ -1,5 +1,3 @@
-import zhinst.utils as utils
-import zhinst.ziPython as ziPython
 from tkinter import messagebox
 import Graphic
 import re
@@ -22,6 +20,8 @@ class Zurich:
         self.poll_set = [poll_length, poll_timeout, poll_flags, poll_return_dict]
 
     def connect_device(self, devicename, required_options=None, required_err_msg='', exp_dependencie=False):
+        import zhinst.utils as utils
+        import zhinst.ziPython as ziPython
 
         # This function finds and connect the zurich device with serial number : devicename
         api_level = 6
