@@ -1,4 +1,3 @@
-import sys
 import glob
 import struct
 import time
@@ -16,7 +15,7 @@ class MonoChrom:
         self.parent = parent
 
     def serial_ports(self):
-        import serial
+        import sys
         """ Lists serial port names
 
             :raises EnvironmentError:
@@ -47,6 +46,7 @@ class MonoChrom:
     def connect(self, exp_dependencie=False):
         if not self.Port:
             return
+        import serial
         self.arduino = serial.Serial(self.Port[0], 9600)
         if exp_dependencie:
             experiments = self.parent.Frame[4].experiment_dict
