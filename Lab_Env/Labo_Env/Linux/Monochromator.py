@@ -2,6 +2,7 @@ import glob
 import struct
 import time
 from tkinter import messagebox
+import serial
 
 
 class MonoChrom:
@@ -46,7 +47,6 @@ class MonoChrom:
     def connect(self, exp_dependencie=False):
         if not self.Port:
             return
-        import serial
         self.arduino = serial.Serial(self.Port[0], 9600)
         if exp_dependencie:
             experiments = self.parent.Frame[4].experiment_dict
