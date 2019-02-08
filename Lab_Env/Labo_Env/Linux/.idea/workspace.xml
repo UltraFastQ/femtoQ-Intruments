@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="Update for the spectrometer : added some tools in the graphic file, and &#10;changed a little of the Main frame file to accomodate everything" />
+    <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -10,7 +12,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/Labo_Env$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548256099349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Linux$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548368694091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Linux$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1549659954220" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -92,29 +94,44 @@
         <counts>
           <entry key="project.closed" value="1" />
           <entry key="project.open.time.1" value="1" />
-          <entry key="project.opened" value="1" />
+          <entry key="project.open.time.3" value="1" />
+          <entry key="project.opened" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="391" />
+          <entry key="PLAIN_TEXT" value="170" />
+          <entry key="Python" value="3677" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="Python" value="4" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Main_Frame.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="116">
-              <caret line="1554" column="22" selection-start-line="1554" selection-start-column="22" selection-end-line="1554" selection-end-column="22" />
+            <state relative-caret-position="243">
+              <caret line="1522" column="17" lean-forward="true" selection-start-line="1522" selection-start-column="17" selection-end-line="1522" selection-end-column="17" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#304#2456#0" />
-                <element signature="e#2532#3238#0" />
-                <element signature="e#3323#68850#0" />
-                <element signature="e#68973#90793#0" />
+                <element signature="e#304#2454#0" />
+                <element signature="e#2530#3236#0" />
+                <element signature="e#3321#68848#0" />
+                <element signature="e#46513#55665#0" />
+                <element signature="e#68971#90791#0" />
+                <element signature="e#69008#90380#0" />
+                <element signature="e#69034#70374#0" />
+                <element signature="e#69100#70374#0" />
+                <element signature="e#70413#76665#0" />
+                <element signature="e#76705#82587#0" />
+                <element signature="e#82631#84114#0" />
+                <element signature="e#90432#90791#0" />
               </folding>
             </state>
           </provider>
@@ -123,8 +140,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Spectrometer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="450">
-              <caret line="96" column="12" selection-start-line="96" selection-start-column="12" selection-end-line="96" selection-end-column="12" />
+            <state relative-caret-position="93">
+              <caret line="70" column="17" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -132,35 +149,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Graphic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="510">
+            <state relative-caret-position="868">
               <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="75">
-              <caret line="5" selection-start-line="5" selection-end-line="5" />
-              <folding>
-                <element signature="e#13#43#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Experiment_file.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2370">
-              <caret line="160" column="63" selection-start-line="160" selection-start-column="63" selection-end-line="160" selection-end-column="63" />
-              <folding>
-                <element signature="e#0#20#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -168,28 +161,24 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="1" column="33" selection-start-line="1" selection-start-column="33" selection-end-line="1" selection-end-column="33" />
+            <state relative-caret-position="308">
+              <caret line="290" column="12" selection-start-line="290" selection-start-column="12" selection-end-line="290" selection-end-column="12" />
               <folding>
-                <element signature="e#159#13475#0" />
-                <element signature="e#195#644#0" />
-                <element signature="e#5004#10755#0" />
-                <element signature="e#10810#12021#0" />
-                <element signature="e#12093#12388#0" />
-                <element signature="e#12437#12593#0" />
-                <element signature="e#12632#13475#0" />
-                <element signature="e#18374#22519#0" />
-                <element signature="e#18435#18826#0" />
-                <element signature="e#18876#19751#0" />
-                <element signature="e#19824#21612#0" />
-                <element signature="e#21669#22080#0" />
-                <element signature="e#22549#27624#0" />
-                <element signature="e#22609#23415#0" />
-                <element signature="e#23486#25410#0" />
-                <element signature="e#25460#25896#0" />
-                <element signature="e#25935#26568#0" />
-                <element signature="e#26628#27624#0" />
+                <element signature="e#0#30#0" expanded="true" />
+                <element signature="e#13814#18724#0" />
+                <element signature="e#18800#23021#0" />
+                <element signature="e#22230#22473#0" />
+                <element signature="e#23038#28231#0" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-357">
+              <caret line="57" column="21" selection-start-line="57" selection-start-column="21" selection-end-line="57" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -210,13 +199,13 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Experiment.py" />
-        <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
         <option value="$PROJECT_DIR$/Monochromator.py" />
         <option value="$PROJECT_DIR$/Experiment_file.py" />
-        <option value="$PROJECT_DIR$/Physics_Instrument.py" />
-        <option value="$PROJECT_DIR$/Main_Frame.py" />
-        <option value="$PROJECT_DIR$/Spectrometer.py" />
         <option value="$PROJECT_DIR$/Graphic.py" />
+        <option value="$PROJECT_DIR$/Physics_Instrument.py" />
+        <option value="$PROJECT_DIR$/Spectrometer.py" />
+        <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
+        <option value="$PROJECT_DIR$/Main_Frame.py" />
       </list>
     </option>
   </component>
@@ -385,20 +374,26 @@
       <option name="project" value="LOCAL" />
       <updated>1548252271310</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Debugging of the zurich and the mainframe for data plotting">
+      <created>1549575305261</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1549575305261</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="-2" width="1920" height="1082" extended-state="6" />
+    <frame x="0" y="25" width="1303" height="743" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.14674494" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1487669" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Messages" weight="0.32901832" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4972156" weight="0.19309601" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4972156" visible="true" weight="0.19217686" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3322034" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -409,6 +404,7 @@
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.50213444" side_tool="true" weight="0.3279396" />
       <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49786553" weight="0.3279396" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.23979592" />
+      <window_info anchor="bottom" id="Messages" order="13" weight="0.32901832" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -451,7 +447,8 @@
     <MESSAGE value="Try to add package to the lab env directory" />
     <MESSAGE value="Deleted all package from PyCharm directory, Package need to be installed&#10;seperatly" />
     <MESSAGE value="Update for the spectrometer : added some tools in the graphic file, and &#10;changed a little of the Main frame file to accomodate everything" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update for the spectrometer : added some tools in the graphic file, and &#10;changed a little of the Main frame file to accomodate everything" />
+    <MESSAGE value="Debugging of the zurich and the mainframe for data plotting" />
+    <option name="LAST_COMMIT_MESSAGE" value="Debugging of the zurich and the mainframe for data plotting" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -483,20 +480,6 @@
     <entry file="file://$PROJECT_DIR$/PyCharm/pip-selfcheck.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="116">
-          <caret line="1554" column="22" selection-start-line="1554" selection-start-column="22" selection-end-line="1554" selection-end-column="22" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#304#2456#0" />
-            <element signature="e#2532#3238#0" />
-            <element signature="e#3323#68850#0" />
-            <element signature="e#68973#90793#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Experiment_file.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2370">
@@ -507,57 +490,63 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
+    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
-          <caret line="1" column="33" selection-start-line="1" selection-start-column="33" selection-end-line="1" selection-end-column="33" />
-          <folding>
-            <element signature="e#159#13475#0" />
-            <element signature="e#195#644#0" />
-            <element signature="e#5004#10755#0" />
-            <element signature="e#10810#12021#0" />
-            <element signature="e#12093#12388#0" />
-            <element signature="e#12437#12593#0" />
-            <element signature="e#12632#13475#0" />
-            <element signature="e#18374#22519#0" />
-            <element signature="e#18435#18826#0" />
-            <element signature="e#18876#19751#0" />
-            <element signature="e#19824#21612#0" />
-            <element signature="e#21669#22080#0" />
-            <element signature="e#22549#27624#0" />
-            <element signature="e#22609#23415#0" />
-            <element signature="e#23486#25410#0" />
-            <element signature="e#25460#25896#0" />
-            <element signature="e#25935#26568#0" />
-            <element signature="e#26628#27624#0" />
-          </folding>
+        <state relative-caret-position="-357">
+          <caret line="57" column="21" selection-start-line="57" selection-start-column="21" selection-end-line="57" selection-end-column="21" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
+    <entry file="file://$PROJECT_DIR$/Graphic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="5" selection-start-line="5" selection-end-line="5" />
-          <folding>
-            <element signature="e#13#43#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="868">
+          <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Spectrometer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="450">
-          <caret line="96" column="12" selection-start-line="96" selection-start-column="12" selection-end-line="96" selection-end-column="12" />
+        <state relative-caret-position="93">
+          <caret line="70" column="17" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Graphic.py">
+    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
+        <state relative-caret-position="308">
+          <caret line="290" column="12" selection-start-line="290" selection-start-column="12" selection-end-line="290" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+            <element signature="e#13814#18724#0" />
+            <element signature="e#18800#23021#0" />
+            <element signature="e#22230#22473#0" />
+            <element signature="e#23038#28231#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="243">
+          <caret line="1522" column="17" lean-forward="true" selection-start-line="1522" selection-start-column="17" selection-end-line="1522" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+            <element signature="e#304#2454#0" />
+            <element signature="e#2530#3236#0" />
+            <element signature="e#3321#68848#0" />
+            <element signature="e#46513#55665#0" />
+            <element signature="e#68971#90791#0" />
+            <element signature="e#69008#90380#0" />
+            <element signature="e#69034#70374#0" />
+            <element signature="e#69100#70374#0" />
+            <element signature="e#70413#76665#0" />
+            <element signature="e#76705#82587#0" />
+            <element signature="e#82631#84114#0" />
+            <element signature="e#90432#90791#0" />
+          </folding>
         </state>
       </provider>
     </entry>
