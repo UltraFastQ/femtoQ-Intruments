@@ -10,7 +10,6 @@ int H_Pin = A1;
 int i = 0;
 int j = 0;
 long Step;
-long TotStep;
 char Side;
 long Step2;
 byte BYTES;
@@ -38,17 +37,17 @@ void loop() {
         TotStep2 = TotStep2 + Step;
       }
       myStepper.step(-TotStep2);
-      TotStep = TotStep + TotStep2;
       delay(100);
     }
     else if (Side == 114) {
-      delay(100);
-      myStepper.step(TotStep);
+      TotStep2 = 0;
       delay(100);
       while (Serial.available() > 0) {
         Step = Serial.read();
-        TotStep = TotStep - Step;
+        TotStep2 = TotStep2 + Step;
       }
+      myStepper.step(TotStep2);
+      delay(100);
     }
     else if (Side == 67) {
       delay(100);

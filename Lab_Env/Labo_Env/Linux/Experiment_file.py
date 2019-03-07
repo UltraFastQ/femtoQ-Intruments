@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import filedialog
 import Graphic
 
 
@@ -155,14 +156,29 @@ class WhiteLight:
 
     def create_frame(self, frame):
 
-        #nb_wavelenghtpt = tk.Label(frame, text='# Wavelength')
-        #nb_wavelenghtpt.grid(row=0, column=0, sticky='nw')
-        #nb_wvlenghtpt_var = tk.IntVar()
-        #nb_wvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_wvlenghtpt_var)
-        #nb_wvlenghtpt.bind('<Return>', lambda e: print(self.main.number, self.graph_dict))
-        #nb_wvlenghtpt.grid(row=0, column=1, sticky='nsew')
-        #wvlenght_b = tk.Button(frame, text='nb', command=lambda: print(self.main.number))
-        #wvlenght_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        nb_wavelenghtpt = tk.Label(frame, text='# Wavelength')
+        nb_wavelenghtpt.grid(row=0, column=0, sticky='nw')
+        nb_wvlenghtpt_var = tk.IntVar()
+        nb_wvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_wvlenghtpt_var)
+        nb_wvlenghtpt.grid(row=0, column=1, sticky='nsew')
+        nb_maxwavelenghtpt = tk.Label(frame, text='Max Wavelength')
+        nb_maxwavelenghtpt.grid(row=1, column=0, sticky='nw')
+        nb_maxwvlenghtpt_var = tk.IntVar()
+        nb_maxwvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_maxwvlenghtpt_var)
+        nb_maxwvlenghtpt.grid(row=1, column=1, sticky='nsew')
+        nb_minwavelenghtpt = tk.Label(frame, text='Min Wavelength')
+        nb_minwavelenghtpt.grid(row=2, column=0, sticky='nw')
+        nb_minwvlenghtpt_var = tk.IntVar()
+        nb_minwvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_minwvlenghtpt_var)
+        nb_minwvlenghtpt.grid(row=2, column=1, sticky='nsew')
+        dir_lbl = tk.Label(frame, text='Directory')
+        dir_lbl.grid(row=3, column=0, sticky='nw')
+        dir_evar = tk.StringVar()
+        dir_evar.set('Du coup')
+        dir_e = tk.Entry(frame, textvariable=dir_evar, width=8)
+        dir_e.grid(row=3, column=1, sticky='nsew')
+        dir_b = tk.Button(frame, text='Choose Dir.', command=lambda: filedialog.askdirectory())
+        dir_b.grid(row=4, column=0, columnspan=2, sticky='nsew')
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment())
         self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')

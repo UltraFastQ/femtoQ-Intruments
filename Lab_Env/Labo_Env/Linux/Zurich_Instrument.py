@@ -2,6 +2,7 @@ from tkinter import messagebox
 import Graphic
 import re
 import numpy as np
+import time
 
 
 class Zurich:
@@ -9,10 +10,13 @@ class Zurich:
         self.parent = parent
         self.info = None
         self.default = None
+        self.num = 1
         self.paths = {}
         self.subscribed = {}
         self.node_branch = None
         self.state = {}
+        self.in_use = False
+        self.subscribing = False
         poll_length = 0.1 # Time of the aquisition in second
         poll_timeout = 500 # [ms]
         poll_flags = 0
@@ -102,15 +106,15 @@ class Zurich:
                                 'before changing any device settings.')
             return
 
-        if len(setting_line.split('oscs')[1]) == 0:
-            state = self.info['daq'].getInt('/{}{}/enable'.format(self.info['device'], setting_line))
+        if 'oscs' in setting_line:
+            state = self.info['daq'].getInt('/{}{}'.format(self.info['device'], setting_line))
             if state == 1:
                 messagebox.showinfo(title='Error', message='This option is unavailable until the external reference' +
                                     'is unconnected.')
                 return
 
         tension_unit = {'V': 1, 'mV': .001, 'uV': 10 ^ (-6)}
-        sample_unit = {'n': 10 ^ (-9), 'u': 10 ^ (-6), 'm': 10 ^ (-3), '': 1, 'k': 10 ^ 3, 'M': 10 ^ 6}
+        sample_unit = {'n': 10 ^ (-9), 'u': 10 ^ (-6), 'm': 10 ^ (-3), 'k': 10 ^ 3, 'M': 10 ^ 6}
         factor = 1
         setting = []
         if not value:
@@ -118,16 +122,17 @@ class Zurich:
         elif value:
             if type(value) == list:
                 if type_ == 'tension':
-                    value = value[0].get()
                     if value[1].get() not in tension_unit:
                         value[1].set('V')
                     factor = tension_unit[value[1].get()]
+                    value = value[0].get()
                 elif type_ == 'sample':
                     value = value[0].get()
                     if value[1].get() not in sample_unit:
                         value[1].set('M')
                     factor = sample_unit[value[1].get()]
                 elif type_ == 'double_bw2tc':
+                    import zhinst.utils as utils
                     value = utils.bw2tc(bandwidth=value[0].get(), order=value[1].get())
                 value = value*factor
             else:
@@ -137,16 +142,16 @@ class Zurich:
                     found = False
                     str_tot_value = value.get()
                     for unit in sample_unit:
-                        str_value = str_tot_value.split(unit)
-                        if len(str_value) == 1:
-                            pass
+                        if unit in str_tot_value:
+                            factor = sample_unit[unit]
+                            str_value = str_tot_value.split(unit)
+                            value_float = round(float(str_value[0]), len(str_value[0])) * factor
+                            found = True
                         elif found:
                             pass
-                        elif len(str_value[1]) == 0:
-                            factor = sample_unit[unit]
-                            value_float = round(float(str_value[0]), len(str_value[0]))*factor
-                            found = True
+
                     if not found:
+                        str_value = str_tot_value
                         try:
                             value_float = round(float(str_value), len(str_value))
                         except ValueError:
@@ -154,7 +159,7 @@ class Zurich:
                             value_float = 1717
                     value = value_float
                 elif type_ == 'T_F':
-                    if len(setting_line.split('enable')[1]) == 0:
+                    if 'enable' in setting_line:
                         self.default_demod(setting_line, value)
                     if value.get() == 'Enabled':
                         value = True
@@ -217,14 +222,14 @@ class Zurich:
         # This set the default demodulator parameter for initialization purpuses
         index = path.split('/demods/')
         index = index[1].split('/enable')[0]
-
+        import zhinst.utils as utils
         basics = [['/%s/demods/%s/enable' % (self.info['device'], index), value],
                   ['/%s/demods/%s/phaseshift' % (self.info['device'], index), 0],
                   ['/%s/demods/%s/rate' % (self.info['device'], index), int(1.717e3)],
                   ['/%s/demods/%s/adcselect' % (self.info['device'], index), 0],
                   ['/%s/demods/%s/order' % (self.info['device'], index), 1],
                   ['/%s/demods/%s/timeconstant' % (self.info['device'], index), utils.bw2tc(100, 1)],
-                  ['/%s/demods/%d/oscselect' % (self.info['device'], index), 0],
+                  ['/%s/demods/%s/oscselect' % (self.info['device'], index), 0],
                   ['/%s/demods/%d/harmonic' % (self.info['device'], 0), 1]]
         self.info['daq'].set(basics)
         self.info['daq'].sync()
@@ -237,15 +242,28 @@ class Zurich:
             return
         if not path:
             return
-        self.info['daq'].subscribe(path)
-        self.subscribed[path] = [child_class, graph_class]
+        while self.in_use:
+            print('0')
+            time.sleep(0.1)
+        for element in self.paths:
+            if self.paths[element]:
+                if path in element:
+                    self.subscribing=True
+                    self.info['daq'].subscribe(element)
+                    self.subscribed[element] = [child_class, graph_class]
+        self.subscribing = False
 
     def unsubscribed_path(self, path):
         # Same input as the add_subscribed
         if not self.info:
             return
-        self.info['daq'].unsubscribe(path)
-        del self.subscribed[path]
+        for element in self.paths:
+            if self.paths[element]:
+                if path in element:
+                    self.subscribing = True
+                    self.info['daq'].unsubscribe(element)
+                    del self.subscribed[element]
+        self.subscribing = False
 
     def measure_guide(self):
         time = 1000
@@ -255,25 +273,33 @@ class Zurich:
         if not self.state:
             self.parent.after(time, self.measure_guide)
             return
+        if not self.state:
+            return
         i = 0
         for item in self.state:
-            if not self.state[item] and i==3:
+            if not self.state[item] and i == 3:
                 self.parent.after(time, self.measure_guide)
                 return
             elif not self.state[item]:
                 i += 1
             elif self.state[item]:
                 time = 100
+        while self.subscribing:
+            time.sleep(0.1)
+
+        subscribed = self.subscribed
         data_set = self.info['daq'].poll(self.poll_set[0], self.poll_set[1], self.poll_set[2], self.poll_set[3])
-        for path in self.subscribed:
-            self.subscribed[path][0].extract_data(Data=data_set, path=path)
-            self.subscribed[path][1].update_graph()
+        for path in subscribed:
+            self.in_use = True
+            subscribed[path][0].extract_data(data=data_set, path=path)
+            subscribed[path][1].update_graph()
+        self.in_use = False
         self.parent.after(time, self.measure_guide)
 
 
-class Scope(Zurich):
+class Scope:
 
-    def __init__(self, line=None, axes=None, fig=None):
+    def __init__(self, zurich=None, line=None, axes=None, fig=None):
         # format will be #1 : device id when connected
         #                #2 : scope taken to read the data
         # line : matplotlib Line issued when you plot axis
@@ -281,36 +307,38 @@ class Scope(Zurich):
         self.line = line
         self.axes = axes
         self.fig = fig
-        super().__init__(self)
+        self.zurich = zurich
 
     def enable_scope(self, scope, variable):
-        if not self.info:
+        if not self.zurich.info:
             messagebox.showinfo(title='Error', message='There is no device connected')
             variable.set('disable')
             return
         value = None
+        device = self.zurich.info['device']
         if variable.get() == 'enable':
-            self.state['Scope'] = True
+            self.zurich.state['Scope'] = True
             value = 1
         elif variable.get() == 'disable':
-            self.state['Scope'] = False
+            self.zurich.state['Scope'] = False
+            self.zurich.paths[self.path.format(device, scope)] = False
             value = 0
-        device = self.info['device']
         setting = [['/{}/scopes/{}/enable'.format(device, scope), value],
                    ['/{}/scopes/{}/length'.format(device, scope), int(1e4)],
                    ['/{}/scopes/{}/channel'.format(device, scope), 1]]
-        # This assigned path is now allowed to be plotted. The Zurich instrument can now subscribe a disgned path
-        self.paths[self.path.format(device, scope)] = True
-        self.info['daq'].set(setting)
-        self.info['daq'].sync()
+        # This assigned path is now allowed to be plotted. The Zurich instrument can now subscribe a designed path
+
+        self.zurich.paths[self.path.format(device, scope)] = True
+        self.zurich.info['daq'].set(setting)
+        self.zurich.info['daq'].sync()
 
     def enable_trigger(self, scope, trigger, variable_):
-        if not self.info:
+        if not self.zurich.info:
             messagebox.showinfo(title='Error', message='There is no device connected')
             variable_.set('disable')
             return
         trigger = trigger.get()
-        device = self.info['device']
+        device = self.zurich.info['device']
         Trig_Settings = [['/{}/scopes/{}/trigenable'.format(device, scope), 1],
                          ['/{}/scopes/{}/trigchannel'.format(device, scope), trigger]]
         # Trigger on rising edge ?
@@ -342,8 +370,8 @@ class Scope(Zurich):
         # I need to learn more about the external ref format
         Trig_Settings.append(['/{}/extrefs/{}/enable' .format(device, 0), 1])
 
-        self.info['daq'].set(Trig_Settings)
-        self.info['daq'].sync()
+        self.zurich.info['daq'].set(Trig_Settings)
+        self.zurich.info['daq'].sync()
 
     def extract_data(self, data, path):
 
@@ -362,9 +390,9 @@ class Scope(Zurich):
                 self.line.set_ydata(wave)
 
 
-class Plotter(Zurich):
+class Plotter:
 
-    def __init__(self, line=None, axes=None, fig=None):
+    def __init__(self, zurich=None, line=None, axes=None, fig=None):
 
         # format will be #1 : device id when connected
         #                #2 : scope taken to read the data
@@ -373,10 +401,9 @@ class Plotter(Zurich):
         self.line = line
         self.axes = axes
         self.fig = fig
-        self.state = 'Disabled'
         self.window_time = 100
         self.axes.set_xlim([0, 100])
-        super().__init__(self)
+        self.zurich = zurich
 
     def change_axislim(self, variable):
         time = variable.get()
@@ -386,7 +413,6 @@ class Plotter(Zurich):
         found = False
         time_float = 100
         for unit in units:
-            print(type(time))
             str_value = time.split(unit)
             if len(str_value) == 1:
                 pass
@@ -407,7 +433,7 @@ class Plotter(Zurich):
         self.fig.canvas.flush_events()
 
     def choose_option(self, variable, displayed_state, graph):
-        if not self.info:
+        if not self.zurich.info:
             return
         if not variable.curselection():
             return
@@ -418,32 +444,33 @@ class Plotter(Zurich):
                        'Boxcars': '/boxcars/{}/wave', 'Arithmetic Units': None, 'Unpopulated': None, 'Manual': None}
         text = ['/demods/', '/boxcars/']
         for item in text:
-            if not option_list[option].split(item)[0]:
+            if item in option_list[option]:
                 if item == '/demods/':
                     for i in range(0, 7):
-                        if '{}'+option_list[option].format(self.info['device'], i) in self.paths:
-                            self.path['{}'+option_list[option].format(self.info['device'], i)] = True
+                        if '{}'+option_list[option].format(self.zurich.info['device'], i) in self.zurich.paths:
+                            self.path['{}'+option_list[option].format(self.zurich.info['device'], i)] = True
                 elif item == '/boxcars/':
                     for j in range(0, 1):
-                        if '{}'+option_list[option].format(self.info['device'], j) in self.paths:
-                            self.path['{}'+option_list[option].format(self.info['device'], j)] = True
+                        if '{}'+option_list[option].format(self.zurich.info['device'], j) in self.zurich.paths:
+                            self.path['{}'+option_list[option].format(self.zurich.info['device'], j)] = True
             else:
                 if item == '/demods/':
                     for i in range(0, 7):
-                        if '{}'+option_list[option].format(self.info['device'], i) in self.paths:
-                            self.path['{}'+option_list[option].format(self.info['device'], i)] = False
+                        if '{}'+option_list[option].format(self.zurich.info['device'], i) in self.zurich.paths:
+                            self.path['{}'+option_list[option].format(self.zurich.info['device'], i)] = False
                 elif item == '/boxcars/':
                     for j in range(0, 1):
-                        if '{}'+option_list[option].format(self.info['device'], j) in self.paths:
-                            self.path['{}'+option_list[option].format(self.info['device'], j)] = False
+                        if '{}'+option_list[option].format(self.zurich.info['device'], j) in self.zurich.paths:
+                            self.path['{}'+option_list[option].format(self.zurich.info['device'], j)] = False
+
         if displayed_state.get() == 'enable':
             self.update_plotter(graph, displayed_state)
 
     def update_plotter(self, graph, variable):
         if variable.get() == 'enable':
-            self.state['Plotter'] = True
+            self.zurich.state['Plotter'] = True
         elif variable.get() == 'disable':
-            self.state['Plotter'] = False
+            self.zurich.state['Plotter'] = False
         for element in self.path:
             if self.path[element]:
                 self.add_subscribed(path=self.path[element], child_class=self, graph_class=graph)
@@ -459,9 +486,9 @@ class Plotter(Zurich):
         self.line.set_ydata([2, 1])
 
 
-class Boxcar(Zurich):
+class Boxcar:
 
-    def __init__(self, line=None, axes=None, fig=None):
+    def __init__(self, zurich=None, line=None, axes=None, fig=None):
         # format will be #1 : device id when connected
         #                #2 : scope taken to read the data
         # line : matplotlib Line issued when you plot axis
@@ -470,10 +497,9 @@ class Boxcar(Zurich):
         self.line = line
         self.axes = axes
         self.fig = fig
+        self.zurich = zurich
         self.xfactor = 360/(2*np.pi)
         self.frequency = None
-        self.state = 'Disabled'
-        super().__init__(self)
         self.line_list = []
         self.line_list.append(Graphic.VerticalDraggableLine(self, axes=self.axes))
         self.line_list.append(Graphic.VerticalDraggableLine(self, axes=self.axes, x=150))
@@ -483,18 +509,18 @@ class Boxcar(Zurich):
     def enable_boxcar(self, pwa_input, box_input, variable):
         pwa_input = pwa_input.get()
         box_input = box_input.get()
-        if not self.info:
+        if not self.zurich.info:
             messagebox.showinfo(title='Error', message='There is no device connected')
             variable.set('disable')
             return
         value = None
         if variable.get() == 'enable':
-            self.state['Boxcar'] = True
+            self.zurich.state['Boxcar'] = True
             value = 1
         elif variable.get() == 'disable':
-            self.state['Boxcar'] = False
+            self.zurich.state['Boxcar'] = False
             value = 0
-        device = self.info['device']
+        device = self.zurich.info['device']
         inputpwa_index = 0
         boxcar_index = 0
         BOX_Settings = [['/%s/inputpwas/%d/oscselect' % (device, inputpwa_index), 0],
@@ -511,17 +537,17 @@ class Boxcar(Zurich):
                         ['/%s/boxcars/%d/periods' % (device, boxcar_index), 1],
                         ['/%s/boxcars/%d/enable' % (device, boxcar_index), value],
                         ]
-        self.info['daq'].set(BOX_Settings)
-        self.info['daq'].sync()
-        self.paths[self.path1.format(device, inputpwa_index)] = True
-        self.paths[self.path2.format(device, boxcar_index)] = True
+        self.zurich.info['daq'].set(BOX_Settings)
+        self.zurich.info['daq'].sync()
+        self.zurich.paths[self.path1.format(device, inputpwa_index)] = True
+        self.zurich.paths[self.path2.format(device, boxcar_index)] = True
 
     def phase_and_time(self, variable):
-        if not self.info:
+        if not self.zurich.info:
             messagebox.showinfo(title='Error', message='There is no device connected')
             return
         if not self.frequency:
-            self.frequency = self.info['daq'].getDouble('/{}/oscs/{}/freq'.format(self.info['device'], 0))
+            self.frequency = self.zurich.info['daq'].getDouble('/{}/oscs/{}/freq'.format(self.zurich.info['device'], 0))
         current = variable.current()
         if current == 0:
             self.xfactor = 1/(2*np.pi*360*self.frequency)
@@ -529,15 +555,15 @@ class Boxcar(Zurich):
             self.xfactor = 360/(2*np.pi)
 
     def refresh(self, path):
-        frequency_set = self.info['daq'].getDouble('/{}/oscs/{}/freq'.format(self.info['device'], 0))
+        frequency_set = self.zurich.info['daq'].getDouble('/{}/oscs/{}/freq'.format(self.zurich.info['device'], 0))
         self.window_start = min(self.line_list[0].x, self.line_list[1].x)
         self.window_length = abs(self.line_list[0].x - self.line_list[1].x) / (2 * np.pi * 360 * frequency_set)
-        self.info['daq'].unsubscribe(path)
-        boxwindow = [['/%s/boxcars/%d/windowstart' % (self.info['device'], 0), self.window_start],
-                     ['/%s/boxcars/%d/windowsize' % (self.info['device'], 0), self.window_length]]
-        self.info['daq'].set(boxwindow)
-        self.info['daq'].sync()
-        self.info['daq'].subscribe(path)
+        self.zurich.info['daq'].unsubscribe(path)
+        boxwindow = [['/%s/boxcars/%d/windowstart' % (self.zurich.info['device'], 0), self.window_start],
+                     ['/%s/boxcars/%d/windowsize' % (self.zurich.info['device'], 0), self.window_length]]
+        self.zurich.info['daq'].set(boxwindow)
+        self.zurich.info['daq'].sync()
+        self.zurich.info['daq'].subscribe(path)
 
     def extract_data(self, data=None, path=None):
         if (not (self.window_start != min(self.line_list[0].x, self.line_list[1].x)) or not (

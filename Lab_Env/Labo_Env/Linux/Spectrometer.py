@@ -1,4 +1,5 @@
 import tkinter as tk
+import numpy as np
 from pathlib import Path
 from tkinter import messagebox
 import Graphic
@@ -24,14 +25,14 @@ class Spectro:
         import seabreeze
         seabreeze.use('pyseabreeze')
         import seabreeze.spectrometers as sb
-
         devices = sb.list_devices()
         if type(devices) == list and devices:
             if len(devices) > 1:
-                device = device_popup(devices)
+                device = device_popup(value=devices, lib_=sb)
             else:
                 device = devices[0]
         else:
+            messagebox.showinfo(title='Error', message='It seems like no devices are connected')
             return
 
         self.spectro = sb.Spectrometer(device)
@@ -51,13 +52,14 @@ class Spectro:
         max_wave = max(wavelengths)
         self.wv_graphic.axes.set_xlim([min_wave, max_wave])
         self.wv_graphic.Line.set_xdata(wavelengths)
+        self.wv_graphic.Line.set_ydata(np.zeros(len(wavelengths)))
         self.wv_graphic.update_graph()
 
     def adjust_integration_time(self, variable):
         if not self.spectro:
             return
         time = variable.get()
-        self.spectro.integration_time_micros(time)
+        self.spectro.integration_time_micros(time*1000)
 
     # Message to PATRICK
     # ICI doit être modifié pour accomoder les différents options ie les manipualtions/fonction peuvent être écrit
@@ -70,7 +72,7 @@ class Spectro:
         intensities = self.spectro.intensities()
         if self.max_intensitie < max(intensities):
             self.max_intensitie = max(intensities)
-            self.wv_graphic.Line.set_ylim([0, self.max_intensitie])
+            self.wv_graphic.axes.set_ylim([0, self.max_intensitie])
         self.wv_graphic.Line.set_ydata(intensities)
         self.wv_graphic.update_graph()
 
@@ -102,10 +104,11 @@ class Spectro:
 
 
 class PopUp(tk.Tk):
-    def __init__(self, values=None, *args, **kwargs):
+    def __init__(self, values=None, lib_=None, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         listbox_val = self.find_id(values)
         self.value = {}
+        self.lib_ = lib_
         # Mini Image and Mainframe title
         directory = Path.cwd()
         image = tk.PhotoImage(file=directory / 'FMQ3.gif')
@@ -126,6 +129,6 @@ class PopUp(tk.Tk):
     def find_id(self, values):
         spec_id = ()
         for value in values:
-            spec_id = spec_id + (sb.Spectrometer(value).serial_number, )
+            spec_id = spec_id + (self.lib_.Spectrometer(value).serial_number, )
             self.value[spec_id] = value
         return spec_id

@@ -753,31 +753,35 @@ class ZurichFrame(tk.Frame):
             class Scope:
 
                 def __init__(self, parent_g, parent_o, parent_):
-                    self.graph = GraphFrame(parent_g, axis=['Time', 'Voltage'], class_=Zurich_Instrument.Scope)
+                    self.graph = GraphFrame(parent_g, axis=['Time', 'Voltage'], class_=Zurich_Instrument.Scope,
+                                            frame_class=parent_)
                     self.option = ScopeOptionFrame(parent_o, self.graph, frame_class=parent_)
 
             class BoxCar:
 
                 def __init__(self, parent_g, parent_o, parent_):
-                    self.graph = GraphFrame(parent_g, axis=['Time', 'Voltage'], class_=Zurich_Instrument.Boxcar)
+                    self.graph = GraphFrame(parent_g, axis=['Time', 'Voltage'], class_=Zurich_Instrument.Boxcar,
+                                            frame_class=parent_)
                     self.option = BoxOptionFrame(parent_o, self.graph, frame_class=parent_)
 
             class Plotter:
 
                 def __init__(self, parent_g, parent_o, parent_):
-                    self.graph = GraphFrame(parent_g, axis=['Time', 'Voltage'], class_=Zurich_Instrument.Plotter)
+                    self.graph = GraphFrame(parent_g, axis=['Time', 'Voltage'], class_=Zurich_Instrument.Plotter,
+                                            frame_class=parent_)
                     self.option = PlotterOptionFrame(parent_o, self.graph, frame_class=parent_)
 
             class GraphFrame(tk.Frame):
 
-                def __init__(self, parent=None, axis=None, class_=None):
+                def __init__(self, parent=None, axis=None, class_=None, frame_class=None):
                     size = [7, 4]
                     tk.Frame.__init__(self, parent)
                     self.grid_columnconfigure(0, weight=1)
                     self.grid_rowconfigure(0, weight=1)
                     self.Graph = Graphic.GraphicFrame(self, axis_name=axis, figsize=size)
                     self.bind('<Configure>', self.Graph.change_dimensions)
-                    self.class_ = class_(line=self.Graph.Line, axes=self.Graph.axes, fig=self.Graph.Fig)
+                    self.class_ = class_(line=self.Graph.Line, axes=self.Graph.axes, fig=self.Graph.Fig,
+                                         zurich=frame_class.parent.Zurich)
 
             class ScopeOptionFrame(tk.Frame):
                 # For now I can only use the first channel and the first scope. It is to be done to work with both
@@ -789,10 +793,10 @@ class ZurichFrame(tk.Frame):
                             return
                         state = state.get()
                         if state == 'enable':
-                            frame_class.parent.Zurich.add_subscribed(assigned_graph.class_.path,
+                            frame_class.parent.Zurich.add_subscribed('/scopes/',
                                                                      assigned_graph.class_, assigned_graph.Graph)
                         elif state == 'disable':
-                            frame_class.parent.Zurich.unsubscribed_path(assigned_graph.class_.path)
+                            frame_class.parent.Zurich.unsubscribed_path('/scopes/')
 
                     tk.Frame.__init__(self, parent)
                     graph = assigned_graph
@@ -922,7 +926,7 @@ class ZurichFrame(tk.Frame):
                             return
                         state = state.get()
                         if state == 'enable':
-                            frame_class.parent.Zurich.add_subscribed(assigned_graph.class_.path,
+                            frame_class.parent.Zurich.add_subscribed('/boxcars/',
                                                                      assigned_graph.class_, assigned_graph.Graph)
                         elif state == 'disable':
                             frame_class.parent.Zurich.unsubscribed_path(assigned_graph.class_.path)
@@ -1010,7 +1014,7 @@ class ZurichFrame(tk.Frame):
                                   'sample': [sample_entry, sample_entry_var, 'double_str2db',
                                              '/inputpwas/0/samplecount'],
                                   'periods': [ave_entry, ave_entry_var, 'int', '/boxcars/0/periods'],
-                                  'rate': [rate_entry, rate_entry_var, 'double_str2db', '/boxcars/0/limiterate']}
+                                  'rate': [rate_entry, rate_entry_var, 'double_str2db', '/boxcars/0/limitrate']}
                     frame_class.create_bind(dict_=entry_dict, type_='entry')
 
             class PlotterOptionFrame(tk.Frame):
@@ -1354,7 +1358,7 @@ class Mono_Physics(tk.Frame):
                 ip_lbl = tk.Label(self.frame, text='IP adress:')
                 ip_lbl.grid(row=2, column=0, sticky='nw')
                 usb_var = tk.StringVar()
-                usb_var.set('C-819')
+                usb_var.set('C-891')
                 usb_entry = tk.Entry(self.frame, width=8, textvariable=usb_var)
                 ip_var = tk.StringVar()
                 ip_entry = tk.Entry(self.frame, width=8, textvariable=ip_var)
@@ -1380,8 +1384,7 @@ class Mono_Physics(tk.Frame):
         wave_lbl.grid(row=2, column=0, sticky='nw')
         wave_entry_var = tk.IntVar()
         wave_entry = tk.Entry(mono_frame, textvariable=wave_entry_var, width=6)
-        wave_entry.bind('<Return>',
-                        lambda e: self.parent.Mono.roll_dial(wave_entry_var.get() - self.parent.Mono.current_position))
+        wave_entry.bind('<Return>', lambda e: self.parent.Mono.roll_dial(wave_entry_var.get() - self.parent.Mono.current_position))
         wave_entry.grid(row=3, column=0, sticky='nsew')
         calibrate_b = tk.Button(mono_frame, text='Calibrate', width=8,
                                 command=lambda: self.parent.Mono.calibrate(self.parent.Spectro.spectro, wave_entry_var))
@@ -1438,10 +1441,12 @@ class Mono_Physics(tk.Frame):
         ite_e.grid(row=5, column=1, sticky='nsew', padx=3)
         ite_lbl = tk.Label(phs_control, text='# Iteration :')
         ite_lbl.grid(row=5, column=0, sticky='nw', padx=3)
+        # Here we should add a step size for the linear stage due the short time I have left I am skipping this part
+        # I don't know what should be the best way to implement this quickly and the best way
         scan_b = tk.Button(phs_control, text='SCAN', width=8,
                            command=lambda: self.parent.Linstage.scanning(max_pos=max_evar, min_pos= min_evar,
                                                                          iteration=ite_var))
-        scan_b.grid(row=6, column=0, columnspan=2, sticky='nsew', padx=3)
+        scan_b.grid(row=7, column=0, columnspan=2, sticky='nsew', padx=3)
 
         def update_speed(scale, variable):
             scale.configure(label='{}'.format(variable[scale.get()]))
@@ -1459,7 +1464,7 @@ class Mono_Physics(tk.Frame):
         speed_scale.configure(label='{}'.format(speed_value[speed_scale.get()]))
         speed_scale.grid(row=3, column=3, columnspan=2, sticky='nsew')
         calib_lin = tk.Button(phs_control, text='Calibrate device', width=16,
-                              command=lambda: self.parent.Linstage.calibrate())
+                              command=lambda: self.parent.Linstage.calibration())
         calib_lin.grid(row=6, column=3, columnspan=2, sticky='nsew', padx=3)
         s2 = ttk.Separator(phs_control, orient='vertical')
         s2.grid(row=0, column=5, sticky='nsew', padx=2, rowspan=8)
@@ -1510,11 +1515,11 @@ class SpectroFrame(tk.Frame):
         dev_e = tk.Entry(option_frame, textvariable=dev_evar, width=8)
         connect = tk.Button(option_frame, text='Connect',
                             command=lambda: self.parent.Spectro.connect(exp_dependencie=True))
-        inte_var = tk.IntVar()
-        inte_var.set(1000)
+        self.inte_var = tk.IntVar()
+        self.inte_var.set(1000)
         inte_lbl = tk.Label(option_frame, text='Integration time [ms]:')
-        inte = tk.Entry(option_frame, textvariable=inte_var, width=6)
-        inte.bind('<Return>', lambda e: self.parent.Spectro.adjust_integration_time(inte_var))
+        inte = tk.Entry(option_frame, textvariable=self.inte_var, width=6)
+        inte.bind('<Return>', lambda e: self.parent.Spectro.adjust_integration_time(self.inte_var))
         dev_lbl.grid(row=0, column=0, sticky='nw')
         dev_e.grid(row=1, column=0, sticky='nsew')
         connect.grid(row=2, column=0, sticky='nsew')
@@ -1550,30 +1555,33 @@ class SpectroFrame(tk.Frame):
 
         run_var = tk.StringVar()
         run_var.set('disable')
-        run = tk.Button(option_frame, text='RUN', width=8, command=lambda: self.measure(run, run_var, inte_var
-                        , click=True))
+        run = tk.Button(option_frame, text='RUN', width=8, command=lambda: self.measure(run, run_var, click=True))
         run.grid(row=9, column=0, sticky='nsew')
         for i in range(1,5):
             self.grid_columnconfigure(i, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
     # It need to have Save Data, Statistics, Axis Modification, Overlaps
-    def measure(self, button, variable, time, click=None):
+    def measure(self, button, variable, click=None):
         if not self.parent.Spectro.spectro:
             return
+
+        time = self.inte_var.get()
+        if time == 0:
+            time = 1
         if click:
             if variable.get() == 'disable':
                 variable.set('enable')
                 button.config(text='STOP')
                 self.parent.Spectro.extract_intensities()
-                self.after(time.get(), self.measure, button, variable)
+                self.after(time, self.measure, button, variable)
             elif variable.get() == 'enable':
                 variable.set('disable')
                 button.config(text='RUN')
         elif not click:
             if variable.get() == 'enable':
                 self.parent.Spectro.extract_intensities()
-                self.after(time.get(), self.measure, button, variable)
+                self.after(time, self.measure, button, variable)
 
 
 # Window for all of the experiement
@@ -1593,7 +1601,8 @@ class Experiment(ttk.LabelFrame):
         values = []
         self.parent = parent
         self.experiment_dict = {}
-        experiment_name.bind('<<ComboboxSelected>>', lambda x: frame_switch(self.experiment_dict, experiment_name.get()))
+
+        experiment_name.bind('<<ComboboxSelected>>', lambda e: frame_switch(self.experiment_dict, experiment_name.get()))
 
         def create_layout(name=None, function_=None, option=None, graph=None):
             if not name:

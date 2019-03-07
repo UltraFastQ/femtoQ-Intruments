@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="">
+    <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="Debugging of the zurich and the mainframe for data plotting">
+      <change beforePath="$PROJECT_DIR$/../../../LIA-master/Sub_Programs/Arduino_Code/MonoChrom_Code/MonoChrom_Code.ino" beforeDir="false" afterPath="$PROJECT_DIR$/../../../LIA-master/Sub_Programs/Arduino_Code/MonoChrom_Code/MonoChrom_Code.ino" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Experiment_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experiment_file.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main_Frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main_Frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Monochromator.py" beforeDir="false" afterPath="$PROJECT_DIR$/Monochromator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Physics_Instrument.py" beforeDir="false" afterPath="$PROJECT_DIR$/Physics_Instrument.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Spectrometer.py" beforeDir="false" afterPath="$PROJECT_DIR$/Spectrometer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Zurich_Instrument.py" beforeDir="false" afterPath="$PROJECT_DIR$/Zurich_Instrument.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -12,7 +20,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/Labo_Env$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548256099349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Linux$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1549659954220" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Linux$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1550171836508" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -92,46 +100,45 @@
     <session id="987575890">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="1" />
+          <entry key="project.closed" value="8" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.3" value="1" />
-          <entry key="project.opened" value="2" />
+          <entry key="project.open.time.30" value="2" />
+          <entry key="project.open.time.41" value="1" />
+          <entry key="project.open.time.42" value="1" />
+          <entry key="project.open.time.43" value="1" />
+          <entry key="project.open.time.45" value="1" />
+          <entry key="project.opened" value="8" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="170" />
-          <entry key="Python" value="3677" />
+          <entry key="Python" value="5736" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="Python" value="4" />
+          <entry key="Python" value="7" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main_Frame.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="243">
-              <caret line="1522" column="17" lean-forward="true" selection-start-line="1522" selection-start-column="17" selection-end-line="1522" selection-end-column="17" />
+            <state relative-caret-position="7962">
+              <caret line="1511" column="25" lean-forward="true" selection-start-line="1511" selection-start-column="25" selection-end-line="1511" selection-end-column="25" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#304#2454#0" />
                 <element signature="e#2530#3236#0" />
-                <element signature="e#3321#68848#0" />
-                <element signature="e#46513#55665#0" />
-                <element signature="e#68971#90791#0" />
-                <element signature="e#69008#90380#0" />
-                <element signature="e#69034#70374#0" />
-                <element signature="e#69100#70374#0" />
-                <element signature="e#70413#76665#0" />
-                <element signature="e#76705#82587#0" />
-                <element signature="e#82631#84114#0" />
-                <element signature="e#90432#90791#0" />
+                <element signature="e#69211#91220#0" />
+                <element signature="e#69274#70614#0" />
+                <element signature="e#70653#76905#0" />
+                <element signature="e#76945#82827#0" />
+                <element signature="e#82871#84354#0" />
               </folding>
             </state>
           </provider>
@@ -140,8 +147,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Spectrometer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="93">
-              <caret line="70" column="17" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
+            <state relative-caret-position="-1324">
+              <caret line="16" selection-start-line="16" selection-end-line="16" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -152,23 +159,23 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Graphic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="868">
+            <state relative-caret-position="1125">
               <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
+              <folding>
+                <element signature="e#261#2586#0" />
+                <element signature="e#2623#6096#0" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="308">
-              <caret line="290" column="12" selection-start-line="290" selection-start-column="12" selection-end-line="290" selection-end-column="12" />
+            <state relative-caret-position="165">
+              <caret line="104" column="26" selection-start-line="104" selection-start-column="26" selection-end-line="104" selection-end-column="26" />
               <folding>
                 <element signature="e#0#30#0" expanded="true" />
-                <element signature="e#13814#18724#0" />
-                <element signature="e#18800#23021#0" />
-                <element signature="e#22230#22473#0" />
-                <element signature="e#23038#28231#0" />
               </folding>
             </state>
           </provider>
@@ -177,8 +184,29 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-357">
-              <caret line="57" column="21" selection-start-line="57" selection-start-column="21" selection-end-line="57" selection-end-column="21" />
+            <state relative-caret-position="506">
+              <caret line="63" column="24" selection-start-line="63" selection-start-column="24" selection-end-line="63" selection-end-column="24" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Monochromator.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1905">
+              <caret line="131" column="22" selection-start-line="131" selection-start-column="22" selection-end-line="131" selection-end-column="22" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/Experiment_file.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="2220">
+              <caret line="151" column="24" selection-start-line="151" selection-start-column="24" selection-end-line="151" selection-end-column="24" />
+              <folding>
+                <element signature="e#0#20#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -199,13 +227,13 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/Experiment.py" />
-        <option value="$PROJECT_DIR$/Monochromator.py" />
-        <option value="$PROJECT_DIR$/Experiment_file.py" />
         <option value="$PROJECT_DIR$/Graphic.py" />
         <option value="$PROJECT_DIR$/Physics_Instrument.py" />
         <option value="$PROJECT_DIR$/Spectrometer.py" />
-        <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
+        <option value="$PROJECT_DIR$/Monochromator.py" />
+        <option value="$PROJECT_DIR$/Experiment_file.py" />
         <option value="$PROJECT_DIR$/Main_Frame.py" />
+        <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
       </list>
     </option>
   </component>
@@ -217,8 +245,8 @@
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
     <option name="y" value="-2" />
-    <option name="width" value="1920" />
-    <option name="height" value="1082" />
+    <option name="width" value="1366" />
+    <option name="height" value="770" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -243,10 +271,10 @@
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///home/nico/Documents/Programs/Python/Labo_Env/zhinst/utils.py" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../.." />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -381,19 +409,25 @@
       <option name="project" value="LOCAL" />
       <updated>1549575305261</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Debugging of the zurich and the mainframe for data plotting">
+      <created>1549660336787</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1549660336787</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="1303" height="743" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1487669" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.11296738" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4972156" visible="true" weight="0.19217686" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4972156" weight="0.5457227" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3322034" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -444,6 +478,11 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
+    <ignored-roots>
+      <path value="$PROJECT_DIR$/../.." />
+      <path value="$PROJECT_DIR$/.." />
+      <path value="$PROJECT_DIR$" />
+    </ignored-roots>
     <MESSAGE value="Try to add package to the lab env directory" />
     <MESSAGE value="Deleted all package from PyCharm directory, Package need to be installed&#10;seperatly" />
     <MESSAGE value="Update for the spectrometer : added some tools in the graphic file, and &#10;changed a little of the Main frame file to accomodate everything" />
@@ -463,13 +502,6 @@
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/PyCharm/lib/python3.6/site-packages/zhinst/utils.py" />
-    <entry file="file://$PROJECT_DIR$/Monochromator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="35" selection-start-line="15" selection-start-column="35" selection-end-line="15" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/lib/python3.6/tkinter/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="236">
@@ -480,72 +512,73 @@
     <entry file="file://$PROJECT_DIR$/PyCharm/pip-selfcheck.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/Experiment_file.py">
+    <entry file="file://$PROJECT_DIR$/Monochromator.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2370">
-          <caret line="160" column="63" selection-start-line="160" selection-start-column="63" selection-end-line="160" selection-end-column="63" />
-          <folding>
-            <element signature="e#0#20#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="1905">
+          <caret line="131" column="22" selection-start-line="131" selection-start-column="22" selection-end-line="131" selection-end-column="22" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
+    <entry file="file://$PROJECT_DIR$/Experiment_file.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-357">
-          <caret line="57" column="21" selection-start-line="57" selection-start-column="21" selection-end-line="57" selection-end-column="21" />
+        <state relative-caret-position="2220">
+          <caret line="151" column="24" selection-start-line="151" selection-start-column="24" selection-end-line="151" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#20#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Graphic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="868">
+        <state relative-caret-position="1125">
           <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
+          <folding>
+            <element signature="e#261#2586#0" />
+            <element signature="e#2623#6096#0" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Spectrometer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="93">
-          <caret line="70" column="17" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
+        <state relative-caret-position="-1324">
+          <caret line="16" selection-start-line="16" selection-end-line="16" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="290" column="12" selection-start-line="290" selection-start-column="12" selection-end-line="290" selection-end-column="12" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-            <element signature="e#13814#18724#0" />
-            <element signature="e#18800#23021#0" />
-            <element signature="e#22230#22473#0" />
-            <element signature="e#23038#28231#0" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Main_Frame.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
-          <caret line="1522" column="17" lean-forward="true" selection-start-line="1522" selection-start-column="17" selection-end-line="1522" selection-end-column="17" />
+        <state relative-caret-position="7962">
+          <caret line="1511" column="25" lean-forward="true" selection-start-line="1511" selection-start-column="25" selection-end-line="1511" selection-end-column="25" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#304#2454#0" />
             <element signature="e#2530#3236#0" />
-            <element signature="e#3321#68848#0" />
-            <element signature="e#46513#55665#0" />
-            <element signature="e#68971#90791#0" />
-            <element signature="e#69008#90380#0" />
-            <element signature="e#69034#70374#0" />
-            <element signature="e#69100#70374#0" />
-            <element signature="e#70413#76665#0" />
-            <element signature="e#76705#82587#0" />
-            <element signature="e#82631#84114#0" />
-            <element signature="e#90432#90791#0" />
+            <element signature="e#69211#91220#0" />
+            <element signature="e#69274#70614#0" />
+            <element signature="e#70653#76905#0" />
+            <element signature="e#76945#82827#0" />
+            <element signature="e#82871#84354#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="506">
+          <caret line="63" column="24" selection-start-line="63" selection-start-column="24" selection-end-line="63" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="104" column="26" selection-start-line="104" selection-start-column="26" selection-end-line="104" selection-end-column="26" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
           </folding>
         </state>
       </provider>

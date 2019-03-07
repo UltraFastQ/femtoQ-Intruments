@@ -17,6 +17,13 @@ class LinearStage:
 
         dev_name = dev_name.get()
         dev_ip = dev_ip.get()
+        dev_list = ['C-891']
+        if dev_name not in dev_list:
+            messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
+                                                       'compatible with the pipython software. If so add it to the list'
+                                                       + 'at line 20 of the Physics_Instrument.py file')
+            return
+
         if dev_name:
             gcs = GCSDevice(dev_name)
             devices = gcs.EnumerateUSB(mask=dev_name)
@@ -27,7 +34,7 @@ class LinearStage:
             messagebox.showinfo(title='Physics Intrument', message='This option is not completed')
 
         self.axes = self.device.axes[0]
-
+        self.device.EAX(self.axes, True)
         if exp_dependencie:
             experiments = self.parent.Frame[4].experiment_dict
             for experiment in experiments:
@@ -39,8 +46,20 @@ class LinearStage:
 
         if not max_pos and not min_pos and not iteration:
             return
-
+        import pipython.pitools as pitools
         iteration = iteration.get()
+        max_pos = max_pos.get()
+        min_pos = min_pos.get()
+        # Getting the max and min possible value of the device
+        max = self.device.qTMX(self.axes).get(str(self.axes))
+        min = self.device.qTMN(self.axes).get(str(self.axes))
+
+        # This is a fail safe in case you don't know your device ( I should have done a manual for this...)
+        if not(min_pos >= min and max_pos >= min and min_pos <= max and max_pos <= max):
+            messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
+                                'of your physik instrument device')
+            return
+
         for i in range(iteration):
             self.device.MOV(self.axes, max_pos)
             pitools.waitontarget(self.device)
@@ -50,7 +69,7 @@ class LinearStage:
     def go_2position(self, position=None):
         if not self.device or not position:
             return
-
+        import pipython.pitools as pitools
         position = position.get()
         self.device.MOV(self.axes, position)
         pitools.waitontarget(self.device)
