@@ -378,6 +378,11 @@ class Scope:
     def extract_data(self, data, path):
         if not(self.zurich.paths[path]):
             return
+        try:
+            scope_data = data[path]
+        except KeyError:
+            print('we avoided trouble')
+            return
         # This takes the wave data stored in the daq and push them into the  it in the assigned figure
         scope_data = data[path]
         for index, shot in enumerate(scope_data):
