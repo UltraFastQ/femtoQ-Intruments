@@ -374,7 +374,7 @@ class Scope:
         self.zurich.info['daq'].sync()
 
     def extract_data(self, data, path):
-        if not(self.paths[path]):
+        if not(self.zurich.paths[path]):
             return
         # This takes the wave data stored in the daq and push them into the  it in the assigned figure
         scope_data = data[path]
@@ -481,7 +481,7 @@ class Plotter:
     # This function need work I haven't found the proper way to make the data collection dependent of the
     # BoxCar and the demodulator... To be continued
     def extract_data(self, path):
-        if not(self.paths[path]):
+        if not(self.zurich.paths[path]):
             return
         # This takes the wave data stored in the daq and push them into the  it in the assigned figure
         # This function is not done just yet work as to be done to finish it
@@ -569,7 +569,7 @@ class Boxcar:
         self.zurich.info['daq'].subscribe(path)
 
     def extract_data(self, data=None, path=None):
-        if not(self.paths[path]):
+        if not(self.zurich.paths[path]):
             return
 
         if (not (self.window_start != min(self.line_list[0].x, self.line_list[1].x)) or not (
