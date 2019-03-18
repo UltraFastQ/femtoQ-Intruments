@@ -287,10 +287,10 @@ class Zurich:
         while self.subscribing:
             time.sleep(0.1)
 
-        subscribed = self.subscribed
-        data_set = self.info['daq'].poll(self.poll_set[0], self.poll_set[1], self.poll_set[2], self.poll_set[3])
         if self.in_use:
             return
+        subscribed = self.subscribed
+        data_set = self.info['daq'].poll(self.poll_set[0], self.poll_set[1], self.poll_set[2], self.poll_set[3])
         for path in subscribed:
             self.in_use = True
             subscribed[path][0].extract_data(data=data_set, path=path)
