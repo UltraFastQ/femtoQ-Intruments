@@ -106,8 +106,8 @@
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="PLAIN_TEXT" value="170" />
-          <entry key="Python" value="5840" />
+          <entry key="PLAIN_TEXT" value="171" />
+          <entry key="Python" value="5900" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
@@ -164,8 +164,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="420">
-              <caret line="574" column="7" selection-start-line="574" selection-start-column="7" selection-end-line="574" selection-end-column="7" />
+            <state relative-caret-position="356">
+              <caret line="296" column="17" selection-start-line="296" selection-start-column="17" selection-end-line="296" selection-end-column="17" />
               <folding>
                 <element signature="e#0#30#0" expanded="true" />
               </folding>
@@ -415,11 +415,25 @@
       <option name="project" value="LOCAL" />
       <updated>1552915203256</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Debugging of the zurich and the mainframe for data plotting">
+      <created>1552915881525</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1552915881525</updated>
+    </task>
+    <task id="LOCAL-00008" summary="-">
+      <created>1552916273392</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1552916273392</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="25" width="1303" height="743" extended-state="7" />
+    <frame x="0" y="25" width="1303" height="743" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.11455847" />
@@ -487,7 +501,8 @@
     <MESSAGE value="Deleted all package from PyCharm directory, Package need to be installed&#10;seperatly" />
     <MESSAGE value="Update for the spectrometer : added some tools in the graphic file, and &#10;changed a little of the Main frame file to accomodate everything" />
     <MESSAGE value="Debugging of the zurich and the mainframe for data plotting" />
-    <option name="LAST_COMMIT_MESSAGE" value="Debugging of the zurich and the mainframe for data plotting" />
+    <MESSAGE value="-" />
+    <option name="LAST_COMMIT_MESSAGE" value="-" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -574,8 +589,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="420">
-          <caret line="574" column="7" selection-start-line="574" selection-start-column="7" selection-end-line="574" selection-end-column="7" />
+        <state relative-caret-position="356">
+          <caret line="296" column="17" selection-start-line="296" selection-start-column="17" selection-end-line="296" selection-end-column="17" />
           <folding>
             <element signature="e#0#30#0" expanded="true" />
           </folding>
