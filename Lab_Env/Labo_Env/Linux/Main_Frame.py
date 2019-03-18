@@ -1566,22 +1566,22 @@ class SpectroFrame(tk.Frame):
         if not self.parent.Spectro.spectro:
             return
 
-        time = self.inte_var.get()
-        if time == 0:
-            time = 1
+        t = self.inte_var.get()
+        if t == 0:
+            t = 1
         if click:
             if variable.get() == 'disable':
                 variable.set('enable')
                 button.config(text='STOP')
                 self.parent.Spectro.extract_intensities()
-                self.after(time, self.measure, button, variable)
+                self.after(t, self.measure, button, variable)
             elif variable.get() == 'enable':
                 variable.set('disable')
                 button.config(text='RUN')
         elif not click:
             if variable.get() == 'enable':
                 self.parent.Spectro.extract_intensities()
-                self.after(time, self.measure, button, variable)
+                self.after(t, self.measure, button, variable)
 
 
 # Window for all of the experiement

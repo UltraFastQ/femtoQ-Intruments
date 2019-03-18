@@ -248,7 +248,7 @@ class Zurich:
         for element in self.paths:
             if self.paths[element]:
                 if path in element:
-                    self.subscribing=True
+                    self.subscribing = True
                     self.info['daq'].subscribe(element)
                     self.subscribed[element] = [child_class, graph_class]
         self.subscribing = False
@@ -266,24 +266,24 @@ class Zurich:
         self.subscribing = False
 
     def measure_guide(self):
-        time = 1000
+        t = 1000
         if not self.info:
-            self.parent.after(time, self.measure_guide)
+            self.parent.after(t, self.measure_guide)
             return
         if not self.state:
-            self.parent.after(time, self.measure_guide)
+            self.parent.after(t, self.measure_guide)
             return
         if not self.state:
             return
         i = 0
         for item in self.state:
             if not self.state[item] and i == 3:
-                self.parent.after(time, self.measure_guide)
+                self.parent.after(t, self.measure_guide)
                 return
             elif not self.state[item]:
                 i += 1
             elif self.state[item]:
-                time = 100
+                t = 100
         while self.subscribing:
             time.sleep(0.1)
 
@@ -294,7 +294,7 @@ class Zurich:
             subscribed[path][0].extract_data(data=data_set, path=path)
             subscribed[path][1].update_graph()
         self.in_use = False
-        self.parent.after(time, self.measure_guide)
+        self.parent.after(t, self.measure_guide)
 
 
 class Scope:
@@ -406,14 +406,14 @@ class Plotter:
         self.zurich = zurich
 
     def change_axislim(self, variable):
-        time = variable.get()
-        time = time.split('s')[0]
+        t = variable.get()
+        t = t.split('s')[0]
         units = {'n': 1e-09, 'u': 1e-06, 'm': 1e-03, 'k': 1e3}
         factor = 1
         found = False
         time_float = 100
         for unit in units:
-            str_value = time.split(unit)
+            str_value = t.split(unit)
             if len(str_value) == 1:
                 pass
             elif found:
@@ -424,11 +424,11 @@ class Plotter:
                 found = True
         if not found:
             try:
-                time_float = round(float(time), len(time))
+                time_float = round(float(t), len(t))
             except ValueError:
                 variable.set('100s')
-        time = time_float
-        self.axes.set_xlim([0, time])
+        t = time_float
+        self.axes.set_xlim([0, t])
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
 
