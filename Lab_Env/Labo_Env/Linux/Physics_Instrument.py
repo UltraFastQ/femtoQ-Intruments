@@ -85,7 +85,7 @@ class LinearStage:
         # there could be more it just need to be changed in both of the program
         # 0 (the minimum) = 250
         # 1 : 500 ...
-        self.device.VEL(self.axes, factor*100)
+        self.device.VEL(self.axes, factor*10)
 
     def calibration(self):
         if not self.device:
