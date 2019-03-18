@@ -46,7 +46,9 @@ class LinearStage:
 
         if not max_pos and not min_pos and not iteration:
             return
-        import pipython.pitools as pitools
+        # Pipython :
+        from pipython import GCSDevice
+        from pipython import pitools
         iteration = iteration.get()
         max_pos = max_pos.get()
         min_pos = min_pos.get()
@@ -78,15 +80,18 @@ class LinearStage:
         if not self.device or not factor:
             return
         factor = factor+1
+        print(factor)
         # The factor is a factor based on the maximum speed ie the minimum is 250 which is 1000/4 (scale is divided by 4
         # there could be more it just need to be changed in both of the program
         # 0 (the minimum) = 250
         # 1 : 500 ...
-        self.device.VEL(self.axes, factor*250)
+        self.device.VEL(self.axes, factor*100)
 
     def calibration(self):
         if not self.device:
             return
+        # Pipython :
+        from pipython import GCSDevice
 
         self.device.FRF()
         i = 0

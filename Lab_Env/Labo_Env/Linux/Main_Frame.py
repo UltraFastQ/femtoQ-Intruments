@@ -1450,7 +1450,7 @@ class Mono_Physics(tk.Frame):
 
         def update_speed(scale, variable):
             scale.configure(label='{}'.format(variable[scale.get()]))
-            self.parent.Linstage.change_speed(scale.get())
+            self.parent.Linstage.change_speed(factor=scale.get())
 
         s1 = ttk.Separator(phs_control, orient='vertical')
         s1.grid(row=0, column=2, rowspan=8, sticky='nsew')
@@ -1458,8 +1458,8 @@ class Mono_Physics(tk.Frame):
         config.grid(row=1, column=3, sticky='nw', columnspan=2)
         speed = tk.Label(phs_control, text='Velocity:')
         speed.grid(row=2, column=3, sticky='nw')
-        speed_value = ['Slow', 'Medium', 'Quick', 'U-Fast']
-        speed_scale = tk.Scale(phs_control, orient='horizontal', from_=0, to=3, width=16, showvalue=False, length=150,
+        speed_value = ['Slow', 'Medium', 'Quick', 'U-Fast', '5', '6', '7', '8', '9', '10']
+        speed_scale = tk.Scale(phs_control, orient='horizontal', from_=0, to=9, width=16, showvalue=False, length=150,
                                command=lambda x: update_speed(speed_scale, speed_value))
         speed_scale.configure(label='{}'.format(speed_value[speed_scale.get()]))
         speed_scale.grid(row=3, column=3, columnspan=2, sticky='nsew')

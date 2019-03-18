@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Zurich_Instrument.py" beforeDir="false" afterPath="$PROJECT_DIR$/Zurich_Instrument.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Main_Frame.py" beforeDir="false" afterPath="$PROJECT_DIR$/Main_Frame.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Physics_Instrument.py" beforeDir="false" afterPath="$PROJECT_DIR$/Physics_Instrument.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -107,11 +108,12 @@
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="171" />
-          <entry key="Python" value="5900" />
+          <entry key="Python" value="6069" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
+          <entry key="Profiler Session" value="1" />
           <entry key="Python" value="7" />
         </counts>
       </usages-collector>
@@ -122,15 +124,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main_Frame.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="270">
-              <caret line="1587" selection-start-line="1587" selection-end-line="1587" />
+            <state relative-caret-position="181">
+              <caret line="1452" column="53" selection-start-line="1452" selection-start-column="53" selection-end-line="1452" selection-end-column="53" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
                 <element signature="e#2530#3236#0" />
+                <element signature="e#3321#69088#0" />
                 <element signature="e#69274#70614#0" />
                 <element signature="e#70653#76905#0" />
                 <element signature="e#76945#82827#0" />
-                <element signature="e#82871#84354#0" />
+                <element signature="e#90861#91220#0" />
+                <element signature="e#91312#95898#0" />
               </folding>
             </state>
           </provider>
@@ -161,11 +165,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="356">
-              <caret line="296" column="17" selection-start-line="296" selection-start-column="17" selection-end-line="296" selection-end-column="17" />
+            <state relative-caret-position="1890">
+              <caret line="384" column="17" selection-start-line="384" selection-start-column="17" selection-end-line="384" selection-end-column="17" />
               <folding>
                 <element signature="e#0#30#0" expanded="true" />
               </folding>
@@ -173,11 +177,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-79">
-              <caret line="63" column="24" selection-start-line="63" selection-start-column="24" selection-end-line="63" selection-end-column="24" />
+            <state relative-caret-position="344">
+              <caret line="83" column="45" selection-start-line="83" selection-start-column="45" selection-end-line="83" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -220,12 +224,12 @@
       <list>
         <option value="$PROJECT_DIR$/Experiment.py" />
         <option value="$PROJECT_DIR$/Graphic.py" />
-        <option value="$PROJECT_DIR$/Physics_Instrument.py" />
         <option value="$PROJECT_DIR$/Spectrometer.py" />
         <option value="$PROJECT_DIR$/Monochromator.py" />
         <option value="$PROJECT_DIR$/Experiment_file.py" />
-        <option value="$PROJECT_DIR$/Main_Frame.py" />
         <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
+        <option value="$PROJECT_DIR$/Main_Frame.py" />
+        <option value="$PROJECT_DIR$/Physics_Instrument.py" />
       </list>
     </option>
   </component>
@@ -285,7 +289,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.LAB_Config">
+  <component name="RunManager" selected="Python.Zurich_Instrument">
     <configuration name="LAB_Config" type="PythonConfigurationType" factoryName="Python">
       <module name="Labo_Env" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -429,19 +433,40 @@
       <option name="project" value="LOCAL" />
       <updated>1552916273392</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="-">
+      <created>1552917524591</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1552917524591</updated>
+    </task>
+    <task id="LOCAL-00010" summary="-">
+      <created>1552917718725</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1552917718725</updated>
+    </task>
+    <task id="LOCAL-00011" summary="-">
+      <created>1552918379865</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1552918379865</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="1303" height="743" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.11455847" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.11455847" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4972156" weight="0.5457227" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4972156" visible="true" weight="0.020408163" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3322034" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -453,6 +478,7 @@
       <window_info anchor="bottom" id="Terminal" order="11" sideWeight="0.49786553" weight="0.3279396" />
       <window_info anchor="bottom" id="Python Console" order="12" weight="0.23979592" />
       <window_info anchor="bottom" id="Messages" order="13" weight="0.32901832" />
+      <window_info anchor="right" id="Coverage" side_tool="true" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -565,35 +591,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
+    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-79">
-          <caret line="63" column="24" selection-start-line="63" selection-start-column="24" selection-end-line="63" selection-end-column="24" />
+        <state relative-caret-position="1890">
+          <caret line="384" column="17" selection-start-line="384" selection-start-column="17" selection-end-line="384" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/Main_Frame.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="270">
-          <caret line="1587" selection-start-line="1587" selection-end-line="1587" />
+        <state relative-caret-position="181">
+          <caret line="1452" column="53" selection-start-line="1452" selection-start-column="53" selection-end-line="1452" selection-end-column="53" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
             <element signature="e#2530#3236#0" />
+            <element signature="e#3321#69088#0" />
             <element signature="e#69274#70614#0" />
             <element signature="e#70653#76905#0" />
             <element signature="e#76945#82827#0" />
-            <element signature="e#82871#84354#0" />
+            <element signature="e#90861#91220#0" />
+            <element signature="e#91312#95898#0" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
+    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="356">
-          <caret line="296" column="17" selection-start-line="296" selection-start-column="17" selection-end-line="296" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="344">
+          <caret line="83" column="45" selection-start-line="83" selection-start-column="45" selection-end-line="83" selection-end-column="45" />
         </state>
       </provider>
     </entry>
