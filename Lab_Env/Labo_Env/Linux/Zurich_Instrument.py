@@ -502,7 +502,7 @@ class Boxcar:
         # format will be #1 : device id when connected
         #                #2 : scope taken to read the data
         # line : matplotlib Line issued when you plot axis
-        self.path1 = '/{}/inputpwas/{}/wave'
+        self.path = '/{}/inputpwas/{}/wave'
         self.path2 = '/{}/boxcars/{}/wave'
         self.line = line
         self.axes = axes
@@ -549,7 +549,7 @@ class Boxcar:
                         ]
         self.zurich.info['daq'].set(BOX_Settings)
         self.zurich.info['daq'].sync()
-        self.zurich.paths[self.path1.format(device, inputpwa_index)] = True
+        self.zurich.paths[self.path.format(device, inputpwa_index)] = True
         self.zurich.paths[self.path2.format(device, boxcar_index)] = True
 
     def phase_and_time(self, variable):

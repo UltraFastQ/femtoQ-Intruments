@@ -2,7 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
 import Graphic
-
+import numpy as np
+import time
 
 # Create a basic layont for every experiment
 class CreateLayout:
@@ -146,12 +147,15 @@ class TemplateForExperiment:
 
 class WhiteLight:
 
-    def __init__(self, ZiData = None, PiData = None, main=None):
+    def __init__(self, main=None):
 
         # Variables Initialization
         self.main = main
-        self.zidata = ZiData
-        self.PiData = PiData
+        self.stop = False
+        self.xfactor = 360/(2*np.pi)
+        self.zidata = main.Zurich
+        self.pidata = main.Linstage
+        self.mono = main.Mono
         self.graph_dict = {}
 
     def create_frame(self, frame):
@@ -183,87 +187,51 @@ class WhiteLight:
                                       command=lambda: self.start_experiment())
         self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
 
-    def start_experiment(self):
+    def start_experiment(self, pos=None, increment=None, dir=None, max_wv=None, min_wv=None,
+                         max_pos=None, min_pos=None):
 
-        print('hello')
+        def change_state():
+            self.stop = True
 
-    def StartMeasure(self):
+        root = tk.Tk()
+        root.title('Experiment: Dialog')
+        root.wm_geometry('100x200')
+        button = tk.Label(root, text='Interrupt', command=lambda: change_state(), width=12)
+        button.pack()
+        root.mainloop()
+        # Initial values or other stuff
+        wv = 900
 
-        poll_length = 0.1  # [s]
+        path = '/{}/boxcars/{}/wave'.format(self.zidata['daq'], 1)
+        poll_length = 0.1  # Time of the acquisition in second
         poll_timeout = 500  # [ms]
         poll_flags = 0
-        poll_return_flat_dict = True
-        self.Find_Delay()
-        fullsweep = False
-        fullsweep_state = 0
-        fullsweep_lim = 1400
-        Nbr_nm_perstep = 10
-        Position = self.DelayZero
-        Pi_dev = self.PiData['Device_id']
-        Pi_Axe = self.PiData['Axes']
-        Zi_Daq = self.ZiData['DAQ']
-        #Full sweep nm
-        while fullsweep == False:
-            Pi_dev.MOV(Pi_Axe,Position)
-            pitools.waitontarget(Pi_dev)
-            Zi_Daq.subscribe(self.ZiData['BC_Smp_PATH'])
-            time.sleep(0.1)
-            Data_Set = Zi_Daq.poll( poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
-            Zi_Daq.unsubscribe(self.ZiData['BC_Smp_PATH'])
-            Position -= 1
-            Sample = DATA_Set[self.ZiData['BC_Smp_PATH']]
-            Intensity.append([Pi_dev.qPOS(),np.mean(Sample['value'])])
-            if Position == -40:
-                Position = self.DelayZero
-                self.Coms.RollDial(Nbr_nm_perstep)
-                fullsweep_state += Nbr_nm_perstep
-                if fullsweep_state == fullsweep_lim:
-                    fullsweep = True
-        self.Coms.Reset()
+        poll_return_dict = True  # This is how the data is returned
+        intensity = []
 
-    def Find_Delay(self):
+        # Initial position
+        if not pos:
+            return
+        self.pidata.MOV(self.pidata.axes, pos)
 
-        # First, we take measurements, then we find the mean value for a given delay. Then we move the stage and do it again
-        # We create a vector of the mean values to find the interference pattern
-        poll_length = 0.1  # [s]
-        poll_timeout = 500  # [ms]
-        poll_flags = 0
-        poll_return_flat_dict = True
-        Intensity = np.array()
+        while self.stop and not(wv<min_wv and wv>max_wv):
+            while self.stop and(pos<min_pos and pos>max_pos):
+                data = self.zidata.info['daq'].poll(poll_length, poll_timeout, poll_flags, poll_return_dict)
+                boxcar_data = data[path][-1]
+                boxcar_data['binphase'] = boxcar_data['binphase'] * self.xfactor
+                # Taking the amplitude and outputting the mean value of it
+                amplitude = boxcar_data['x']
+                amplitude = np.mean(amplitude)
+                intensity.append(amplitude)
+                pos = pos + increment
+                self.pidata.MOV(self.pidata.axes, pos)
+                time.wait(0.1)
+            self.mono.roll_dial(1)
+            time.wait(0.1)
+            # Output the data here
+            ###
+            wv = self.mono.current_position
 
-        i = 40
-
-        while (i >= -40):
-            self.PiData['Device_id'].MOV(self.PiData['Axes'], i)
-            pitools.waitontarget(self.PiData['Device_id'])
-            self.ZiData['DAQ'].subscribe(self.ZiData['BC_Smp_PATH'])
-            time.sleep(0.1)
-            Data_Set = self.ZiData['DAQ'].poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
-            self.ZiData['DAQ'].unsubscribe(self.ZiData['BC_Smp_PATH'])
-            i -= 2
-            Sample = DATA_Set[self.ZiData['BC_Smp_PATH']]
-            Intensity.append([self.PiData["Device_id"].qPOS(), np.mean(Sample['value'])])
-
-        # Find the interference pattern
-        l = Intensity.size
-        left = Intensity[0][0]
-        right = Intensity[l][0]
-        # Intensity is the array of measurements, the format is couples of values, stage position and intensity
-        # thresh is the threshold value for the interference pattern detection, when the intensity drops, it means we
-        # reached the delay where the interferences are happening
-        thresh = 100
-        i = 0
-        # We start from left and right and detect a significant change in intensity
-        while (abs(Intensity[i + 1][1] - Intensity[i][1]) < thresh):
-            i += 1
-        left_lim = i
-
-        i = l
-        while (abs(Intensity[i][1] - Intensity[i - 1][1]) < thresh):
-            i -= 1
-        right_lim = i
-        # The interference happens between the positions left_lim and right_lim
-        # We have to swipe again in this area to get the position of the maximum
-
-        self.DelayZero = None
-
+        self.zidata.unsubscribe(path)
+        self.stop = False
+        root.destroy()

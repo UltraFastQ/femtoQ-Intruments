@@ -46,6 +46,7 @@ class LinearStage:
 
         if not max_pos and not min_pos and not iteration:
             return
+
         # Pipython :
         from pipython import GCSDevice
         from pipython import pitools
