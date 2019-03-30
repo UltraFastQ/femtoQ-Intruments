@@ -13,7 +13,7 @@
   </component>
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/Labo_Env$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1548256099349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/Linux$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1550171836508" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Linux$LAB_Config.coverage" NAME="LAB_Config Coverage Results" MODIFIED="1553931554805" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="DatabaseView">
     <option name="SHOW_INTERMEDIATE" value="true" />
@@ -93,8 +93,9 @@
     <session id="987575890">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="11" />
+          <entry key="project.closed" value="12" />
           <entry key="project.open.time.1" value="1" />
+          <entry key="project.open.time.12" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.30" value="2" />
           <entry key="project.open.time.38" value="1" />
@@ -103,13 +104,13 @@
           <entry key="project.open.time.42" value="2" />
           <entry key="project.open.time.43" value="2" />
           <entry key="project.open.time.45" value="1" />
-          <entry key="project.opened" value="12" />
+          <entry key="project.opened" value="13" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="171" />
-          <entry key="Python" value="7673" />
+          <entry key="Python" value="7964" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
@@ -122,23 +123,6 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/Main_Frame.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="15">
-              <caret line="1144" selection-start-line="1144" selection-end-line="1144" />
-              <folding>
-                <element signature="e#0#20#0" expanded="true" />
-                <element signature="e#2530#3236#0" />
-                <element signature="e#3321#69088#0" />
-                <element signature="e#69274#70614#0" />
-                <element signature="e#70653#76905#0" />
-                <element signature="e#76945#82827#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Spectrometer.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -167,10 +151,15 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="356">
-              <caret line="551" column="74" lean-forward="true" selection-start-line="551" selection-start-column="74" selection-end-line="551" selection-end-column="74" />
+            <state relative-caret-position="398">
+              <caret line="520" column="13" selection-start-line="520" selection-start-column="13" selection-end-line="520" selection-end-column="13" />
               <folding>
                 <element signature="e#0#30#0" expanded="true" />
+                <element signature="e#23782#29109#0" />
+                <element signature="e#24697#26757#0" />
+                <element signature="e#26807#27264#0" />
+                <element signature="e#27303#27992#0" />
+                <element signature="e#28052#29109#0" />
               </folding>
             </state>
           </provider>
@@ -249,7 +238,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -261,6 +249,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -288,7 +277,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.Zurich_Instrument">
+  <component name="RunManager" selected="Python.LAB_Config">
     <configuration name="LAB_Config" type="PythonConfigurationType" factoryName="Python">
       <module name="Labo_Env" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -315,9 +304,6 @@
       <module name="Labo_Env" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -474,19 +460,26 @@
       <option name="project" value="LOCAL" />
       <updated>1553252012342</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="-">
+      <created>1553916314332</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1553916314337</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="1303" height="743" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.08194113" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.08273667" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.4972156" weight="0.020408163" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.4972156" visible="true" weight="0.20918368" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3322034" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -575,7 +568,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Main_Frame.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15">
+        <state relative-caret-position="1035">
           <caret line="1144" selection-start-line="1144" selection-end-line="1144" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
@@ -635,10 +628,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="356">
-          <caret line="551" column="74" lean-forward="true" selection-start-line="551" selection-start-column="74" selection-end-line="551" selection-end-column="74" />
+        <state relative-caret-position="398">
+          <caret line="520" column="13" selection-start-line="520" selection-start-column="13" selection-end-line="520" selection-end-column="13" />
           <folding>
             <element signature="e#0#30#0" expanded="true" />
+            <element signature="e#23782#29109#0" />
+            <element signature="e#24697#26757#0" />
+            <element signature="e#26807#27264#0" />
+            <element signature="e#27303#27992#0" />
+            <element signature="e#28052#29109#0" />
           </folding>
         </state>
       </provider>

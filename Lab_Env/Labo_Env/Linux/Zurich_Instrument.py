@@ -486,13 +486,36 @@ class Plotter:
 
     # This function need work I haven't found the proper way to make the data collection dependent of the
     # BoxCar and the demodulator... To be continued
-    def extract_data(self, path):
+    def extract_data(self, data, path):
         if not(self.zurich.paths[path]):
             return
-        # This takes the wave data stored in the daq and push them into the  it in the assigned figure
-        # This function is not done just yet work as to be done to finish it
-        self.line.set_xdata([1, 2])
-        self.line.set_ydata([2, 1])
+        clockbase = float(self.zurich.info['daq'].getInt('/%s/clockbase' % self.zurich.info['device']))
+        # self.Value = np.append(self.Value['vals']['phi'], np.angle(Sample['x'] +1j*Sample['y']))
+        amplitude = []
+        t = []
+        if 'demods' in path:
+            if not t:
+                amplitude.append(np.abs(data['x'] + 1j * data['y']))
+                t.append(((data['timestamp'] - data['timestamp'][0]) / clockbase))
+            else:
+                amplitude[0] = np.append(amplitude[0], np.abs(data['x'] + 1j * data['y']))
+                t[0] = np.append(t[0], ((data['timestamp'] - data['timestamp'][0]) / clockbase) +
+                                         max(t[0]))
+        elif 'boxcars' :
+            if not t:
+                amplitude.append(data['value'])
+                t.append(((data['timestamp'] - data['timestamp'][0]) / clockbase))
+            else:
+                amplitude[0] = np.append(self.Value['vals'][0], data['value'])
+                # Work needs to be done to optimize the offset
+                t[0] = np.append(self.Value['t'][0], ((data['timestamp'] - data['timestamp'][0]) / clockbase) +
+                                                       max(t[0]))
+        self.axes.set_ylim([min(amplitude) - abs(min(amplitude) * 15 / 100),
+                            max(amplitude) + max(amplitude) * 15 / 100])
+        self.axes.set_xlim([min(1e6 * t) - abs(min(1e6 * t) * 15 / 100),
+                            max(1e6 * t) + max(1e6 * t) * 15 / 100])
+        self.line.set_ydata(amplitude)
+        self.line.set_xdata(time)
 
 
 class Boxcar:
@@ -591,7 +614,7 @@ class Boxcar:
         # The inputpwa waveform is stored in 'x', currently 'y' is unused.
         self.axes.set_ylim([min(amplitude) - abs(min(amplitude) * 15 / 100),
                             max(amplitude) + max(amplitude) * 15 / 100])
-        self.axes.set_xlim([min(1e6 * phase) - abs(min(1e6 * phase) * 15 / 100),
-                            max(1e6 * phase) + max(1e6 * phase) * 15 / 100])
+        self.axes.set_xlim([min(phase) - abs(min(phase) * 15 / 100),
+                            max(phase) + max(phase) * 15 / 100])
         self.line.set_ydata(amplitude)
         self.line.set_xdata(phase)
