@@ -243,7 +243,6 @@ class Zurich:
         if not path:
             return
         while self.in_use:
-            print('0')
             time.sleep(0.1)
         for element in self.paths:
             if self.paths[element]:
@@ -524,15 +523,16 @@ class Boxcar:
             variable.set('disable')
             return
         value = None
+        device = self.zurich.info['device']
+        inputpwa_index = 0
+        boxcar_index = 0
         if variable.get() == 'enable':
             self.zurich.state['Boxcar'] = True
             value = 1
         elif variable.get() == 'disable':
             self.zurich.state['Boxcar'] = False
+            self.zurich.paths[self.path.format(device, inputpwa_index)] = False
             value = 0
-        device = self.zurich.info['device']
-        inputpwa_index = 0
-        boxcar_index = 0
         BOX_Settings = [['/%s/inputpwas/%d/oscselect' % (device, inputpwa_index), 0],
                         ['/%s/inputpwas/%d/inputselect' % (device, inputpwa_index), pwa_input],
                         ['/%s/inputpwas/%d/mode' % (device, inputpwa_index), 1],
@@ -550,7 +550,7 @@ class Boxcar:
         self.zurich.info['daq'].set(BOX_Settings)
         self.zurich.info['daq'].sync()
         self.zurich.paths[self.path.format(device, inputpwa_index)] = True
-        self.zurich.paths[self.path2.format(device, boxcar_index)] = True
+        #self.zurich.paths[self.path2.format(device, boxcar_index)] = True
 
     def phase_and_time(self, variable):
         if not self.zurich.info:

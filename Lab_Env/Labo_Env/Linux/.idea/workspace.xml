@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="5eedb525-9321-4030-8d23-ac9c5ba95ffb" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Experiment_file.py" beforeDir="false" afterPath="$PROJECT_DIR$/Experiment_file.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Physics_Instrument.py" beforeDir="false" afterPath="$PROJECT_DIR$/Physics_Instrument.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Zurich_Instrument.py" beforeDir="false" afterPath="$PROJECT_DIR$/Zurich_Instrument.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -95,21 +93,23 @@
     <session id="987575890">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="9" />
+          <entry key="project.closed" value="11" />
           <entry key="project.open.time.1" value="1" />
           <entry key="project.open.time.3" value="1" />
           <entry key="project.open.time.30" value="2" />
+          <entry key="project.open.time.38" value="1" />
+          <entry key="project.open.time.4" value="1" />
           <entry key="project.open.time.41" value="1" />
           <entry key="project.open.time.42" value="2" />
           <entry key="project.open.time.43" value="2" />
           <entry key="project.open.time.45" value="1" />
-          <entry key="project.opened" value="10" />
+          <entry key="project.opened" value="12" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="PLAIN_TEXT" value="171" />
-          <entry key="Python" value="7643" />
+          <entry key="Python" value="7673" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
@@ -122,10 +122,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Main_Frame.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-4054">
+            <state relative-caret-position="15">
               <caret line="1144" selection-start-line="1144" selection-end-line="1144" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
@@ -154,7 +154,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Graphic.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="506">
+            <state relative-caret-position="1305">
               <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
               <folding>
                 <element signature="e#261#2586#0" />
@@ -164,11 +164,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="510" column="13" selection-start-line="510" selection-start-column="13" selection-end-line="510" selection-end-column="13" />
+            <state relative-caret-position="356">
+              <caret line="551" column="74" lean-forward="true" selection-start-line="551" selection-start-column="74" selection-end-line="551" selection-end-column="74" />
               <folding>
                 <element signature="e#0#30#0" expanded="true" />
               </folding>
@@ -179,7 +179,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="821">
+            <state relative-caret-position="1635">
               <caret line="109" selection-start-line="109" selection-end-line="109" />
             </state>
           </provider>
@@ -197,7 +197,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Experiment_file.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="296">
+            <state relative-caret-position="3285">
               <caret line="224" column="41" selection-start-line="224" selection-start-column="41" selection-end-line="224" selection-end-column="41" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
@@ -227,8 +227,8 @@
         <option value="$PROJECT_DIR$/Monochromator.py" />
         <option value="$PROJECT_DIR$/Main_Frame.py" />
         <option value="$PROJECT_DIR$/Physics_Instrument.py" />
-        <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
         <option value="$PROJECT_DIR$/Experiment_file.py" />
+        <option value="$PROJECT_DIR$/Zurich_Instrument.py" />
       </list>
     </option>
   </component>
@@ -467,14 +467,21 @@
       <option name="project" value="LOCAL" />
       <updated>1552921262488</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="-">
+      <created>1553252012341</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1553252012342</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="25" width="1303" height="743" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.08035004" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.08194113" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -566,47 +573,17 @@
     <entry file="file://$PROJECT_DIR$/PyCharm/pip-selfcheck.json">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/Experiment_file.py">
+    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="296">
-          <caret line="224" column="41" selection-start-line="224" selection-start-column="41" selection-end-line="224" selection-end-column="41" />
+        <state relative-caret-position="15">
+          <caret line="1144" selection-start-line="1144" selection-end-line="1144" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Monochromator.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1905">
-          <caret line="131" column="22" selection-start-line="131" selection-start-column="22" selection-end-line="131" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="821">
-          <caret line="109" selection-start-line="109" selection-end-line="109" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="510" column="13" selection-start-line="510" selection-start-column="13" selection-end-line="510" selection-end-column="13" />
-          <folding>
-            <element signature="e#0#30#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Graphic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
-          <folding>
-            <element signature="e#261#2586#0" />
-            <element signature="e#2623#6096#0" />
+            <element signature="e#2530#3236#0" />
+            <element signature="e#3321#69088#0" />
+            <element signature="e#69274#70614#0" />
+            <element signature="e#70653#76905#0" />
+            <element signature="e#76945#82827#0" />
           </folding>
         </state>
       </provider>
@@ -621,17 +598,47 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Main_Frame.py">
+    <entry file="file://$PROJECT_DIR$/Graphic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-4054">
-          <caret line="1144" selection-start-line="1144" selection-end-line="1144" />
+        <state relative-caret-position="1305">
+          <caret line="263" column="65" selection-start-line="263" selection-start-column="65" selection-end-line="263" selection-end-column="65" />
+          <folding>
+            <element signature="e#261#2586#0" />
+            <element signature="e#2623#6096#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Physics_Instrument.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1635">
+          <caret line="109" selection-start-line="109" selection-end-line="109" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Monochromator.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1905">
+          <caret line="131" column="22" selection-start-line="131" selection-start-column="22" selection-end-line="131" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Experiment_file.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3285">
+          <caret line="224" column="41" selection-start-line="224" selection-start-column="41" selection-end-line="224" selection-end-column="41" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <element signature="e#2530#3236#0" />
-            <element signature="e#3321#69088#0" />
-            <element signature="e#69274#70614#0" />
-            <element signature="e#70653#76905#0" />
-            <element signature="e#76945#82827#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Zurich_Instrument.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="356">
+          <caret line="551" column="74" lean-forward="true" selection-start-line="551" selection-start-column="74" selection-end-line="551" selection-end-column="74" />
+          <folding>
+            <element signature="e#0#30#0" expanded="true" />
           </folding>
         </state>
       </provider>
