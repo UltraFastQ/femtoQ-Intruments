@@ -6,7 +6,7 @@ import serial
 
 
 class MonoChrom:
-    def __init__(self, parent=None):
+    def __init__(self, mainf=None):
         self.Port = None
         self.arduino = None
         self.calibrated = False
@@ -14,7 +14,7 @@ class MonoChrom:
         self.side = ''
         self.done = True
         self.current_position = 800  #Current position in nanometer
-        self.parent = parent
+        self.mainf = mainf
 
     def serial_ports(self):
         import sys
@@ -53,7 +53,7 @@ class MonoChrom:
         if self.arduino:
             messagebox.showinfo(title='Error', message='The monochromator is connected')
         if exp_dependencie:
-            experiments = self.parent.Frame[4].experiment_dict
+            experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
                 experiments[experiment].update_options('Monochrom')
 

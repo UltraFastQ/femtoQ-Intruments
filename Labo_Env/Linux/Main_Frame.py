@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from pathlib import Path
+from multiprocessing import Process
+from usb_1208LS import *
 # Import of classes
 import Zurich_Instrument
 import Graphic
@@ -9,6 +11,7 @@ import Experiment_file
 import Monochromator
 import Spectrometer
 import Physics_Instrument
+import threading
 
 
 # Main Frame creation
@@ -18,14 +21,11 @@ class MainFrame(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         # Variable that are spreaded throughout the program
         self.Zurich = Zurich_Instrument.Zurich(self)
-        self.Spectro = Spectrometer.Spectro(parent=self)
-        self.Mono = Monochromator.MonoChrom(parent=self)
-        self.Linstage = Physics_Instrument.LinearStage(parent=self)
         self.number = 2
         self.width = self.winfo_screenwidth()
         self.height = self.winfo_screenheight()
         # List of all de frame
-        self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self), SpectroFrame(self), Experiment(self)]
+        self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self, mainf=self), SpectroFrame(self, mainf=self), Experiment(self, mainf=self)]
         self.Frame[0].grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
         directory = Path.cwd()
@@ -316,7 +316,7 @@ class ZurichFrame(tk.Frame):
                            'Aux Out 4', 'Aux In 1', 'Aux In 2')
             # Signal input label and input
             s1 = ttk.Separator(demoframe, orient='vertical')
-            s1.grid(row=0, column=1, rowspan=10, sticky='nsew', padx=2)
+            s1.grid(row=0, column=1, rowspan=20, sticky='nsew', padx=2)
             demoinput = tk.Label(demoframe, text='Input')
             demoinput.grid(row=1, column=2, sticky='nw')
             demosignal = tk.Label(demoframe, text='Signal')
@@ -359,7 +359,7 @@ class ZurichFrame(tk.Frame):
 
             # Reference and Mode
             s2 = ttk.Separator(demoframe, orient='vertical')
-            s2.grid(row=0, column=3, rowspan=10, sticky='nsew', padx=2)
+            s2.grid(row=0, column=3, rowspan=20, sticky='nsew', padx=2)
             demoref = tk.Label(demoframe, text='Reference')
             demoref.grid(row=0, column=4, sticky='nsew')
             demomode = tk.Label(demoframe, text='Mode')
@@ -399,7 +399,7 @@ class ZurichFrame(tk.Frame):
 
             # Frequencies and others
             s3 = ttk.Separator(demoframe, orient='vertical')
-            s3.grid(row=0, column=5, rowspan=10, padx=2, sticky='nsew')
+            s3.grid(row=0, column=5, rowspan=20, padx=2, sticky='nsew')
             demofreq = tk.Label(demoframe, text='Frequence')
             demofreq.grid(row=0, column=6, columnspan=3, sticky='nsew')
             demoosc = tk.Label(demoframe, text='Osc.')
@@ -1038,8 +1038,6 @@ class ZurichFrame(tk.Frame):
                     preset_box = tk.Listbox(self, listvariable=preset_options, height=3)
                     preset_box.selection_set(0)
                     preset_box.grid(row=2, column=2, sticky='nsew')
-                    preset_box.bind('<<ListboxSelect>>', lambda e: assigned_graph.class_.choose_option(preset_box,
-                                                                                                       run_var, graph))
 
                     s2 = ttk.Separator(self, orient='vertical')
                     s2.grid(row=0, column=5, rowspan=4, sticky='nsew', padx=2)
@@ -1141,10 +1139,10 @@ class ZurichFrame(tk.Frame):
 
 # Frame dispositions for the Monochromator and the Linear Stage of physics Intrumente
 class Mono_Physics(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, mainf=None):
 
         class Dialog:
-            def __init__(self, parent_frame=None, main=None):
+            def __init__(self, parent_frame=None, main_phs=None):
                 self.text = 'This method allows you to connect a single devices via the embeded graphical interface '\
                             'from GCS DLL. The first field is requiered. The second allows you to recall data and'\
                             ' settings from this key.'
@@ -1165,10 +1163,10 @@ class Mono_Physics(tk.Frame):
                 con_b.grid(row=4, column=0, sticky='nsew')
 
         class Interface:
-            def __init__(self, parent_frame=None, main=None):
+            def __init__(self, parent_frame=None, main_phs=None):
                 class Rs232:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame):
+                        self.frame = tk.Frame(parent_frame)
                         com_lbl = tk.Label(self.frame, text='COM port')
                         com_var = tk.StringVar()
                         com_e = tk.Entry(self.frame, textvariable=com_var, width=10)
@@ -1185,8 +1183,8 @@ class Mono_Physics(tk.Frame):
                         con_b.grid(row=4, column=0, sticky='nsew')
 
                 class Usb:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame):
+                        self.frame = tk.Frame(parent_frame)
                         serial_lbl = tk.Label(self.frame, text='Serial number:')
                         serial_var = tk.StringVar()
                         serial_e = tk.Entry(self.frame, textvariable=serial_var, width=10)
@@ -1198,8 +1196,8 @@ class Mono_Physics(tk.Frame):
                         con_b.grid(row=4, column=0, sticky='nsew')
 
                 class Descript:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame):
+                        self.frame = tk.Frame(parent_frame)
                         descrip_lbl = tk.Label(self.frame, text='Description')
                         descrip_var = tk.StringVar()
                         descrip_e = tk.Entry(self.frame, textvariable=descrip_var, width=10)
@@ -1211,8 +1209,8 @@ class Mono_Physics(tk.Frame):
                         con_b.grid(row=4, column=0, sticky='nsew')
 
                 class Adress:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame):
+                        self.frame = tk.Frame(parent_frame)
                         ip_adress_lbl = tk.Label(self.frame, text='IP Adress:')
                         ip_adress_var = tk.StringVar()
                         ip_adress_e = tk.Entry(self.frame, textvariable=ip_adress_var, width=10)
@@ -1244,8 +1242,8 @@ class Mono_Physics(tk.Frame):
                 adress = tk.Radiobutton(self.frame, text='TCP/IP: Adress', variable=choice, value='Adress',
                                         command=lambda: self.frame_switch(choice))
                 choice.set('RS-232')
-                self.dict_ = {'RS-232': Rs232(main=self.frame), 'USB': Usb(main=self.frame),
-                              'Description': Descript(main=self.frame), 'Adress': Adress(main=self.frame)}
+                self.dict_ = {'RS-232': Rs232(parent_frame=self.frame), 'USB': Usb(parent_frame=self.frame),
+                              'Description': Descript(parent_frame=self.frame), 'Adress': Adress(parent_frame=self.frame)}
                 rs_232.grid(row=0, column=0, sticky='nw')
                 usb.grid(row=1, column=0, sticky='nw')
                 desc.grid(row=2, column=0, sticky='nw')
@@ -1258,10 +1256,10 @@ class Mono_Physics(tk.Frame):
                 self.dict_[new].frame.grid(column=0, row=4, sticky='nsew', rowspan=4, padx=5)
 
         class DaisyChain:
-            def __init__(self, parent_frame=None, main=None):
+            def __init__(self, parent_frame=None, main_phs=None):
                 class Rs232:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame=None):
+                        self.frame = tk.Frame(parent_frame)
                         com_lbl = tk.Label(self.frame, text='COM port')
                         com_var = tk.StringVar()
                         com_e = tk.Entry(self.frame, textvariable=com_var, width=10)
@@ -1278,8 +1276,8 @@ class Mono_Physics(tk.Frame):
                         con_b.grid(row=4, column=0, sticky='nsew')
 
                 class Usb:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame=None):
+                        self.frame = tk.Frame(parent_frame)
                         serial_lbl = tk.Label(self.frame, text='Serial number:')
                         serial_var = tk.StringVar()
                         serial_e = tk.Entry(self.frame, textvariable=serial_var, width=10)
@@ -1291,8 +1289,8 @@ class Mono_Physics(tk.Frame):
                         con_b.grid(row=4, column=0, sticky='nsew')
 
                 class Descript:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame):
+                        self.frame = tk.Frame(parent_frame)
                         descrip_lbl = tk.Label(self.frame, text='Description')
                         descrip_var = tk.StringVar()
                         descrip_e = tk.Entry(self.frame, textvariable=descrip_var, width=10)
@@ -1304,8 +1302,8 @@ class Mono_Physics(tk.Frame):
                         con_b.grid(row=4, column=0, sticky='nsew')
 
                 class Adress:
-                    def __init__(self, main):
-                        self.frame = tk.Frame(main)
+                    def __init__(self, parent_frame=None):
+                        self.frame = tk.Frame(parent_frame)
                         ip_adress_lbl = tk.Label(self.frame, text='IP Adress:')
                         ip_adress_var = tk.StringVar()
                         ip_adress_e = tk.Entry(self.frame, textvariable=ip_adress_var, width=10)
@@ -1334,8 +1332,8 @@ class Mono_Physics(tk.Frame):
                 adress = tk.Radiobutton(self.frame, text='TCP/IP: Adress', variable=choice, value='Adress',
                                         command=lambda: self.frame_switch(choice))
                 choice.set('RS-232')
-                self.dict_ = {'RS-232': Rs232(main=self.frame), 'USB': Usb(main=self.frame),
-                              'Description': Descript(main=self.frame), 'Adress': Adress(main=self.frame)}
+                self.dict_ = {'RS-232': Rs232(parent_frame=self.frame), 'USB': Usb(parent_frame=self.frame),
+                              'Description': Descript(parent_frame=self.frame), 'Adress': Adress(parent_frame=self.frame)}
                 rs_232.grid(row=0, column=0, sticky='nw')
                 usb.grid(row=1, column=0, sticky='nw')
                 desc.grid(row=2, column=0, sticky='nw')
@@ -1348,7 +1346,7 @@ class Mono_Physics(tk.Frame):
                 self.dict_[new].frame.grid(column=0, row=4, sticky='nsew', rowspan=4, padx=5)
 
         class Identification:
-            def __init__(self, parent_frame=None, main=None):
+            def __init__(self, parent_frame=None, main_phs=None):
                 self.text = "This method allows you to connect a single device via a USB/IP scanning method. Inputs" \
                             " needs to either be a part of the name of the device you are looking for or a part of" \
                             " its IP adress."
@@ -1364,30 +1362,44 @@ class Mono_Physics(tk.Frame):
                 ip_entry = tk.Entry(self.frame, width=8, textvariable=ip_var)
                 usb_entry.grid(row=1, column=0, sticky='nsew')
                 ip_entry.grid(row=3, column=0, sticky='nsew')
-                con_b = tk.Button(self.frame, text='Connect Device(s)',
-                                  command=lambda: main.Linstage.connect_identification(dev_name=usb_var,
-                                                                                       dev_ip=ip_var,
-                                                                                       exp_dependencie=True))
+                if main_phs.mainf == None:
+                    con_b = tk.Button(self.frame, text='Connect Device(s)',
+                                      command=lambda: main_phs.Linstage.connect_identification(dev_name=usb_var,
+                                                                                           dev_ip=ip_var,
+                                                                                           exp_dependencie=False))
+                else:
+                    con_b = tk.Button(self.frame, text='Connect Device(s)',
+                                      command=lambda: main_phs.Linstage.connect_identification(dev_name=usb_var,
+                                                                                           dev_ip=ip_var,
+                                                                                           exp_dependencie=True))
+                    
                 con_b.grid(row=4, column=0, sticky='nsew')
-
+        
         tk.Frame.__init__(self, parent)
         self.parent = parent
+        self.mainf = mainf
+        self.Mono = Monochromator.MonoChrom(mainf=mainf)
+        self.Linstage = Physics_Instrument.LinearStage(mainf=mainf)
         self.config(bg='gray', width=100, height=100)
         # Monochromator Stuff
         mono_frame = ttk.LabelFrame(self, text='Monochromator')
         mono_frame.grid(row=0, column=0, sticky='nsew')
         # This frame has lot of free space right now kinda disturbing
         mono_connect_b = tk.Button(mono_frame, text='Connect', width=8,
-                                   command=lambda: self.parent.Mono.connect(exp_dependencie=True))
+                                   command=lambda: self.Mono.connect(exp_dependencie=True))
         mono_connect_b.grid(row=0, column=0, sticky='nsew')
         wave_lbl = tk.Label(mono_frame, text='Wavelength')
         wave_lbl.grid(row=2, column=0, sticky='nw')
         wave_entry_var = tk.IntVar()
         wave_entry = tk.Entry(mono_frame, textvariable=wave_entry_var, width=6)
-        wave_entry.bind('<Return>', lambda e: self.parent.Mono.roll_dial(wave_entry_var.get() - self.parent.Mono.current_position))
+        wave_entry.bind('<Return>', lambda e: self.Mono.roll_dial(wave_entry_var.get() - self.Mono.current_position))
         wave_entry.grid(row=3, column=0, sticky='nsew')
-        calibrate_b = tk.Button(mono_frame, text='Calibrate', width=8,
-                                command=lambda: self.parent.Mono.calibrate(self.parent.Spectro.spectro, wave_entry_var))
+        if self.mainf == None:
+            calibrate_b = tk.Button(mono_frame, text='Calibrate', width=8,
+                                    command=lambda: print('Option not available in independant window'))
+        else:
+            calibrate_b = tk.Button(mono_frame, text='Calibrate', width=8,
+                                    command=lambda: self.Mono.calibrate(self.mainf.Frame[3].Spectro.spectro, wave_entry_var))
         calibrate_b.grid(row=1, column=0, sticky='nsew')
         # Physics Linear Stage Stuff
         phs_frame = ttk.LabelFrame(self, text='Physics Linear Stage')
@@ -1408,17 +1420,17 @@ class Mono_Physics(tk.Frame):
         textb = tk.Text(phs_con_frame, width=50, height=16, wrap='word', state='disabled')
         textb.grid(row=1, column=0, sticky='nsew')
 
-        self.list_ = [Dialog(parent_frame=phs_con_frame, main=self.parent),
-                      Interface(parent_frame=phs_con_frame, main=self.parent),
-                      Identification(parent_frame=phs_con_frame, main=self.parent),
-                      DaisyChain(parent_frame=phs_con_frame, main=self.parent)]
+        self.list_ = [Dialog(parent_frame=phs_con_frame, main_phs=self),
+                      Interface(parent_frame=phs_con_frame, main_phs=self),
+                      Identification(parent_frame=phs_con_frame, main_phs=self),
+                      DaisyChain(parent_frame=phs_con_frame, main_phs=self)]
         self.frame_switch(con_meth, textb)
         for i in range(5):
             phs_frame.grid_rowconfigure(i, weight=1)
         phs_frame.grid_columnconfigure(0, weight=1)
 
         s = ttk.Separator(phs_control, orient='horizontal')
-        s.grid(row=0, column=0, columnspan=8, sticky='nsew')
+        s.grid(row=0, column=0, columnspan=20, sticky='nsew')
         scanning = tk.Label(phs_control, text='Scanning')
         scanning.grid(row=1, column=0, columnspan=2, sticky='nw')
         pos_lbl = tk.Label(phs_control, text='Position:')
@@ -1427,10 +1439,10 @@ class Mono_Physics(tk.Frame):
         max_pos.grid(row=3, column=0, sticky='nw', pady=3)
         min_pos = tk.Label(phs_control, text='Min:')
         min_pos.grid(row=3, column=1, sticky='nw', pady=3)
-        max_evar = tk.IntVar()
+        max_evar = tk.DoubleVar()
         max_evar.set(40)
-        min_evar = tk.IntVar()
-        min_evar.set(-40)
+        min_evar = tk.DoubleVar()
+        min_evar.set(39.99)
         max_e = tk.Entry(phs_control, textvariable=max_evar, width=8)
         min_e = tk.Entry(phs_control, textvariable=min_evar, width=8)
         max_e.grid(row=4, column=0, sticky='nsew', padx=3)
@@ -1441,19 +1453,89 @@ class Mono_Physics(tk.Frame):
         ite_e.grid(row=5, column=1, sticky='nsew', padx=3)
         ite_lbl = tk.Label(phs_control, text='# Iteration :')
         ite_lbl.grid(row=5, column=0, sticky='nw', padx=3)
-        # Here we should add a step size for the linear stage due the short time I have left I am skipping this part
+
+
+
+#################################################################################################################
+#### J'ai rajouté la partie qui suit pour faire fonctionner les fonctions en plus dans le code Physics ##########
+#################################################################################################################
+
+
+        # Entries for the scan and measure function
+        step = tk.DoubleVar()
+        step.set(0.02) #um
+        step_e = tk.Entry(phs_control, textvariable=step, width=8)
+        step_e.grid(row=6, column=1, sticky = 'nsew', padx=3)
+        step_text = tk.Label(phs_control, text='stage step (um)')
+        step_text.grid(row=6, column=0, sticky='nsew', padx=3)
+        file_name = tk.StringVar()
+        file_name.set('step_scan')
+        file_entry = tk.Entry(phs_control, width=6, textvariable=file_name)
+        file_entry.grid(row=7, column=1, sticky='nsew', padx=3)
+        file_text = tk.Label(phs_control, text='name of the saved file')
+        file_text.grid(row=7, column=0, sticky='nsew', padx=3)
+        duree = tk.DoubleVar()
+        duree.set(300)
+        duree_entry = tk.Entry(phs_control, width=6, textvariable=duree)
+        duree_entry.grid(row=8, column=1, sticky='nsew', padx=3)
+        duree_text = tk.Label(phs_control, text='measure duration per point (ms)')
+        duree_text.grid(row=8, column=0, sticky='nsew', padx=3)
+        
+        
+
+	# Here we should add a step size for the linear stage due the short time I have left I am skipping this part
         # I don't know what should be the best way to implement this quickly and the best way
         scan_b = tk.Button(phs_control, text='SCAN', width=8,
-                           command=lambda: self.parent.Linstage.scanning(max_pos=max_evar, min_pos= min_evar,
-                                                                         iteration=ite_var))
-        scan_b.grid(row=7, column=0, columnspan=2, sticky='nsew', padx=3)
+                           command=lambda: threading.Thread(target = self.Linstage.scanning, 
+                               args = (min_evar, max_evar, ite_var)).start())
+        scan_b.grid(row=9, column=0, columnspan=2, sticky='nsew', padx=3)
+
+       ## Ajout d'un bouton pour tester la fonction d'acquisition avec le module Zurich
+        scanlock = tk.Button(phs_control, text='Scan_DAQ', width=8,
+                           command=lambda: self.Linstage.measure_daq(min_evar.get(), max_evar.get(), 
+                           ite_var.get(), duree.get()/1000, step.get()/1000, file_name.get()))
+        scanlock.grid(row=11, column=0, columnspan=2, sticky='nsew', padx=3)
+
+        connect_card = tk.Button(phs_control, text = 'Connect Card', width = 8, command=lambda: self.Linstage.connect_card())
+        connect_card.grid(row = 12, column = 0, columnspan = 2, sticky = 'nsew', padx = 3)
+
+###################################################################################################################
+### J'ai aussi fait une fonction de mesure sans scan avec le bouton dans l'onglet stage mais le code dans Zurich ##
+###################################################################################################################
+
+        ## New column in the software for measures without scans (again temporary solution)
+        s3 = ttk.Separator(phs_control, orient='vertical')
+        s3.grid(row=0, column=14, rowspan=20, sticky='nsew')
+        s4 = ttk.Separator(phs_control, orient='horizontal')
+        s4.grid(row=0, column=10, columnspan=3)
+        measure_only = tk.Label(phs_control, text='Measure only')
+        measure_only.grid(row=1, column=11, sticky='nsew', columnspan=2)
+        file_measure = tk.StringVar()
+        file_measure.set('data')
+        filem_entry = tk.Entry(phs_control, width=6, textvariable=file_measure)
+        filem_entry.grid(row=2, column=12, sticky='nsew', padx=3)
+        filem_text = tk.Label(phs_control, text='name of the saved file')
+        filem_text.grid(row=2, column=11, sticky='nsew', padx=3)
+        duree_m = tk.DoubleVar()
+        duree_m.set(1.0)
+        dureem_entry = tk.Entry(phs_control, width=6, textvariable=duree_m)
+        dureem_entry.grid(row=3, column=12, sticky='nsew', padx=3)
+        dureem_text = tk.Label(phs_control, text='measure duration (s)')
+        dureem_text.grid(row=3, column=11, sticky='nsew', padx=3)
+
+        measure_b = tk.Button(phs_control, text='Start measure', width=8, 
+            command=lambda: self.Linstage.quick_measure(duree_m.get(), file_measure.get()))
+        measure_b.grid(row=4, column=11, columnspan=2, sticky='nsew', padx=3)
+ 
+
+
 
         def update_speed(scale, variable):
             scale.configure(label='{}'.format(variable[scale.get()]))
-            self.parent.Linstage.change_speed(factor=scale.get())
+            self.Linstage.change_speed(factor=scale.get())
 
         s1 = ttk.Separator(phs_control, orient='vertical')
-        s1.grid(row=0, column=2, rowspan=8, sticky='nsew')
+        s1.grid(row=0, column=2, rowspan=20, sticky='nsew')
         config = tk.Label(phs_control, text='Configure')
         config.grid(row=1, column=3, sticky='nw', columnspan=2)
         speed = tk.Label(phs_control, text='Velocity:')
@@ -1464,20 +1546,31 @@ class Mono_Physics(tk.Frame):
         speed_scale.configure(label='{}'.format(speed_value[speed_scale.get()]))
         speed_scale.grid(row=3, column=3, columnspan=2, sticky='nsew')
         calib_lin = tk.Button(phs_control, text='Calibrate device', width=16,
-                              command=lambda: self.parent.Linstage.calibration())
+                              command=lambda: self.Linstage.calibration())
         calib_lin.grid(row=6, column=3, columnspan=2, sticky='nsew', padx=3)
         s2 = ttk.Separator(phs_control, orient='vertical')
-        s2.grid(row=0, column=5, sticky='nsew', padx=2, rowspan=8)
+        s2.grid(row=0, column=5, sticky='nsew', padx=2, rowspan=20)
         control = tk.Label(phs_control, text='Control')
         control.grid(row=1, column=6, columnspan=2, sticky='nw')
         go2 = tk.Label(phs_control, text='Go to position:')
         go2.grid(row=2, column=6, sticky='nw')
-        go_var = tk.IntVar()
+        go_var = tk.DoubleVar()
         go_e = tk.Entry(phs_control, width=8, textvariable=go_var)
         go_e.grid(row=2, column=7, sticky='nsew', padx=2, pady=2)
-        go_e.bind('<Return>', lambda e: self.parent.Linstage.go_2position(go_var))
+        go_e.bind('<Return>', lambda e: self.Linstage.go_2position(go_var))
+        inc = tk.Label(phs_control, text='Increment:')
+        inc.grid(row=3, column=6, sticky='nw')
+        inc_var = tk.DoubleVar()
+        inc_e = tk.Entry(phs_control, width=8, textvariable=inc_var)
+        inc_e.grid(row=3, column=7, sticky='nsew', padx=2, pady=2)
+        left_b = tk.Button(phs_control, text='L', 
+                           command=lambda:self.Linstage.increment_move(position=go_var, increment=inc_var, direction='left'))
+        right_b = tk.Button(phs_control, text='R', 
+                           command=lambda:self.Linstage.increment_move(position=go_var, increment=inc_var, direction='right'))
+        left_b.grid(row=4, column=6, sticky='nsew', padx=2, pady=2)
+        right_b.grid(row=4, column=7, sticky='nsew', padx=2, pady=2)
         s3 = ttk.Separator(phs_control, orient='vertical')
-        s3.grid(row=0, column=8, sticky='nsew', rowspan=8)
+        s3.grid(row=0, column=8, sticky='nsew', rowspan=20)
 
         for i in range(4):
             self.grid_columnconfigure(i, weight=1)
@@ -1496,10 +1589,11 @@ class Mono_Physics(tk.Frame):
 
 # Frame dispositions for the spectrometer interactions
 class SpectroFrame(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, mainf=None):
         tk.Frame.__init__(self, parent)
         self.config(bg='brown', width=100, height=100)
         self.parent = parent
+        self.Spectro = Spectrometer.Spectro(mainf=mainf)
         option_frame = ttk.Labelframe(self, text='Options')
         option_frame.grid(row=0, column=0, sticky='nsew')
         graph_frame = tk.Frame(self)
@@ -1507,19 +1601,19 @@ class SpectroFrame(tk.Frame):
         graph_frame.grid_rowconfigure(0, weight=1)
         graph_frame.grid_columnconfigure(0, weight=1)
         self.graph = Graphic.GraphicFrame(graph_frame, axis_name=['Wavelength', 'Intensity'], figsize=[9, 6])
-        self.parent.Spectro.wv_graphic = self.graph
+        self.Spectro.wv_graphic = self.graph
         self.bind('<Configure>', self.graph.change_dimensions)
         # Possible option
         dev_lbl = tk.Label(option_frame, text='Specific Device?')
         dev_evar = tk.StringVar()
         dev_e = tk.Entry(option_frame, textvariable=dev_evar, width=8)
         connect = tk.Button(option_frame, text='Connect',
-                            command=lambda: self.parent.Spectro.connect(exp_dependencie=True))
+                            command=lambda: self.Spectro.connect(exp_dependencie=True))
         self.inte_var = tk.IntVar()
         self.inte_var.set(1000)
         inte_lbl = tk.Label(option_frame, text='Integration time [ms]:')
         inte = tk.Entry(option_frame, textvariable=self.inte_var, width=6)
-        inte.bind('<Return>', lambda e: self.parent.Spectro.adjust_integration_time(self.inte_var))
+        inte.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(self.inte_var))
         dev_lbl.grid(row=0, column=0, sticky='nw')
         dev_e.grid(row=1, column=0, sticky='nsew')
         connect.grid(row=2, column=0, sticky='nsew')
@@ -1528,7 +1622,7 @@ class SpectroFrame(tk.Frame):
         dark_spectrum_var = tk.StringVar()
         dark_spectrum_var.set('disable')
         dark_spectrum = tk.Checkbutton(option_frame, text='Dark Spectrum substraction:', variable=dark_spectrum_var,
-                                       command=lambda: self.parent.Spectro.enable_darkspectrum(dark_spectrum_var),
+                                       command=lambda: self.Spectro.enable_darkspectrum(dark_spectrum_var),
                                        onvalue='enable', offvalue='disable')
         dark_spectrum.grid(row=5, column=0, sticky='nw')
         eff_var = tk.StringVar()
@@ -1548,7 +1642,7 @@ class SpectroFrame(tk.Frame):
         dual_plotting_var = tk.StringVar()
         dual_plotting_var.set('disable')
         dual_plotting = tk.Checkbutton(option_frame, text='Wavalenght + FFT:', variable=dual_plotting_var,
-                                       command=lambda: self.parent.Spectro.switch_graphics(dual_plotting_var,
+                                       command=lambda: self.Spectro.switch_graphics(dual_plotting_var,
                                                                                            graph_frame),
                                        onvalue='enable', offvalue='disable')
         dual_plotting.grid(row=8, column=0, sticky='nw')
@@ -1563,7 +1657,7 @@ class SpectroFrame(tk.Frame):
 
     # It need to have Save Data, Statistics, Axis Modification, Overlaps
     def measure(self, button, variable, click=None):
-        if not self.parent.Spectro.spectro:
+        if not self.Spectro.spectro:
             return
 
         t = self.inte_var.get()
@@ -1573,23 +1667,24 @@ class SpectroFrame(tk.Frame):
             if variable.get() == 'disable':
                 variable.set('enable')
                 button.config(text='STOP')
-                self.parent.Spectro.extract_intensities()
+                self.Spectro.extract_intensities()
                 self.after(t, self.measure, button, variable)
             elif variable.get() == 'enable':
                 variable.set('disable')
                 button.config(text='RUN')
         elif not click:
             if variable.get() == 'enable':
-                self.parent.Spectro.extract_intensities()
+                self.Spectro.extract_intensities()
                 self.after(t, self.measure, button, variable)
 
 
 # Window for all of the experiement
 class Experiment(ttk.LabelFrame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, mainf=None):
 
         ttk.LabelFrame.__init__(self, parent)
+        self.mainf = mainf
 
         def frame_switch(list_, new):
             for frame in list_:
@@ -1610,7 +1705,7 @@ class Experiment(ttk.LabelFrame):
             if type(name) == str:
                 values.append(name)
                 experiment_name['value'] = tuple(values)
-                self.experiment_dict[name] = Experiment_file.CreateLayout(main=self.parent, window=self,
+                self.experiment_dict[name] = Experiment_file.CreateLayout(mainf=self.mainf, window=self,
                                                                           tools_names=option, graph_names=graph,
                                                                           function_class=function_)
 
@@ -1626,6 +1721,9 @@ class Experiment(ttk.LabelFrame):
         create_layout(name='White_Light', function_=Experiment_file.WhiteLight,
                       option=['Monochrom', 'Zurich', 'Spectrometer', 'Physics_Linear_Stage'],
                       graph={'Wave': ['Wavelength', 'Max Delay'], 'Delay': ['Delay', 'Intensity']})
+        create_layout(name='Zero Delay', function_=Experiment_file.ZeroDelay,
+                      option=['Physics_Linear_Stage'],
+                      graph={'Power': ['Stage position [um]', 'Normalized Voltage'], 'Else': ['a', 'b']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
@@ -1637,6 +1735,6 @@ class Experiment(ttk.LabelFrame):
                 self.grid_columnconfigure(i, weight=1)
                 self.grid_rowconfigure(j, weight=1)
 
-
-app = MainFrame()
-app.mainloop()
+if __name__ == '__main__':
+    app = MainFrame()
+    app.mainloop()

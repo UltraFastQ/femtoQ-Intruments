@@ -3,6 +3,8 @@ import Graphic
 import re
 import numpy as np
 import time
+import zhinst.utils
+import matplotlib.pyplot as plt
 
 
 class Zurich:
@@ -92,6 +94,7 @@ class Zurich:
 
             daq.set(reset_settings)
             daq.sync()
+            print(self.paths)
 
             if exp_dependencie:
                 experiments = self.parent.Frame[4].experiment_dict
@@ -221,6 +224,7 @@ class Zurich:
 
         # This set the default demodulator parameter for initialization purpuses
         index = path.split('/demods/')
+        print(index)
         index = index[1].split('/enable')[0]
         import zhinst.utils as utils
         basics = [['/%s/demods/%s/enable' % (self.info['device'], index), value],
@@ -243,6 +247,7 @@ class Zurich:
         if not path:
             return
         while self.in_use:
+            print('0')
             time.sleep(0.1)
         for element in self.paths:
             if self.paths[element]:
@@ -290,14 +295,19 @@ class Zurich:
             return
         subscribed = self.subscribed
         data_set = self.info['daq'].poll(self.poll_set[0], self.poll_set[1], self.poll_set[2], self.poll_set[3])
-        for path in subscribed:
-            self.in_use = True
-            subscribed[path][0].extract_data(data=data_set, path=path)
-            subscribed[path][1].update_graph()
+        self.in_use = True
+        # Ici pour le bug de superposition
+        try:
+            for path in subscribed:
+                subscribed[path][0].extract_data(data=data_set, path=path)
+                subscribed[path][1].update_graph()
+        except:
+            print("Size change")
         self.in_use = False
         self.parent.after(t, self.measure_guide)
+   
 
-
+   
 class Scope:
 
     def __init__(self, zurich=None, line=None, axes=None, fig=None):
@@ -486,36 +496,13 @@ class Plotter:
 
     # This function need work I haven't found the proper way to make the data collection dependent of the
     # BoxCar and the demodulator... To be continued
-    def extract_data(self, data, path):
+    def extract_data(self, path):
         if not(self.zurich.paths[path]):
             return
-        clockbase = float(self.zurich.info['daq'].getInt('/%s/clockbase' % self.zurich.info['device']))
-        # self.Value = np.append(self.Value['vals']['phi'], np.angle(Sample['x'] +1j*Sample['y']))
-        amplitude = []
-        t = []
-        if 'demods' in path:
-            if not t:
-                amplitude.append(np.abs(data['x'] + 1j * data['y']))
-                t.append(((data['timestamp'] - data['timestamp'][0]) / clockbase))
-            else:
-                amplitude[0] = np.append(amplitude[0], np.abs(data['x'] + 1j * data['y']))
-                t[0] = np.append(t[0], ((data['timestamp'] - data['timestamp'][0]) / clockbase) +
-                                         max(t[0]))
-        elif 'boxcars' :
-            if not t:
-                amplitude.append(data['value'])
-                t.append(((data['timestamp'] - data['timestamp'][0]) / clockbase))
-            else:
-                amplitude[0] = np.append(self.Value['vals'][0], data['value'])
-                # Work needs to be done to optimize the offset
-                t[0] = np.append(self.Value['t'][0], ((data['timestamp'] - data['timestamp'][0]) / clockbase) +
-                                                       max(t[0]))
-        self.axes.set_ylim([min(amplitude) - abs(min(amplitude) * 15 / 100),
-                            max(amplitude) + max(amplitude) * 15 / 100])
-        self.axes.set_xlim([min(1e6 * t) - abs(min(1e6 * t) * 15 / 100),
-                            max(1e6 * t) + max(1e6 * t) * 15 / 100])
-        self.line.set_ydata(amplitude)
-        self.line.set_xdata(time)
+        # This takes the wave data stored in the daq and push them into the  it in the assigned figure
+        # This function is not done just yet work as to be done to finish it
+        self.line.set_xdata([1, 2])
+        self.line.set_ydata([2, 1])
 
 
 class Boxcar:
@@ -524,7 +511,7 @@ class Boxcar:
         # format will be #1 : device id when connected
         #                #2 : scope taken to read the data
         # line : matplotlib Line issued when you plot axis
-        self.path = '/{}/inputpwas/{}/wave'
+        self.path1 = '/{}/inputpwas/{}/wave'
         self.path2 = '/{}/boxcars/{}/wave'
         self.line = line
         self.axes = axes
@@ -546,16 +533,15 @@ class Boxcar:
             variable.set('disable')
             return
         value = None
-        device = self.zurich.info['device']
-        inputpwa_index = 0
-        boxcar_index = 0
         if variable.get() == 'enable':
             self.zurich.state['Boxcar'] = True
             value = 1
         elif variable.get() == 'disable':
             self.zurich.state['Boxcar'] = False
-            self.zurich.paths[self.path.format(device, inputpwa_index)] = False
             value = 0
+        device = self.zurich.info['device']
+        inputpwa_index = 0
+        boxcar_index = 0
         BOX_Settings = [['/%s/inputpwas/%d/oscselect' % (device, inputpwa_index), 0],
                         ['/%s/inputpwas/%d/inputselect' % (device, inputpwa_index), pwa_input],
                         ['/%s/inputpwas/%d/mode' % (device, inputpwa_index), 1],
@@ -572,8 +558,8 @@ class Boxcar:
                         ]
         self.zurich.info['daq'].set(BOX_Settings)
         self.zurich.info['daq'].sync()
-        self.zurich.paths[self.path.format(device, inputpwa_index)] = True
-        #self.zurich.paths[self.path2.format(device, boxcar_index)] = True
+        self.zurich.paths[self.path1.format(device, inputpwa_index)] = True
+        self.zurich.paths[self.path2.format(device, boxcar_index)] = True
 
     def phase_and_time(self, variable):
         if not self.zurich.info:
@@ -614,7 +600,7 @@ class Boxcar:
         # The inputpwa waveform is stored in 'x', currently 'y' is unused.
         self.axes.set_ylim([min(amplitude) - abs(min(amplitude) * 15 / 100),
                             max(amplitude) + max(amplitude) * 15 / 100])
-        self.axes.set_xlim([min(phase) - abs(min(phase) * 15 / 100),
-                            max(phase) + max(phase) * 15 / 100])
+        self.axes.set_xlim([min(1e6 * phase) - abs(min(1e6 * phase) * 15 / 100),
+                            max(1e6 * phase) + max(1e6 * phase) * 15 / 100])
         self.line.set_ydata(amplitude)
         self.line.set_xdata(phase)

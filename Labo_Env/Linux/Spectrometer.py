@@ -6,12 +6,12 @@ import Graphic
 
 
 class Spectro:
-    def __init__(self, graphic=None, parent=None):
+    def __init__(self, graphic=None, mainf=None):
         self.spectro = None
         self.wv_graphic = graphic
         self.fft_graphic = None
         self.dual = None
-        self.parent = parent
+        self.mainf = mainf
         self.max_intensitie = 0
         self.dark_spectrum = False
 
@@ -40,7 +40,7 @@ class Spectro:
         self.spectro.integration_time_micros(1000)
 
         if exp_dependencie:
-            experiments = self.parent.Frame[4].experiment_dict
+            experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
                 experiments[experiment].update_options('Spectrometer')
 

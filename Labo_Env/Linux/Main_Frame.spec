@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['Main_Frame.py'],
-             pathex=['/home/nico/Documents/Intern_Programs/Git_Folder/Lab_Env/Labo_Env'],
+             pathex=['/home/blue/Poly/Software/Lab_Env/Labo_Env/Linux'],
              binaries=[],
              datas=[],
              hiddenimports=[],

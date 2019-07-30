@@ -1,12 +1,18 @@
 # tkinter
 from tkinter import messagebox
+from multiprocessing import Process
+import threading
+import time
+import numpy as np
+import matplotlib.pyplot as plt
 
 
 class LinearStage:
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, mainf=None):
+        self.mainf = mainf
         self.device = None
         self.axes = None
+        self.thread = None
 
     def connect_identification(self, dev_name=None, dev_ip=None, exp_dependencie=False):
         if not dev_name and not dev_ip:
@@ -17,7 +23,7 @@ class LinearStage:
 
         dev_name = dev_name.get()
         dev_ip = dev_ip.get()
-        dev_list = ['C-891']
+        dev_list = ['C-891', 'C-863']
         if dev_name not in dev_list:
             messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
                                                        'compatible with the pipython software. If so add it to the list'
@@ -27,6 +33,9 @@ class LinearStage:
         if dev_name:
             gcs = GCSDevice(dev_name)
             devices = gcs.EnumerateUSB(mask=dev_name)
+            if devices == []:
+                messagebox.showinfo(title='Error', message='It seems like there is no devices connected to your computer')
+                return
             gcs.ConnectUSB(devices[0])
             messagebox.showinfo(title='Physics Instrument', message='Device {} is connected.'.format(dev_name))
             self.device = gcs
@@ -36,9 +45,10 @@ class LinearStage:
         self.axes = self.device.axes[0]
         self.device.EAX(self.axes, True)
         if exp_dependencie:
-            experiments = self.parent.Frame[4].experiment_dict
+            experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
                 experiments[experiment].update_options('Physics_Linear_Stage')
+    
 
     def scanning(self, min_pos=None, max_pos=None, iteration=None):
         if not self.device:
@@ -68,7 +78,7 @@ class LinearStage:
             pitools.waitontarget(self.device)
             self.device.MOV(self.axes, min_pos)
             pitools.waitontarget(self.device)
-
+    
     def go_2position(self, position=None):
         if not self.device or not position:
             return
@@ -76,6 +86,23 @@ class LinearStage:
         position = position.get()
         self.device.MOV(self.axes, position)
         pitools.waitontarget(self.device)
+
+    def increment_move(self, position=None, increment=None, 
+                       direction = None):
+        if not self.device or not position:
+            return
+        import pipython.pitools as pitools
+        position2 = position.get()
+        increment = increment.get()
+        if direction == 'left':
+            increment = -increment
+        else:
+            pass
+        position2 += increment
+        position.set(position2)
+        self.device.MOV(self.axes, position2)
+        pitools.waitontarget(self.device)
+        
 
     def change_speed(self, factor=None):
         if not self.device or not factor:
@@ -87,7 +114,8 @@ class LinearStage:
         # 0 (the minimum) = 250
         # 1 : 500 ...
         self.device.VEL(self.axes, factor*10)
-
+        print(self.empty_var)
+        
     def calibration(self):
         if not self.device:
             return
@@ -106,4 +134,14 @@ class LinearStage:
         else:
             messagebox.showinfo(message='Calibration failed')
 
+
+class myThread(threading.Thread):
+    def __init__(self, parent, min_pos, max_pos, iteration):
+        self.parent = parent
+        self.min_pos = min_pos
+        self.max_pos = max_pos
+        self.iteration = iteration
+
+    def run(self):
+        self.parent.scanning(self.min_pos, self.max_pos, self.iteration)
 
