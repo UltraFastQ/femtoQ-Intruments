@@ -39,15 +39,18 @@ class LinearStage:
                     messagebox.showinfo(title='Error', message='It seems like there is no devices connected to your computer')
                     return
                 gcs.ConnectUSB(devices[0])
+                self.device = gcs
                 self.axes = self.device.axes[0]
                 self.device.EAX(self.axes, True)
                 
             # Case controller C-863.12    
             elif dev_name == dev_list[1]:
                 gcs.ConnectUSB(serialnum = '0019550022')
+                self.device = gcs
                 self.axes = self.device.axes[0]
                 self.device.SVO(self.axes, 1)
-                
+               
+            self.calibration(dev_name = dev_name) 
             messagebox.showinfo(title='Physics Instrument', message='Device {} is connected.'.format(dev_name))
             self.device = gcs
             
@@ -126,13 +129,12 @@ class LinearStage:
         self.device.VEL(self.axes, factor*10)
         print(self.empty_var)
         
-    def calibration(self, dev_name = None):
+    def calibration(self, dev_name):
         if not self.device:
             return
         # Pipython :
         from pipython import GCSDevice
         
-        dev_name = dev_name.get()
         dev_list = ['C-891', 'C-863.11']
         
         # Controller C-891
@@ -143,11 +145,8 @@ class LinearStage:
                 if i == 0:
                     messagebox.showinfo(message='Wait until the orange light is closed')
                     i += 1
-            if self.device.IsControllerReady():
-                messagebox.showinfo(message='Device is ready')
-                self.device.SVO(self.axes, 1)
-            else:
-                messagebox.showinfo(message='Calibration failed')
+            messagebox.showinfo(message='Device is ready')
+            self.device.SVO(self.axes, 1)
         
         # Controller C-863.12
         if dev_name == dev_list[1]:
@@ -157,10 +156,7 @@ class LinearStage:
                 if i == 0:
                     messagebox.showinfo(message='Calibration in progress')
                     i += 1
-            if self.device.IsControllerReady():
-                messagebox.showinfo(message='Device is ready')
-            else:
-                messagebox.showinfo(message='Calibration failed')
+            messagebox.showinfo(message='Device is ready')
 
 
 class myThread(threading.Thread):
