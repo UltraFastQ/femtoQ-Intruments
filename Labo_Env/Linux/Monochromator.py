@@ -2,7 +2,6 @@ import glob
 import struct
 import time
 from tkinter import messagebox
-import serial
 
 
 class MonoChrom:
@@ -18,6 +17,7 @@ class MonoChrom:
 
     def serial_ports(self):
         import sys
+        import serial
         """ Lists serial port names
 
             :raises EnvironmentError:
@@ -46,6 +46,7 @@ class MonoChrom:
         self.Port = result
 
     def connect(self, exp_dependencie=False):
+        import serial
         self.serial_ports()
         if not self.Port:
             return

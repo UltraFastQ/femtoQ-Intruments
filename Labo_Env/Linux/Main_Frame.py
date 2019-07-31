@@ -27,10 +27,10 @@ class MainFrame(tk.Tk):
         self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self, mainf=self), SpectroFrame(self, mainf=self), Experiment(self, mainf=self)]
         self.Frame[0].grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
-        directory = Path.cwd()
-        image = tk.PhotoImage(file=directory / 'FMQ3.gif')
-        tk.Tk.wm_title(self, "femtoQPy")
-        tk.Tk.wm_iconphoto(self, '-default', image)
+#        directory = Path.cwd()
+#        image = tk.PhotoImage(file=directory / 'FMQ3.gif')
+#        tk.Tk.wm_title(self, "femtoQPy")
+#        tk.Tk.wm_iconphoto(self, '-default', image)
         # Menubar creation
         menubar = tk.Menu(self)
         filemenu = tk.Menu(menubar, tearoff=False)
@@ -64,11 +64,11 @@ class HomePage(tk.Frame):
         welcomelabel = tk.Label(self, text='WELCOME', font=24)
         welcomelabel.grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
-        directory = Path.cwd()
-        image = tk.PhotoImage(file=directory / 'FemtoQ_logo_white-bg.png')
-        panel = tk.Label(self, image=image)
-        panel.image = image
-        panel.grid(row=1, column=0, sticky='nsew')
+#        directory = Path.cwd()
+#        image = tk.PhotoImage(file=directory / 'FemtoQ_logo_white-bg.png')
+#        panel = tk.Label(self, image=image)
+#        panel.image = image
+#        panel.grid(row=1, column=0, sticky='nsew')
         for i in range(1):
             for j in range(2):
                 self.grid_columnconfigure(i, weight=1)
