@@ -492,7 +492,7 @@ class ZeroDelay:
                     value_step = np.append(value_step, self.DAQ.card.AIn(chan, gain))
                  
                 if progress:
-                    progress['value'] = (i*j + 2)/(iteration*nsteps)
+                    progress['value'] = (i*nsteps + j)/(iteration*nsteps)
                     progress.update()
 
                 pos += step

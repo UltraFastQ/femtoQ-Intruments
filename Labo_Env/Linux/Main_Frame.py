@@ -1454,12 +1454,6 @@ class Mono_Physics(tk.Frame):
         ite_lbl.grid(row=5, column=0, sticky='nw', padx=3)
 
 
-
-#################################################################################################################
-#### J'ai rajouté la partie qui suit pour faire fonctionner les fonctions en plus dans le code Physics ##########
-#################################################################################################################
-
-
         # Entries for the scan and measure function
         step = tk.DoubleVar()
         step.set(0.02) #um
