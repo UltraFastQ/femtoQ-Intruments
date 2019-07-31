@@ -1,4 +1,3 @@
-from usb_1208LS import *
 from tkinter import messagebox
 import time
 

@@ -3,7 +3,6 @@ from tkinter import ttk
 from tkinter import messagebox
 from pathlib import Path
 from multiprocessing import Process
-from usb_1208LS import *
 # Import of classes
 import Zurich_Instrument
 import Graphic
@@ -1490,18 +1489,6 @@ class Mono_Physics(tk.Frame):
                                args = (min_evar, max_evar, ite_var)).start())
         scan_b.grid(row=9, column=0, columnspan=2, sticky='nsew', padx=3)
 
-       ## Ajout d'un bouton pour tester la fonction d'acquisition avec le module Zurich
-        scanlock = tk.Button(phs_control, text='Scan_DAQ', width=8,
-                           command=lambda: self.Linstage.measure_daq(min_evar.get(), max_evar.get(), 
-                           ite_var.get(), duree.get()/1000, step.get()/1000, file_name.get()))
-        scanlock.grid(row=11, column=0, columnspan=2, sticky='nsew', padx=3)
-
-        connect_card = tk.Button(phs_control, text = 'Connect Card', width = 8, command=lambda: self.Linstage.connect_card())
-        connect_card.grid(row = 12, column = 0, columnspan = 2, sticky = 'nsew', padx = 3)
-
-###################################################################################################################
-### J'ai aussi fait une fonction de mesure sans scan avec le bouton dans l'onglet stage mais le code dans Zurich ##
-###################################################################################################################
 
         ## New column in the software for measures without scans (again temporary solution)
         s3 = ttk.Separator(phs_control, orient='vertical')
@@ -1522,13 +1509,6 @@ class Mono_Physics(tk.Frame):
         dureem_entry.grid(row=3, column=12, sticky='nsew', padx=3)
         dureem_text = tk.Label(phs_control, text='measure duration (s)')
         dureem_text.grid(row=3, column=11, sticky='nsew', padx=3)
-
-        measure_b = tk.Button(phs_control, text='Start measure', width=8, 
-            command=lambda: self.Linstage.quick_measure(duree_m.get(), file_measure.get()))
-        measure_b.grid(row=4, column=11, columnspan=2, sticky='nsew', padx=3)
- 
-
-
 
         def update_speed(scale, variable):
             scale.configure(label='{}'.format(variable[scale.get()]))
