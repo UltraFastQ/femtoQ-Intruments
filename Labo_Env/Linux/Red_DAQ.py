@@ -10,8 +10,10 @@ class PMD_1008:
     def connect_card(self):
         import usb_1208LS as us
         self.card = us.usb_miniLAB()
-        messagebox.showinfo(title='INFO', message='Red Lab connected')
-
+        if self.card:    
+            messagebox.showinfo(title='INFO', message='Red Lab connected')
+        else:
+            messagebox.showinfo(title='ERROR', message='No device found')
 
     def quick_measure(self, duree, file_name):
         import usb_1208LS as us
