@@ -22,7 +22,7 @@ class LinearStage:
 
         dev_name = dev_name.get()
         dev_ip = dev_ip.get()
-        dev_list = ['C-891', 'C-863']
+        dev_list = ['C-891', 'C-863.11']
         if dev_name not in dev_list:
             messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
                                                        'compatible with the pipython software. If so add it to the list'
