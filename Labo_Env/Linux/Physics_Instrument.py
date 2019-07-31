@@ -31,18 +31,29 @@ class LinearStage:
 
         if dev_name:
             gcs = GCSDevice(dev_name)
-            devices = gcs.EnumerateUSB(mask=dev_name)
-            if devices == []:
-                messagebox.showinfo(title='Error', message='It seems like there is no devices connected to your computer')
-                return
-            gcs.ConnectUSB(devices[0])
+            
+            # Case controller C-891
+            if dev_name == dev_list[0]:
+                devices = gcs.EnumerateUSB(mask=dev_name)
+                if devices == []:
+                    messagebox.showinfo(title='Error', message='It seems like there is no devices connected to your computer')
+                    return
+                gcs.ConnectUSB(devices[0])
+                self.axes = self.device.axes[0]
+                self.device.EAX(self.axes, True)
+                
+            # Case controller C-863.12    
+            elif dev_name == dev_list[1]:
+                gcs.ConnectUSB(serialnum = '0019550022')
+                self.axes = self.device.axes[0]
+                self.device.SVO(self.axes, 1)
+                
             messagebox.showinfo(title='Physics Instrument', message='Device {} is connected.'.format(dev_name))
             self.device = gcs
+            
         elif dev_ip:
             messagebox.showinfo(title='Physics Intrument', message='This option is not completed')
 
-        self.axes = self.device.axes[0]
-        self.device.EAX(self.axes, True)
         if exp_dependencie:
             experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
@@ -115,23 +126,41 @@ class LinearStage:
         self.device.VEL(self.axes, factor*10)
         print(self.empty_var)
         
-    def calibration(self):
+    def calibration(self, dev_name = None):
         if not self.device:
             return
         # Pipython :
         from pipython import GCSDevice
-
-        self.device.FRF()
-        i = 0
-        while self.device.IsControllerReady() != 1:
-            if i == 0:
-                messagebox.showinfo(message='Wait until the orange light is closed')
-                i += 1
-        if self.device.IsControllerReady() == 1:
-            messagebox.showinfo(message='Device is ready')
-            self.device.SVO(self.axes, 1)
-        else:
-            messagebox.showinfo(message='Calibration failed')
+        
+        dev_name = dev_name.get()
+        dev_list = ['C-891', 'C-863.11']
+        
+        # Controller C-891
+        if dev_name == dev_list[0]:
+            self.device.FRF()
+            i = 0
+            while self.device.IsControllerReady() != 1:
+                if i == 0:
+                    messagebox.showinfo(message='Wait until the orange light is closed')
+                    i += 1
+            if self.device.IsControllerReady():
+                messagebox.showinfo(message='Device is ready')
+                self.device.SVO(self.axes, 1)
+            else:
+                messagebox.showinfo(message='Calibration failed')
+        
+        # Controller C-863.12
+        if dev_name == dev_list[1]:
+            self.device.FRF(self.axes)
+            i = 0
+            while self.device.IsControllerReady() != 1:
+                if i == 0:
+                    messagebox.showinfo(message='Calibration in progress')
+                    i += 1
+            if self.device.IsControllerReady():
+                messagebox.showinfo(message='Device is ready')
+            else:
+                messagebox.showinfo(message='Calibration failed')
 
 
 class myThread(threading.Thread):
