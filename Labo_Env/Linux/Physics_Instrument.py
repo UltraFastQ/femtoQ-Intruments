@@ -63,7 +63,8 @@ class LinearStage:
                 experiments[experiment].update_options('Physics_Linear_Stage')
 
 
-    def scanning(self, min_pos=None, max_pos=None, iteration=None):
+    def scanning(self, min_pos=None, max_pos=None, iteration=None,
+		         wtime=None, steps=None):
         if not self.device:
             return
 
@@ -76,21 +77,31 @@ class LinearStage:
         iteration = iteration.get()
         max_pos = max_pos.get()
         min_pos = min_pos.get()
+	    wtime = wtime.get()
+	    steps = steps.get()
+
         # Getting the max and min possible value of the device
-        max = self.device.qTMX(self.axes).get(str(self.axes))
-        min = self.device.qTMN(self.axes).get(str(self.axes))
+        maxp = self.device.qTMX(self.axes).get(str(self.axes))
+        minp = self.device.qTMN(self.axes).get(str(self.axes))
 
         # This is a fail safe in case you don't know your device ( I should have done a manual for this...)
-        if not(min_pos >= min and max_pos >= min and min_pos <= max and max_pos <= max):
+        if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
                                 'of your physik instrument device')
             return
-
+        nsteps = int(np.abs(max_pos - min_pos)/steps)
         for i in range(iteration):
-            self.device.MOV(self.axes, max_pos)
-            pitools.waitontarget(self.device)
             self.device.MOV(self.axes, min_pos)
             pitools.waitontarget(self.device)
+	        time.sleep(wtime/1000)
+            pos = min_pos
+            for step in range(nsteps):
+                pos += steps
+                self.device.MOV(self.axes, pos)
+                pitools.waitontarget(self.device)
+	            time.sleep(wtime/1000)
+            if self.device.qPOS(self.axes) != max_pos:
+                self.device.MOV(self.axes, max_pos)
 
     def go_2position(self, position=None):
         if not self.device or not position:
@@ -159,13 +170,13 @@ class LinearStage:
             messagebox.showinfo(message='Device is ready')
 
 
-class myThread(threading.Thread):
-    def __init__(self, parent, min_pos, max_pos, iteration):
-        self.parent = parent
-        self.min_pos = min_pos
-        self.max_pos = max_pos
-        self.iteration = iteration
-
-    def run(self):
-        self.parent.scanning(self.min_pos, self.max_pos, self.iteration)
+#class myThread(threading.Thread):
+#    def __init__(self, parent, min_pos, max_pos, iteration):
+#        self.parent = parent
+#        self.min_pos = min_pos
+#        self.max_pos = max_pos
+#        self.iteration = iteration
+#
+#    def run(self):
+#        self.parent.scanning(self.min_pos, self.max_pos, self.iteration, )
 

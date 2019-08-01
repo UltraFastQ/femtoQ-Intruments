@@ -1479,18 +1479,12 @@ class Mono_Physics(tk.Frame):
         step_e.grid(row=6, column=1, sticky = 'nsew', padx=3)
         step_text = tk.Label(phs_control, text='stage step (um)')
         step_text.grid(row=6, column=0, sticky='nsew', padx=3)
-        file_name = tk.StringVar()
-        file_name.set('step_scan')
-        file_entry = tk.Entry(phs_control, width=6, textvariable=file_name)
-        file_entry.grid(row=7, column=1, sticky='nsew', padx=3)
-        file_text = tk.Label(phs_control, text='name of the saved file')
-        file_text.grid(row=7, column=0, sticky='nsew', padx=3)
         duree = tk.DoubleVar()
         duree.set(300)
         duree_entry = tk.Entry(phs_control, width=6, textvariable=duree)
-        duree_entry.grid(row=8, column=1, sticky='nsew', padx=3)
+        duree_entry.grid(row=7, column=1, sticky='nsew', padx=3)
         duree_text = tk.Label(phs_control, text='measure duration per point (ms)')
-        duree_text.grid(row=8, column=0, sticky='nsew', padx=3)
+        duree_text.grid(row=7, column=0, sticky='nsew', padx=3)
 
 
 
@@ -1498,7 +1492,7 @@ class Mono_Physics(tk.Frame):
         # I don't know what should be the best way to implement this quickly and the best way
         scan_b = tk.Button(phs_control, text='SCAN', width=8,
                            command=lambda: threading.Thread(target = self.Linstage.scanning,
-                               args = (min_evar, max_evar, ite_var)).start())
+                               args = (min_evar, max_evar, ite_var, duree, step)).start())
         scan_b.grid(row=9, column=0, columnspan=2, sticky='nsew', padx=3)
 
 
