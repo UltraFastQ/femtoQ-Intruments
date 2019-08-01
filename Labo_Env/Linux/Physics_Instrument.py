@@ -77,8 +77,8 @@ class LinearStage:
         iteration = iteration.get()
         max_pos = max_pos.get()
         min_pos = min_pos.get()
-	    wtime = wtime.get()
-	    steps = steps.get()
+        wtime = wtime.get()
+        steps = steps.get()
 
         # Getting the max and min possible value of the device
         maxp = self.device.qTMX(self.axes).get(str(self.axes))
@@ -93,13 +93,13 @@ class LinearStage:
         for i in range(iteration):
             self.device.MOV(self.axes, min_pos)
             pitools.waitontarget(self.device)
-	        time.sleep(wtime/1000)
+            time.sleep(wtime/1000)
             pos = min_pos
             for step in range(nsteps):
                 pos += steps
                 self.device.MOV(self.axes, pos)
                 pitools.waitontarget(self.device)
-	            time.sleep(wtime/1000)
+                time.sleep(wtime/1000)
             if self.device.qPOS(self.axes) != max_pos:
                 self.device.MOV(self.axes, max_pos)
 
