@@ -3,7 +3,6 @@ import Graphic
 import re
 import numpy as np
 import time
-import zhinst.utils
 import matplotlib.pyplot as plt
 
 

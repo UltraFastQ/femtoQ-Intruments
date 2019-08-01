@@ -28,7 +28,7 @@ class MainFrame(tk.Tk):
         self.Frame[0].grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
         directory = Path.cwd()
-        image = tk.PhotoImage(file=directory / 'FMQ3.gif')
+        image = tk.PhotoImage(master=self, file=directory / 'FMQ3.gif')
         tk.Tk.wm_title(self, "femtoQPy")
         tk.Tk.wm_iconphoto(self, '-default', image)
         # Menubar creation
@@ -65,7 +65,7 @@ class HomePage(tk.Frame):
         welcomelabel.grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
         directory = Path.cwd()
-        image = tk.PhotoImage(file=directory / 'FemtoQ_logo_white-bg.png')
+        image = tk.PhotoImage(master=self, file=directory / 'FemtoQ_logo_white-bg.png')
         panel = tk.Label(self, image=image)
         panel.image = image
         panel.grid(row=1, column=0, sticky='nsew')
