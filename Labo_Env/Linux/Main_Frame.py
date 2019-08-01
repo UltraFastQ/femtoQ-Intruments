@@ -45,6 +45,9 @@ class MainFrame(tk.Tk):
         winmenu.add_command(label='Experiment', underline=0, command=lambda: self.frame_switch(self.Frame[4]))
         self.config(menu=menubar)
 
+        # Here is the line to have a closing procedure that close all
+        # connections to devices
+        self.protocol('WM_DELETE_WINDOW', self.closing_procedure)
         # Grid scaling
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -54,6 +57,20 @@ class MainFrame(tk.Tk):
             frame.grid_forget()
         new.grid(column=0, row=0, sticky='nsew')
 
+    def closing_procedure(self):
+        if self.Frame[1]:
+            # Do something to close the zurich
+            pass
+        if self.Frame[2].Linstage.device:
+            self.Frame[2].Linstage.device.CloseConnection()
+        if self.Frame[2].Mono.arduino:
+            # Do something to close serial connection
+            pass
+        if self.Frame[3].Spectro.spectro:
+            # Do something to close connection with spectrometer
+            pass
+
+        self.destroy()
 
 # Initial Frame *Put some cozy stuff here*
 class HomePage(tk.Frame):
@@ -64,6 +81,7 @@ class HomePage(tk.Frame):
         welcomelabel = tk.Label(self, text='WELCOME', font=24)
         welcomelabel.grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
+	# Merci à Laurent d'avoir trouver le bug ici :D
         directory = Path.cwd()
         image = tk.PhotoImage(master=self, file=directory / 'FemtoQ_logo_white-bg.png')
         panel = tk.Label(self, image=image)
@@ -1371,9 +1389,9 @@ class Mono_Physics(tk.Frame):
                                       command=lambda: main_phs.Linstage.connect_identification(dev_name=usb_var,
                                                                                            dev_ip=ip_var,
                                                                                            exp_dependencie=True))
-                    
+
                 con_b.grid(row=4, column=0, sticky='nsew')
-        
+
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.mainf = mainf
@@ -1473,13 +1491,13 @@ class Mono_Physics(tk.Frame):
         duree_entry.grid(row=8, column=1, sticky='nsew', padx=3)
         duree_text = tk.Label(phs_control, text='measure duration per point (ms)')
         duree_text.grid(row=8, column=0, sticky='nsew', padx=3)
-        
-        
+
+
 
 	# Here we should add a step size for the linear stage due the short time I have left I am skipping this part
         # I don't know what should be the best way to implement this quickly and the best way
         scan_b = tk.Button(phs_control, text='SCAN', width=8,
-                           command=lambda: threading.Thread(target = self.Linstage.scanning, 
+                           command=lambda: threading.Thread(target = self.Linstage.scanning,
                                args = (min_evar, max_evar, ite_var)).start())
         scan_b.grid(row=9, column=0, columnspan=2, sticky='nsew', padx=3)
 
@@ -1537,9 +1555,9 @@ class Mono_Physics(tk.Frame):
         inc_var = tk.DoubleVar()
         inc_e = tk.Entry(phs_control, width=8, textvariable=inc_var)
         inc_e.grid(row=3, column=7, sticky='nsew', padx=2, pady=2)
-        left_b = tk.Button(phs_control, text='L', 
+        left_b = tk.Button(phs_control, text='L',
                            command=lambda:self.Linstage.increment_move(position=go_var, increment=inc_var, direction='left'))
-        right_b = tk.Button(phs_control, text='R', 
+        right_b = tk.Button(phs_control, text='R',
                            command=lambda:self.Linstage.increment_move(position=go_var, increment=inc_var, direction='right'))
         left_b.grid(row=4, column=6, sticky='nsew', padx=2, pady=2)
         right_b.grid(row=4, column=7, sticky='nsew', padx=2, pady=2)

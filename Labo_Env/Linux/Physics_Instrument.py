@@ -31,7 +31,7 @@ class LinearStage:
 
         if dev_name:
             gcs = GCSDevice(dev_name)
-            
+
             # Case controller C-891
             if dev_name == dev_list[0]:
                 devices = gcs.EnumerateUSB(mask=dev_name)
@@ -42,18 +42,18 @@ class LinearStage:
                 self.device = gcs
                 self.axes = self.device.axes[0]
                 self.device.EAX(self.axes, True)
-                
-            # Case controller C-863.12    
+
+            # Case controller C-863.12
             elif dev_name == dev_list[1]:
                 gcs.ConnectUSB(serialnum = '0019550022')
                 self.device = gcs
                 self.axes = self.device.axes[0]
                 self.device.SVO(self.axes, 1)
-               
-            self.calibration(dev_name = dev_name) 
+
+            self.calibration(dev_name = dev_name)
             messagebox.showinfo(title='Physics Instrument', message='Device {} is connected.'.format(dev_name))
             self.device = gcs
-            
+
         elif dev_ip:
             messagebox.showinfo(title='Physics Intrument', message='This option is not completed')
 
@@ -61,7 +61,7 @@ class LinearStage:
             experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
                 experiments[experiment].update_options('Physics_Linear_Stage')
-    
+
 
     def scanning(self, min_pos=None, max_pos=None, iteration=None):
         if not self.device:
@@ -91,7 +91,7 @@ class LinearStage:
             pitools.waitontarget(self.device)
             self.device.MOV(self.axes, min_pos)
             pitools.waitontarget(self.device)
-    
+
     def go_2position(self, position=None):
         if not self.device or not position:
             return
@@ -100,7 +100,7 @@ class LinearStage:
         self.device.MOV(self.axes, position)
         pitools.waitontarget(self.device)
 
-    def increment_move(self, position=None, increment=None, 
+    def increment_move(self, position=None, increment=None,
                        direction = None):
         if not self.device or not position:
             return
@@ -115,7 +115,7 @@ class LinearStage:
         position.set(position2)
         self.device.MOV(self.axes, position2)
         pitools.waitontarget(self.device)
-        
+
 
     def change_speed(self, factor=None):
         if not self.device or not factor:
@@ -128,15 +128,15 @@ class LinearStage:
         # 1 : 500 ...
         self.device.VEL(self.axes, factor*10)
         print(self.empty_var)
-        
+
     def calibration(self, dev_name):
         if not self.device:
             return
         # Pipython :
         from pipython import GCSDevice
-        
+
         dev_list = ['C-891', 'C-863.11']
-        
+
         # Controller C-891
         if dev_name == dev_list[0]:
             self.device.FRF()
@@ -147,7 +147,7 @@ class LinearStage:
                     i += 1
             messagebox.showinfo(message='Device is ready')
             self.device.SVO(self.axes, 1)
-        
+
         # Controller C-863.12
         if dev_name == dev_list[1]:
             self.device.FRF(self.axes)

@@ -112,7 +112,7 @@ class CreateLayout:
             self.state_dict[tool].set('ready')
         elif current_state == 'ready':
             self.state_dict[tool].set('disconnected')
-        
+
         change_start = False
 
         if len(self.tools_names) == 1:
@@ -123,7 +123,7 @@ class CreateLayout:
                 state = self.state_dict[tool].get()
                 if state == 'disconnected':
                     break
-        
+
         if change_start:
             self.dependant_function.start_button['state'] = 'normal'
 
@@ -148,12 +148,12 @@ class TemplateForExperiment:
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
         self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
-    
+
     def stop_experiment(self):
         self.running = False
 
     def start_experiment(self):
-        
+
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
         self.running = True
@@ -162,7 +162,7 @@ class TemplateForExperiment:
         print(self.empty_var)
         # You can add a break variable to get out of anyloop you might have like in the Zero Delay Program with
         # The self.running variable
-       
+
         #if not self.running:
         #    break
 
@@ -242,13 +242,13 @@ class WhiteLight:
 	# Here will be implemented the subscription to the lockin
 
 	# After the subscription we scan with the stage (we can use the parameters input in this window)
-        
+
         self.main.Linstage.scanning_measure(mini_pos_var, maxi_pos_var, iteration_var, lenght_var, step_var)
 
 	# Then we unsubscribe and acquire data in this part (TODO)
 
         print('hello world')
-	
+
 
     def StartMeasure(self):
 
@@ -388,7 +388,7 @@ class ZeroDelay:
         filen_e = tk.Entry(frame, width=6, textvariable=filen_var)
         mtime_e = tk.Entry(frame, width=6, textvariable=mtime_var)
         utime_e = tk.Entry(frame, width=6, textvariable=utime_var)
-        scan_e = tk.Entry(frame, width =6, textvariable=scan_var) 
+        scan_e = tk.Entry(frame, width =6, textvariable=scan_var)
         maxp_e.grid(row=2, column=1, sticky='nse')
         minp_e.grid(row=3, column=1, sticky='nse')
         step_e.grid(row=4, column=1, sticky='nse')
@@ -401,18 +401,18 @@ class ZeroDelay:
                                       command=lambda: self.start_experiment(min_pos=minp_var, max_pos=maxp_var,
                                       iteration=scan_var, duree = mtime_var, step = step_var, file_name = filen_var,
                                       progress=p_bar, update_time=utime_var))
-        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew') 
-       
+        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
         self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
-    
+
     def stop_experiment(self):
         self.running = False
 
     def start_experiment(self, min_pos=None, max_pos=None, iteration=None, duree = .1, step = 0.0001,
                          file_name = 'default', progress=None, update_time=None):
-        
+
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
         self.running = True
@@ -435,7 +435,7 @@ class ZeroDelay:
 
         if not max_pos and not min_pos and not iteration:
             return
-        
+
         # Pipython :
         from pipython import GCSDevice
         from pipython import pitools
@@ -448,13 +448,13 @@ class ZeroDelay:
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
                                 'of your physik instrument device')
             return
-        
+
 
         import time
         import sys
         import usb_1208LS as us
 
-        chan = 1 
+        chan = 1
         if self.DAQ.card == None:
             messagebox.showinfo(title='Error', message='DAQ device not connected')
             return
@@ -490,18 +490,18 @@ class ZeroDelay:
                 start = time.time()
                 while((time.time() - start) < duree):
                     value_step = np.append(value_step, self.DAQ.card.AIn(chan, gain))
-                 
+
                 if progress:
                     progress['value'] = (i*nsteps + j)/(iteration*nsteps)
                     progress.update()
 
                 pos += step
                 self.PI.device.MOV(self.PI.axes, pos)
-                
-                value = np.append(value, np.mean(value_step)) 
-                pos_val = pos*1000 
+
+                value = np.append(value, np.mean(value_step))
+                pos_val = pos*1000
                 absc = np.append(absc, pos_val)
-                
+
                 if (time.time() - last_gu) > update_time:
                     power_graph.Line.set_xdata(absc)
                     power_graph.Line.set_ydata(value)
@@ -511,7 +511,7 @@ class ZeroDelay:
                 break
             values[i,:] = value
             absc_vals[i,:] = absc
-        
+
         if not self.running:
             self.PI.device.MOV(self.PI.axes, min_pos)
             time.sleep(.1)
@@ -525,7 +525,7 @@ class ZeroDelay:
             messagebox.showinfo(title='INFO', message='Measurements is done.')
             file_data = [absc, values]
             np.save('measurements/' + filename, file_data)
-        
+
         # Going back to initial state
         self.running = False
         progress['value'] = 0
