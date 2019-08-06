@@ -19,10 +19,25 @@ class LinearStage:
         # Pipython :
         from pipython import GCSDevice
         from pipython import pitools
-
-        dev_name = dev_name.get()
-        dev_ip = dev_ip.get()
+        print(dev_name)
+        if (dev_name or dev_ip):
+            pass
+        else:
+            print('shit')
+            return
+        
+        if (dev_name and type(dev_name)!=str):
+            dev_name = dev_name.get()
+        else:
+            pass
+        
+        if (dev_ip and type(dev_ip)!=str):    
+            dev_ip = dev_ip.get()
+        else:
+            pass
+        
         dev_list = ['C-891', 'C-863.11']
+        print('sup')
         if dev_name not in dev_list:
             messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
                                                        'compatible with the pipython software. If so add it to the list'

@@ -23,7 +23,8 @@ class MainFrame(tk.Tk):
         self.width = self.winfo_screenwidth()
         self.height = self.winfo_screenheight()
         # List of all de frame
-        self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self, mainf=self), SpectroFrame(self, mainf=self), Experiment(self, mainf=self)]
+        self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self, mainf=self), SpectroFrame(self, mainf=self)]
+        self.Frame.append(Experiment(self, mainf=self))
         self.Frame[0].grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
         directory = Path.cwd()
@@ -1715,10 +1716,13 @@ class Experiment(ttk.LabelFrame):
         create_layout(name='Zero Delay', function_=Experiment_file.ZeroDelay,
                       option=['Physics_Linear_Stage'],
                       graph={'Power': ['Stage position [um]', 'Normalized Voltage'], 'Else': ['a', 'b']})
+        create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
+                      option=['Physics_Linear_Stage'],
+                      graph={'Scanning': ['Required stage position [\mu m]', 'Measured stage position [\mu m]'], 'Else': ['a', 'b']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
-        experiment_name.current(0)
+        experiment_name.current(2)
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):

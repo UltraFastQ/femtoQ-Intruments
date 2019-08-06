@@ -572,3 +572,65 @@ class ZeroDelay:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
 
+
+class Electro_Optic_Sampling:
+
+    # This class is implicitly called in the main frame
+    def __init__(self, mainf = None):
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+        self.PI = mainf.Frame[2].Linstage
+        
+    def create_frame(self, frame):
+        pos_lbl = tk.Label(frame, text = 'Go to position (mm)')
+        vel_lbl = tk.Label(frame, text = 'Set velocity to')
+        
+        
+        con_b = tk.Button(frame, text='Connect PI linear stage',
+                                      command=lambda: self.PI.connect_identification(dev_name='C-863.11',
+                                                                                           exp_dependencie=True))
+        pos_var = tk.DoubleVar()
+        vel_var = tk.DoubleVar()
+        
+        pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
+        vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
+        
+        pos_lbl.grid(row=1, column=0, sticky='nsw')
+        pos_e.grid(row=1, column=1, sticky='nse')
+        vel_lbl.grid(row=2, column=0, sticky='nsw')
+        vel_e.grid(row=2, column=1, sticky='nse')
+        con_b.grid(row=3, column=0, sticky='nsew')
+        
+        # this function contains at minimum :
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+                                      command=lambda: self.start_experiment())
+        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+
+    def stop_experiment(self):
+        self.running = False
+
+    def start_experiment(self):
+
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        self.running = True
+        # Here should be all of your experiment for here we have a huge program where we print literally nothing
+        print(self.empty_var)
+        # You can add a break variable to get out of anyloop you might have like in the Zero Delay Program with
+        # The self.running variable
+
+        #if not self.running:
+        #    break
+
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
