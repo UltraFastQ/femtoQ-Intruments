@@ -417,21 +417,21 @@ class ZeroDelay:
     def stop_experiment(self):
         self.running = False
 
-    def update_std(self, graph, ydata, xdata, 1std, 2std, 3std):
+    def update_std(self, graph, ydata, xdata, std1, std2, std3):
         std = np.std(ydata, axis=0)
         xdata = np.mean(xdata, axis=0)
         ymean = np.mean(ydata, axis=0)
-        1std.remove()
-        1std = graph.axes.fill_between(xdata, ymean+std, ymean-std, alpha=0.6,
+        std1.remove()
+        std1 = graph.axes.fill_between(xdata, ymean+std, ymean-std, alpha=0.6,
                                        interpolate=True, step='mid')
-        2std.remove()
-        2std = graph.axes.fill_between(xdata, ymean+2*std, ymean-2*std, alpha=0.4,
+        std2.remove()
+        std2 = graph.axes.fill_between(xdata, ymean+2*std, ymean-2*std, alpha=0.4,
                                        interpolate=True, step='mid')
-        3std.remove()
-        3std = graph.axes.fill_between(xdata, ymean+3*std, ymean-3*std, alpha=0.2,
+        std3.remove()
+        std3 = graph.axes.fill_between(xdata, ymean+3*std, ymean-3*std, alpha=0.2,
                                        interpolate=True, step='mid')
 
-        return 1std, 2std, 3std
+        return std1, std2, std3
 
     def start_experiment(self, min_pos=None, max_pos=None, iteration=None, duree = .1, step = 0.0001,
                          file_name = 'default', progress=None, update_time=None):
@@ -493,11 +493,11 @@ class ZeroDelay:
         power_graph.Line.set_markersize(2)
         power_graph.update_graph()
         # Standard deviation measure
-        1std = power_graph.axes.fill_between([0], [0], [0], alpha=0.6,
+        std1 = power_graph.axes.fill_between([0], [0], [0], alpha=0.6,
                                              interpolate=True, step='mid')
-        2std = power_graph.axes.fill_between([0], [0], [0], alpha=0.4,
+        std2 = power_graph.axes.fill_between([0], [0], [0], alpha=0.4,
                                              interpolate=True, step='mid')
-        3std = power_graph.axes.fill_between([0], [0], [0], alpha=0.2,
+        std3 = power_graph.axes.fill_between([0], [0], [0], alpha=0.2,
                                              interpolate=True, step='mid')
         #Add an option to have many measurements
         # ...
@@ -541,8 +541,8 @@ class ZeroDelay:
                 break
             values[i,:] = value
             absc_vals[i,:] = absc
-            1std, 2std, 3std = self.update_std(power_graph, values[:i,:], absc_vals[:i,:],
-                                               1std, 2std, 3std)
+            std1, std2, std3 = self.update_std(power_graph, values[:i,:], absc_vals[:i,:],
+                                               std1, std2, std3)
             power_graph.update_graph()
 
         if not self.running:
