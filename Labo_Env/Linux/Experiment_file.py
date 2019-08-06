@@ -354,6 +354,7 @@ class ZeroDelay:
         mtime_lbl = tk.Label(frame, text='Time @ pts [ms]:')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
         scan_lbl = tk.Label(frame, text='Number of ave. scans :')
+        nite_lbl = tk.Label(frame, text='# of iteration done :')
         daqc_b.grid(row=0, column=0, columnspan=2, sticky='nsew')
         scan_lbl.grid(row=1, column=0, sticky='nsw')
         maxp_lbl.grid(row=2, column=0, sticky='nsw')
@@ -363,6 +364,7 @@ class ZeroDelay:
         mtime_lbl.grid(row=6, column=0, sticky='nsw')
         utime_lbl.grid(row=7, column=0, sticky='nsw')
         scan_lbl.grid(row=8, column=0, sticky='nsw')
+        nite_lbl.grid(row=12, column=0, sticky='nsw')
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
         p_bar.grid(row=9, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
@@ -381,6 +383,8 @@ class ZeroDelay:
         utime_var.set(5)
         scan_var = tk.IntVar()
         scan_var.set(10)
+        nite_var = tk.IntVar()
+        nite_var.set(0)
 
         maxp_e = tk.Entry(frame, width=6, textvariable=maxp_var)
         minp_e = tk.Entry(frame, width=6, textvariable=minp_var)
@@ -388,7 +392,9 @@ class ZeroDelay:
         filen_e = tk.Entry(frame, width=6, textvariable=filen_var)
         mtime_e = tk.Entry(frame, width=6, textvariable=mtime_var)
         utime_e = tk.Entry(frame, width=6, textvariable=utime_var)
-        scan_e = tk.Entry(frame, width =6, textvariable=scan_var)
+        scan_e = tk.Entry(frame, width=6, textvariable=scan_var)
+        nite_e = tk.Entry(frame, width=6, textvariable=nite_var,
+                          state='disabled')
         maxp_e.grid(row=2, column=1, sticky='nse')
         minp_e.grid(row=3, column=1, sticky='nse')
         step_e.grid(row=4, column=1, sticky='nse')
@@ -396,6 +402,7 @@ class ZeroDelay:
         mtime_e.grid(row=6, column=1, sticky='nse')
         utime_e.grid(row=7, column=1, sticky='nse')
         scan_e.grid(row=8, column=1, sticky='nse')
+        nite_e.grid(row=12, column=1, sticky='nse')
         # this function contains at minimum :
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(min_pos=minp_var, max_pos=maxp_var,
@@ -409,6 +416,22 @@ class ZeroDelay:
 
     def stop_experiment(self):
         self.running = False
+
+    def update_std(self, graph, ydata, xdata, 1std, 2std, 3std):
+        std = np.std(ydata, axis=0)
+        xdata = np.mean(xdata, axis=0)
+        ymean = np.mean(ydata, axis=0)
+        1std.remove()
+        1std = graph.axes.fill_between(xdata, ymean+std, ymean-std, alpha=0.6,
+                                       interpolate=True, step='mid')
+        2std.remove()
+        2std = graph.axes.fill_between(xdata, ymean+2*std, ymean-2*std, alpha=0.4,
+                                       interpolate=True, step='mid')
+        3std.remove()
+        3std = graph.axes.fill_between(xdata, ymean+3*std, ymean-3*std, alpha=0.2,
+                                       interpolate=True, step='mid')
+
+        return 1std, 2std, 3std
 
     def start_experiment(self, min_pos=None, max_pos=None, iteration=None, duree = .1, step = 0.0001,
                          file_name = 'default', progress=None, update_time=None):
@@ -465,7 +488,17 @@ class ZeroDelay:
         power_graph.axes.set_xlim([min_pos*1000, max_pos*1000])
         power_graph.Line.set_xdata([])
         power_graph.Line.set_ydata([])
+        power_graph.Line.set_color('r')
+        power_graph.Line.set_marker('.')
+        power_graph.Line.set_markersize(2)
         power_graph.update_graph()
+        # Standard deviation measure
+        1std = power_graph.axes.fill_between([0], [0], [0], alpha=0.6,
+                                             interpolate=True, step='mid')
+        2std = power_graph.axes.fill_between([0], [0], [0], alpha=0.4,
+                                             interpolate=True, step='mid')
+        3std = power_graph.axes.fill_between([0], [0], [0], alpha=0.2,
+                                             interpolate=True, step='mid')
         #Add an option to have many measurements
         # ...
         # This section is to obtain average over many scan by creating a numpy array
@@ -473,15 +506,12 @@ class ZeroDelay:
         nsteps = (max_pos - min_pos)/step
         values = np.zeros((iteration, int(nsteps)))
         absc_vals = np.zeros((iteration, int(nsteps)))
+        value = np.zeros(nsteps)
+        absc = np.zeros(nsteps)
         for i in range(iteration):
             self.PI.device.MOV(self.PI.axes, min_pos)
             time.sleep(.1)
             pos = min_pos
-            power_graph.Line.set_xdata([])
-            power_graph.Line.set_ydata([])
-            power_graph.update_graph()
-            value = []
-            absc = []
             for j in range(int(nsteps)):
                 if not self.running:
                     break
@@ -498,9 +528,9 @@ class ZeroDelay:
                 pos += step
                 self.PI.device.MOV(self.PI.axes, pos)
 
-                value = np.append(value, np.mean(value_step))
+                value[j] = np.mean(value_step)
                 pos_val = pos*1000
-                absc = np.append(absc, pos_val)
+                absc[j] = pos_val
 
                 if (time.time() - last_gu) > update_time:
                     power_graph.Line.set_xdata(absc)
@@ -511,19 +541,28 @@ class ZeroDelay:
                 break
             values[i,:] = value
             absc_vals[i,:] = absc
+            1std, 2std, 3std = self.update_std(power_graph, values[:i,:], absc_vals[:i,:],
+                                               1std, 2std, 3std)
+            power_graph.update_graph()
 
         if not self.running:
             self.PI.device.MOV(self.PI.axes, min_pos)
             time.sleep(.1)
-            messagebox.showinfo(title='INFO', message='Experiment was aborted')
+            answ = messagebox.askyesno(title='INFO', message='Experiment was'+
+                                       'aborted./n Do you want to save your Data?')
+            if answ:
+                file_data = np.array([abs_vals[:i,:], values[:i, :]])
+                np.save('measurements/' + filename, file_data)
         else:
+            self.PI.device.MOV(self.PI.axes, min_pos)
+            time.sleep(.1)
             ave_vals = np.mean(values, axis=0)
             ave_absc = np.mean(absc_vals, axis=0)
             power_graph.Line.set_xdata(ave_absc)
             power_graph.Line.set_ydata(ave_vals)
             power_graph.update_graph()
             messagebox.showinfo(title='INFO', message='Measurements is done.')
-            file_data = [absc, values]
+            file_data = np.array([absc_vals, values])
             np.save('measurements/' + filename, file_data)
 
         # Going back to initial state

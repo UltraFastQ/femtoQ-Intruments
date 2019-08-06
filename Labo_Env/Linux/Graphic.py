@@ -1,4 +1,3 @@
-
 # Matplotlib :
 import matplotlib
 matplotlib.use("TkAgg")
@@ -288,4 +287,10 @@ class SubGraphFrame:
     def destroy_graph(self):
         self.canvas.get_tk_widget().destroy()
         self.toolbar.destroy()
+
+def black_theme_graph():
+    plt.style.use('dark_background')
+
+def default_theme_graph():
+    plt.style.use('classic')
 

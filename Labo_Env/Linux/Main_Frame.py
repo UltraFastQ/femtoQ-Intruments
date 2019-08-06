@@ -20,7 +20,6 @@ class MainFrame(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         # Variable that are spreaded throughout the program
         self.Zurich = Zurich_Instrument.Zurich(self)
-        self.number = 2
         self.width = self.winfo_screenwidth()
         self.height = self.winfo_screenheight()
         # List of all de frame
@@ -43,6 +42,12 @@ class MainFrame(tk.Tk):
         winmenu.add_command(label='Mono+PhysL', underline=0, command=lambda: self.frame_switch(self.Frame[2]))
         winmenu.add_command(label='Spectro.', underline=0, command=lambda: self.frame_switch(self.Frame[3]))
         winmenu.add_command(label='Experiment', underline=0, command=lambda: self.frame_switch(self.Frame[4]))
+        graphmenu = tk.Menu(menubar, tearoff=False)
+        menubar.add_cascade(label='Graph', underline=0, menu=graphmenu)
+        graphmenu.add_command(label='Black theme', underline=0,
+                              command=lambda:Graphic.black_theme_graph())
+        graphmenu.add_command(label='Default theme', underline=0,
+                              command=lambda:Graphic.default_theme_graph())
         self.config(menu=menubar)
 
         # Here is the line to have a closing procedure that close all
