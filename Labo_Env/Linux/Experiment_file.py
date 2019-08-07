@@ -583,24 +583,54 @@ class Electro_Optic_Sampling:
         self.PI = mainf.Frame[2].Linstage
         
     def create_frame(self, frame):
-        pos_lbl = tk.Label(frame, text = 'Go to position (mm)')
-        vel_lbl = tk.Label(frame, text = 'Set velocity to')
-        
-        
+        # Define labels
+        pos_lbl = tk.Label(frame, text = 'Go to position (mm):')
+        vel_lbl = tk.Label(frame, text = 'Set velocity to:')
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+        min_lbl = tk.Label(frame, text = 'Min. pos. (mm):')
+        max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
+        step_lbl = tk.Label(frame, text = 'Step size (um):')
+        # Define buttons and their action
         con_b = tk.Button(frame, text='Connect PI linear stage',
                                       command=lambda: self.PI.connect_identification(dev_name='C-863.11',
                                                                                            exp_dependencie=True))
+        # Define variables
         pos_var = tk.DoubleVar()
         vel_var = tk.DoubleVar()
+        min_var = tk.DoubleVar()
+        max_var = tk.DoubleVar()
+        step_var = tk.DoubleVar()
+        pos_var.set(0)
+        vel_var.set(1)
+        min_var.set(-50)
+        max_var.set(50)
+        step_var.set(100)
         
+        
+        # Define entry boxes
         pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
         vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
+        min_e = tk.Entry(frame, width = 6, textvariable = min_var)
+        max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        step_e = tk.Entry(frame, width = 6, textvariable = step_var)
         
-        pos_lbl.grid(row=1, column=0, sticky='nsw')
-        pos_e.grid(row=1, column=1, sticky='nse')
-        vel_lbl.grid(row=2, column=0, sticky='nsw')
-        vel_e.grid(row=2, column=1, sticky='nse')
-        con_b.grid(row=3, column=0, sticky='nsew')
+        # Define position of all objects on the grid
+        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        pos_lbl.grid(row=2, column=0, sticky='nsw')
+        pos_e.grid(row=2, column=1, sticky='nse')
+        vel_lbl.grid(row=3, column=0, sticky='nsw')
+        vel_e.grid(row=3, column=1, sticky='nse')
+        param_lbl.grid(row=4, column=0, columnspan=2, sticky='nsew')
+        min_lbl.grid(row=5, column=0, sticky='nsw')
+        min_e.grid(row=5, column=1, sticky='nse')
+        max_lbl.grid(row=6, column=0, sticky='nsw')
+        max_e.grid(row=6, column=1, sticky='nse')
+        step_lbl.grid(row=7, column=0, sticky='nsw')
+        step_e.grid(row=7, column=1, sticky='nse')
+        
+        # Select a key and its effect when pressed in an entry box
+        pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
+        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
         
         # this function contains at minimum :
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,

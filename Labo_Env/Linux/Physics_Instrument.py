@@ -19,11 +19,9 @@ class LinearStage:
         # Pipython :
         from pipython import GCSDevice
         from pipython import pitools
-        print(dev_name)
         if (dev_name or dev_ip):
             pass
         else:
-            print('shit')
             return
         
         if (dev_name and type(dev_name)!=str):
@@ -37,7 +35,6 @@ class LinearStage:
             pass
         
         dev_list = ['C-891', 'C-863.11']
-        print('sup')
         if dev_name not in dev_list:
             messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
                                                        'compatible with the pipython software. If so add it to the list'
@@ -154,6 +151,12 @@ class LinearStage:
         # 1 : 500 ...
         self.device.VEL(self.axes, factor*10)
         print(self.empty_var)
+        
+    def set_velocity(self, vel=None):
+        if not self.device or not vel:
+            return
+        vel = vel.get()
+        self.device.VEL(self.axes, vel)
 
     def calibration(self, dev_name):
         if not self.device:
