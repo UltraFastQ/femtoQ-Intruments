@@ -1718,7 +1718,7 @@ class Experiment(ttk.LabelFrame):
                       graph={'Power': ['Stage position [um]', 'Normalized Voltage'], 'Else': ['a', 'b']})
         create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
                       option=['Physics_Linear_Stage'],
-                      graph={'Scanning': ['Required stage position [\mu m]', 'Measured stage position [\mu m]'], 'Else': ['a', 'b']})
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'], 'Else': ['a', 'b']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
