@@ -726,17 +726,24 @@ class Electro_Optic_Sampling:
             if not self.running:
                 break       
         if not self.running:
+            return_vel = tk.IntVar()
+            return_vel.set(10)
+            self.PI.set_velocity(return_vel)
             self.PI.device.MOV(self.PI.axes, 0)
             pitools.waitontarget(self.PI.device)
             messagebox.showinfo(title='Error', message='Experiment was aborted')
         else:
+            return_vel = tk.IntVar()
+            return_vel.set(10)
+            self.PI.set_velocity(return_vel)
             self.PI.device.MOV(self.PI.axes, 0)
             pitools.waitontarget(self.PI.device)
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
-            messagebox.showinfo(title='INFO', message='Measurements is done.')
-
+            dp = np.std(pos-move)
+            messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
+        
         # Going back to initial state
         self.running = False
         progress['value'] = 0
