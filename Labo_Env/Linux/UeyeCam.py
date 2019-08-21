@@ -1,10 +1,11 @@
 try:
     from pyueye import ueye
+    import cv2
 except:
     pass
 from tkinter import messagebox
 import numpy as np
-import cv2
+
 
 
 
@@ -15,19 +16,22 @@ class UeyeCamera:
         self.graphic = graphic
         self.mainf = mainf
         self.detected_devices = {}
-        self.hid = ueye.HIDS()
-        self.sinfo = ueye.SENSORINFO()
-        self.hwnd = ueye.HWND()
-        self.width = ueye.INT()
-        self.height = ueye.INT()
-        self.psize = None
-        self.bitspixel = ueye.INT(24)
-        self.ppcImgMem = ueye.c_mem_p()
-        self.pid = ueye.INT()
-        self.MemID = ueye.INT()
-        self.colorm = ueye.INT()
-        self.pitch = ueye.INT()
-        self.rect = ueye.IS_RECT()
+        try:
+            self.hid = ueye.HIDS()
+            self.sinfo = ueye.SENSORINFO()
+            self.hwnd = ueye.HWND()
+            self.width = ueye.INT()
+            self.height = ueye.INT()
+            self.psize = None
+            self.bitspixel = ueye.INT(24)
+            self.ppcImgMem = ueye.c_mem_p()
+            self.pid = ueye.INT()
+            self.MemID = ueye.INT()
+            self.colorm = ueye.INT()
+            self.pitch = ueye.INT()
+            self.rect = ueye.IS_RECT()
+        except:
+            return
 
     def return_devices(self, variable):
 
