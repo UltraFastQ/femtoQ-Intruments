@@ -1,11 +1,22 @@
 # Matplotlib :
 import matplotlib
+import numpy as np
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 plt.ion()
+
+
+def black_theme_graph():
+    plt.style.use('dark_background')
+
+
+def default_theme_graph():
+    plt.style.use('classic')
+
 
 
 class HorizontalDraggableLine:
@@ -225,14 +236,23 @@ class GraphicFrame:
         self.canvas.get_tk_widget().destroy()
         self.toolbar.destroy()
 
+    def log_scale(self):
+        self.axes.set_yscale('log')
+        self.update_graph()
+
+    def lin_scale(self):
+        self.axes.set_yscale('linear')
+        self.update_graph()
+
 class SubGraphFrame:
 
     def __init__(self, parent, figsize=[1, 1], subplots=None):
+
         class Graph:
             def __init__(self, fig, axes, line):
                 self.Fig = fig
                 self.axes = axes
-                self.line = line
+                self.Line = line
                 self.canvas = None
                 self.toolbar = None
 
@@ -249,27 +269,33 @@ class SubGraphFrame:
                 self.canvas.get_tk_widget().destroy()
                 self.toolbar.destroy()
 
+            def log_scale(self):
+                self.axes.set_yscale('log')
+                self.update_graph()
+
+            def lin_scale(self):
+                self.axes.set_yscale('linear')
+                self.update_graph()
+
         if not subplots:
             return
         # axis_name is a string tuple of the x and y axis in that order
         # figsize is a list of two component the first one is the x and the other one is the y axis
         self.parent = parent
         self.Fig = Figure(dpi=100, figsize=figsize)
-        self.axes = []
-        self.line = []
         self.graph = []
         nbr_subplots = len(subplots)
         for i, sub_plot in enumerate(subplots):
-            self.axes = self.Fig.add_subplot(nbr_subplots, 1, i+1)
-            self.axes.set_aspect('auto', adjustable='box')
-            self.axes.set_adjustable('box')
-            self.line.append(self.axes.plot([], []))
-            self.axes.tick_params(axis='both', which='major', labelsize=8)
-            self.axes.grid()
-            self.axes.set_xlabel(subplots[sub_plot][0])
-            self.axes.set_ylabel(subplots[sub_plot][1])
-            self.axes.set_title(sub_plot)
-            self.graph.append(Graph(self.Fig, self.axes, self.line))
+            axes = self.Fig.add_subplot(nbr_subplots, 1, i+1)
+            axes.set_aspect('auto', adjustable='box')
+            axes.set_adjustable('box')
+            Line, = axes.plot([], [])
+            axes.tick_params(axis='both', which='major', labelsize=8)
+            axes.grid()
+            axes.set_xlabel(subplots[sub_plot][0])
+            axes.set_ylabel(subplots[sub_plot][1])
+            axes.set_title(sub_plot)
+            self.graph.append(Graph(self.Fig, axes, Line))
 
         self.Fig.subplots_adjust(left=0.0625, right=0.9875, bottom=0.075, top=0.9625, hspace=0.25)
 
@@ -288,9 +314,55 @@ class SubGraphFrame:
         self.canvas.get_tk_widget().destroy()
         self.toolbar.destroy()
 
-def black_theme_graph():
-    plt.style.use('dark_background')
 
-def default_theme_graph():
-    plt.style.use('classic')
+class UyeGraphFrame:
+
+    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1]):
+        # axis_name is a string tuple of the x and y axis in that order
+        # figsize is a list of two component the first one is the x and the other one is the y axis
+        self.parent = parent
+        self.Fig = Figure(dpi=100, figsize=figsize)
+        self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
+        self.axes.set_aspect('auto', adjustable='box')
+        self.axes.set_adjustable('box')
+        self.Line = self.axes.imshow(np.zeros((10,10)))
+        self.axes.tick_params(axis='both', which='major', labelsize=8)
+        self.axes.grid()
+        self.axes.set_xlabel(r'' + axis_name[0])
+        self.axes.set_ylabel(r'' + axis_name[1])
+        # Create Image on top and right of the graph
+        divider = make_axes_locatable(self.axes)
+        self.maxx = divider.append_axes('top', 1, pad=0, sharex=self.axes)
+        self.maxy = divider.append_axes('right', 1, pad=0, sharey=self.axes)
+        # Invisible label
+        self.maxx.xaxis.set_tick_params(labelbottom=False)
+        self.maxy.yaxis.set_tick_params(labelleft=False)
+
+        self.canvas = FigureCanvasTkAgg(self.Fig, parent)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(expand=True, fill='both')
+        self.toolbar = NavigationToolbar2Tk(self.canvas, parent)
+        self.toolbar.update()
+        self.canvas._tkcanvas.pack()
+
+    def change_dimensions(self, event):
+        width = event.width/self.Fig.get_dpi()
+        height = event.height/self.Fig.get_dpi()
+        self.Fig.set_size_inches(w=width, h=height)
+
+    def update_graph(self):
+        self.Fig.canvas.draw()
+        self.Fig.canvas.flush_events()
+
+    def destroy_graph(self):
+        self.canvas.get_tk_widget().destroy()
+        self.toolbar.destroy()
+
+    def log_scale(self):
+        self.axes.set_yscale('log')
+        self.update_graph()
+
+    def lin_scale(self):
+        self.axes.set_yscale('linear')
+        self.update_graph()
 

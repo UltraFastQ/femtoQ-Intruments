@@ -10,6 +10,7 @@ import Experiment_file
 import Monochromator
 import Spectrometer
 import Physics_Instrument
+import UeyeCam
 import threading
 
 
@@ -23,8 +24,12 @@ class MainFrame(tk.Tk):
         self.width = self.winfo_screenwidth()
         self.height = self.winfo_screenheight()
         # List of all de frame
-        self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self, mainf=self), SpectroFrame(self, mainf=self)]
+        self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self, mainf=self),
+                      SpectroFrame(self, mainf=self)]
+        # If experiment change from this position in this vector we need to
+        # change some things in the other document in their connection method
         self.Frame.append(Experiment(self, mainf=self))
+        self.Frame.append(Ueye_Frame(self, mainf=self))
         self.Frame[0].grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
         directory = Path.cwd()
@@ -43,6 +48,7 @@ class MainFrame(tk.Tk):
         winmenu.add_command(label='Mono+PhysL', underline=0, command=lambda: self.frame_switch(self.Frame[2]))
         winmenu.add_command(label='Spectro.', underline=0, command=lambda: self.frame_switch(self.Frame[3]))
         winmenu.add_command(label='Experiment', underline=0, command=lambda: self.frame_switch(self.Frame[4]))
+        winmenu.add_command(label='Ueye', underline=0, command=lambda: self.frame_switch(self.Frame[5]))
         graphmenu = tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label='Graph', underline=0, menu=graphmenu)
         graphmenu.add_command(label='Black theme', underline=0,
@@ -75,6 +81,8 @@ class MainFrame(tk.Tk):
         if self.Frame[3].Spectro.spectro:
             # Do something to close connection with spectrometer
             pass
+        if self.Frame[5].ueyec.camera:
+            self.Frame[5].ueyec.disconnect_device()
 
         self.destroy()
 
@@ -1606,30 +1614,35 @@ class SpectroFrame(tk.Frame):
         inte_lbl = tk.Label(option_frame, text='Integration time [ms]:')
         inte = tk.Entry(option_frame, textvariable=self.inte_var, width=6)
         inte.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(self.inte_var))
-        dev_lbl.grid(row=0, column=0, sticky='nw')
-        dev_e.grid(row=1, column=0, sticky='nsew')
-        connect.grid(row=2, column=0, sticky='nsew')
-        inte_lbl.grid(row=3, column=0, sticky='nw')
-        inte.grid(row=4, column=0, sticky='nsew')
+        dev_lbl.grid(row=0, column=0, sticky='nw', columnspan=2)
+        dev_e.grid(row=1, column=0, sticky='nsew', columnspan=2)
+        connect.grid(row=2, column=0, sticky='nsew', columnspan=2)
+        inte_lbl.grid(row=3, column=0, sticky='nw', columnspan=2)
+        inte.grid(row=4, column=0, sticky='nsew', columnspan=2)
+        dark_b = tk.Button(option_frame, text='Update Dark Spectrum',
+                           state='disabled',
+                           command=lambda:self.Spectro.measure_darkspectrum())
+        dark_b.grid(row=11, column=0, sticky='nsew', columnspan=2)
         dark_spectrum_var = tk.StringVar()
         dark_spectrum_var.set('disable')
         dark_spectrum = tk.Checkbutton(option_frame, text='Dark Spectrum substraction:', variable=dark_spectrum_var,
-                                       command=lambda: self.Spectro.enable_darkspectrum(dark_spectrum_var),
+                                       command=lambda:
+                                       self.Spectro.enable_darkspectrum(dark_spectrum_var, dark_b),
                                        onvalue='enable', offvalue='disable')
-        dark_spectrum.grid(row=5, column=0, sticky='nw')
+        dark_spectrum.grid(row=5, column=0, sticky='nw', columnspan=2)
         eff_var = tk.StringVar()
         eff_var.set('disable')
         eff = tk.Checkbutton(option_frame, text='Detector efficiencie divider:', variable=eff_var,
-                             command=lambda: print('Je vais pas tout faire quand même'),
+                             command=lambda: self.Spectro.enable_eff(eff_var),
                              onvalue='enable', offvalue='disable')
-        eff.grid(row=6, column=0, sticky='nw')
+        eff.grid(row=6, column=0, sticky='nw', columnspan=2)
 
         logascale_var = tk.StringVar()
         logascale_var.set('disable')
         logascale = tk.Checkbutton(option_frame, text='Logarithmic scale:', variable=logascale_var,
-                                   command=lambda: print('You just got fooled again ;)'),
+                                   command=lambda: self.Spectro.enable_logscale(logascale_var),
                                    onvalue='enable', offvalue='disable')
-        logascale.grid(row=7, column=0, sticky='nw')
+        logascale.grid(row=7, column=0, sticky='nw', columnspan=2)
 
         dual_plotting_var = tk.StringVar()
         dual_plotting_var.set('disable')
@@ -1637,37 +1650,240 @@ class SpectroFrame(tk.Frame):
                                        command=lambda: self.Spectro.switch_graphics(dual_plotting_var,
                                                                                            graph_frame),
                                        onvalue='enable', offvalue='disable')
-        dual_plotting.grid(row=8, column=0, sticky='nw')
+        dual_plotting.grid(row=8, column=0, sticky='nw', columnspan=2)
+
+        norm_var = tk.StringVar()
+        norm_var.set('disable')
+        norm = tk.Checkbutton(option_frame, text='Normalize:', variable=norm_var,
+                          command=lambda: self.Spectro.normalized(norm_var),
+                          onvalue='enable', offvalue='disable')
+        norm.grid(row=9, column=0, sticky='nw', columnspan=2)
+
+        autofft_var = tk.StringVar()
+        autofft_var.set('disable')
+        autofft = tk.Checkbutton(option_frame, text='Autoscale fft:', variable=autofft_var,
+                                 command=lambda: self.Spectro.auto_update_fft(autofft_var),
+                                 onvalue='enable', offvalue='disable')
+        autofft.grid(row=15, column=0, sticky='nw', columnspan=2)
+
+        ave_lbl = tk.Label(option_frame, text='Averaging number:')
+        ave_lbl.grid(row=10, column=0, sticky='nsw')
+        ave_var = tk.IntVar()
+        ave_var.set(1)
+        ave_e = tk.Entry(option_frame, textvariable=ave_var, width=6)
+        ave_e.grid(row=10, column=1, sticky='nse')
+
+        fwhm_lbl = tk.Label(option_frame, text='FWHM [fs]:')
+        fwhm_lbl.grid(row=14, column=0, sticky='nsw')
+        fwhm_var = tk.DoubleVar()
+        fwhm_var.set(0)
+        fwhm_e = tk.Entry(option_frame, textvariable=fwhm_var, width=6,
+                          state='disabled')
+        fwhm_e.grid(row=14, column=1, sticky='nse')
 
         run_var = tk.StringVar()
         run_var.set('disable')
-        run = tk.Button(option_frame, text='RUN', width=8, command=lambda: self.measure(run, run_var, click=True))
-        run.grid(row=9, column=0, sticky='nsew')
+        run = tk.Button(option_frame, text='RUN', width=8,
+                        command=lambda:self.measure(run, run_var, click=True,
+                                                    dual_p=dual_plotting,
+                                                    average=ave_var,
+                                                    fwhm=fwhm_var))
+        run.grid(row=12, column=0, sticky='nsew', columnspan=2)
+
+        save = tk.Button(option_frame, text='Save current spectrum', width=8,
+                        command=lambda:self.Spectro.save_data(ave=ave_var))
+        save.grid(row=13, column=0, sticky='nsew', columnspan=2)
+
         for i in range(1,5):
             self.grid_columnconfigure(i, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
     # It need to have Save Data, Statistics, Axis Modification, Overlaps
-    def measure(self, button, variable, click=None):
+    def measure(self, button, variable, dual_p,
+                average, fwhm, click=False):
         if not self.Spectro.spectro:
             return
 
-        t = self.inte_var.get()
+        try:
+            t = self.inte_var.get()
+        except:
+            t = 1
+
         if t == 0:
             t = 1
         if click:
             if variable.get() == 'disable':
                 variable.set('enable')
                 button.config(text='STOP')
-                self.Spectro.extract_intensities()
-                self.after(t, self.measure, button, variable)
+                dual_p.config(state='disabled')
+                self.Spectro.extract_intensities(average, fwhm)
+                self.after(t, self.measure, button, variable, dual_p, average,
+                           fwhm)
             elif variable.get() == 'enable':
                 variable.set('disable')
+                dual_p.config(state='normal')
                 button.config(text='RUN')
         elif not click:
             if variable.get() == 'enable':
-                self.Spectro.extract_intensities()
-                self.after(t, self.measure, button, variable)
+                self.Spectro.extract_intensities(average, fwhm)
+                self.after(t, self.measure, button, variable, dual_p, average,
+                           fwhm)
+
+# Frame dispositions for the spectrometer interactions
+class Ueye_Frame(tk.Frame):
+    def __init__(self, parent, mainf=None):
+        tk.Frame.__init__(self, parent)
+        self.config(bg='brown', width=100, height=100)
+        self.parent = parent
+        self.ueyec = UeyeCam.UeyeCamera(mainf=mainf)
+        option_frame = ttk.Labelframe(self, text='Options')
+        option_frame.grid(row=0, column=0, sticky='nsew')
+        graph_frame = tk.Frame(self)
+        graph_frame.grid(row=0, column=1, columnspan=4, sticky='nsew')
+        graph_frame.grid_rowconfigure(0, weight=1)
+        graph_frame.grid_columnconfigure(0, weight=1)
+        self.graph = Graphic.UyeGraphFrame(graph_frame,
+                                           axis_name=['Position[/mu m]',
+                                                      'Position[/mu m]'],
+                                           figsize=[8, 6])
+        self.bind('<Configure>', self.graph.change_dimensions)
+        # Configuration of the different option of the window
+        dev_lbl = tk.Label(option_frame, text='Device detected :')
+        dev_lbl.grid(row=0, column=0, sticky='nsw', columnspan=2)
+        dev_lst = tk.Listbox(option_frame, height=3)
+        dev_lst.grid(row=1, column=0, columnspan=3, sticky='nsew')
+        # Create three button to 1 refresh device box, 2 connect a given
+        # device and 3 disconnect a device
+        refr_b = tk.Button(option_frame, text='Refresh', width=5,
+                          command=lambda:self.ueyec.return_devices(dev_lst))
+        con_b = tk.Button(option_frame, text='Connect', width=5,
+                          command=lambda:self.ueyec.connect_device(dev_lst))
+        disc_b = tk.Button(option_frame, text='Disconnect', width=7,
+                          command=lambda:self.ueyec.disconnect_device(dev_lst))
+        refr_b.grid(row=2, column=0, sticky='nsew', padx=2, pady=2)
+        con_b.grid(row=2, column=1, sticky='nsew', padx=2, pady=2)
+        disc_b.grid(row=2, column=2, sticky='nsew', padx=2, pady=2)
+        #####
+        # This part is for the options
+        live_b = tk.Button(option_frame, text='Live', width=5)
+        live_b.grid(row=3, column=0, sticky='nsew')
+        zoom_b = tk.Button(option_frame, text='Zoom', width=5)
+        zoom_b.grid(row=4, column=0, sticky='nsew', rowspan=2)
+        fzoom_lbl = tk.Label(option_frame, text='Factor')
+        fzoom_lbl.grid(row=4, column=1, sticky='nsew', columnspan=2)
+        zoom_var = tk.DoubleVar()
+        zoom_var.set(1)
+        zoom_e = tk.Entry(option_frame, textvariable=zoom_var,
+                          width=5, justify='center')
+        zoom_e.grid(row=5, column=1, sticky='ns', columnspan=2)
+        azoom_var = tk.StringVar()
+        azoom_var.set('disabled')
+        azoom = tk.Checkbutton(option_frame, variable=azoom_var,
+                               text='Autoupdate zoom position',
+                               onvalue='enable', offvalue='disabled')
+
+        gain_b = tk.Button(option_frame, text='Auto gain', width=5)
+        gain_b.grid(row=6, column=0, sticky='nsew', rowspan=2)
+        exp_lbl = tk.Label(option_frame, text='Exposure time [ms]')
+        exp_lbl.grid(row=6, column=1, sticky='nsew', columnspan=2)
+        exp_var = tk.DoubleVar()
+        exp_var.set(1)
+        exp_e = tk.Entry(option_frame, textvariable=zoom_var,
+                          width=6, justify='center')
+        exp_e.grid(row=7, column=1, sticky='ns', columnspan=2)
+
+        gauss_b = tk.Button(option_frame, text='Gaussian fit', width=5)
+        gauss_b.grid(row=8, column=0, sticky='nsew')
+
+        acut_var = tk.StringVar()
+        acut_var.set('disabled')
+        acut = tk.Checkbutton(option_frame, variable=acut_var,
+                               text='Autoupdate cut position',
+                               onvalue='enable', offvalue='disabled')
+        acut.grid(row=9, column=0, columnspan=2, sticky='nsew')
+
+        ascale_var = tk.StringVar()
+        ascale_var.set('disabled')
+        ascale = tk.Checkbutton(option_frame, variable=ascale_var,
+                               text='Autoupdate scale position',
+                               onvalue='enable', offvalue='disabled')
+        ascale.grid(row=10, column=0, columnspan=2, sticky='nsew')
+
+        fwhm = tk.Label(option_frame, text='FWHM')
+        fwhm.grid(row=11, column=0, rowspan=2, sticky='nsew')
+        fwhmx_var = tk.DoubleVar()
+        fwhmy_var = tk.DoubleVar()
+        fwhmx_var.set(0)
+        fwhmy_var.set(0)
+        tk.Label(option_frame, text='Y :').grid(row=11, column=1)
+        tk.Label(option_frame, text='X :').grid(row=12, column=1)
+        fwhmy = tk.Entry(option_frame, textvariable=fwhmy_var,
+                         state='disabled', width=6)
+        fwhmy.grid(row=11, column=2, sticky='nw')
+        fwhmx = tk.Entry(option_frame, textvariable=fwhmx_var,
+                         state='disabled', width=6)
+        fwhmx.grid(row=12, column=2, sticky='nw')
+
+        gwaist = tk.Label(option_frame, text='Gaus. waist')
+        gwaist.grid(row=13, column=0, rowspan=2, sticky='nsew')
+        gwaistx_var = tk.DoubleVar()
+        gwaisty_var = tk.DoubleVar()
+        gwaistx_var.set(0)
+        gwaisty_var.set(0)
+        tk.Label(option_frame, text='Y :').grid(row=13, column=1)
+        tk.Label(option_frame, text='X :').grid(row=14, column=1)
+        gwaisty = tk.Entry(option_frame, textvariable=gwaisty_var,
+                         state='disabled', width=6)
+        gwaisty.grid(row=13, column=2, sticky='nw')
+        gwaistx = tk.Entry(option_frame, textvariable=gwaistx_var,
+                         state='disabled', width=6)
+        gwaistx.grid(row=14, column=2, sticky='nw')
+
+        tk.Label(option_frame, text='Highest pixel count :').grid(row=15,
+                                                                  column=0,
+                                                                  sticky='nw',
+                                                                  columnspan=2)
+        pcount_var = tk.IntVar()
+        pcount_var.set(0)
+        pcount = tk.Entry(option_frame, textvariable=gwaisty_var,
+                          state='disabled', width=6)
+        pcount.grid(row=15, column=2, sticky='nw')
+
+        for i in range(1,5):
+            self.grid_columnconfigure(i, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+    # It need to have Save Data, Statistics, Axis Modification, Overlaps
+    def measure(self, button, variable, dual_p,
+                average, fwhm, click=False):
+        return
+        if not self.Spectro.spectro:
+            return
+
+        try:
+            t = self.inte_var.get()
+        except:
+            t = 1
+
+        if t == 0:
+            t = 1
+        if click:
+            if variable.get() == 'disable':
+                variable.set('enable')
+                button.config(text='STOP')
+                dual_p.config(state='disabled')
+                self.Spectro.extract_intensities(average, fwhm)
+                self.after(t, self.measure, button, variable, dual_p, average,
+                           fwhm)
+            elif variable.get() == 'enable':
+                variable.set('disable')
+                dual_p.config(state='normal')
+                button.config(text='RUN')
+        elif not click:
+            if variable.get() == 'enable':
+                self.Spectro.extract_intensities(average, fwhm)
+                self.after(t, self.measure, button, variable, dual_p, average,
+                           fwhm)
 
 
 # Window for all of the experiement
