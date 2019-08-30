@@ -4,8 +4,10 @@ except:
     pass
 from tkinter import messagebox
 import numpy as np
+import matplotlib.pyplot as plt
+plt.ion()
 import cv2
-
+import time
 
 
 class UeyeCamera:
@@ -18,16 +20,20 @@ class UeyeCamera:
         self.hid = ueye.HIDS()
         self.sinfo = ueye.SENSORINFO()
         self.hwnd = ueye.HWND()
-        self.width = ueye.INT()
-        self.height = ueye.INT()
+        self.width = None
+        self.height = None
         self.psize = None
         self.bitspixel = ueye.INT(24)
+        self.bytesppixel = int(self.bitspixel/8)
         self.ppcImgMem = ueye.c_mem_p()
-        self.pid = ueye.INT()
-        self.MemID = ueye.INT()
+        self.MemID = ueye.int()
         self.colorm = ueye.INT()
         self.pitch = ueye.INT()
         self.rect = ueye.IS_RECT()
+        self.maxExp = ueye.double()
+        self.minExp = ueye.double()
+        self.Exp = ueye.double()
+        self.nRet = None
 
     def return_devices(self, variable):
 
@@ -61,7 +67,7 @@ class UeyeCamera:
 
     def disconnect_device(self, variable=None):
 
-        ueye.is_FreeImageMem(self.hid, self.ppcImgMem, self.pid)
+        ueye.is_FreeImageMem(self.hid, self.ppcImgMem, self.MemID)
         ueye.is_ExitCamera(self.hid)
         self.camera = False
 
@@ -70,54 +76,120 @@ class UeyeCamera:
             self.return_devices(variable)
 
     def configure_device(self):
-        self.width = self.sinfo.nMaxWidth
-        self.height = self.sinfo.nMaxHeight
-        self.psize = self.sinfo.wPixelSize
-        nRet = ueye.is_ResetToDefault(self.hid)
-        if nRet != ueye.IS_SUCCESS:
+
+        self.nRet = ueye.is_ResetToDefault(self.hid)
+        if self.nRet != ueye.IS_SUCCESS:
             print('Reset ERROR')
-        nRet = ueye.is_SetDisplayMode(self.hid, ueye.IS_SET_DM_DIB)
-        if nRet != ueye.IS_SUCCESS:
+
+        ueye.is_Exposure(self.hid, ueye.IS_EXPOSURE_CMD_GET_EXPOSURE_RANGE_MIN, self.minExp, 8)
+        ueye.is_Exposure(self.hid, ueye.IS_EXPOSURE_CMD_GET_EXPOSURE_RANGE_MAX, self.maxExp, 8)
+
+        self.nRet = ueye.is_SetDisplayMode(self.hid, ueye.IS_SET_DM_DIB)
+        if self.nRet != ueye.IS_SUCCESS:
             print('Display Mode ERROR')
-        nRet = ueye.is_AOI(self.hid, ueye.IS_AOI_IMAGE_GET_AOI, self.rect,
+        ueye.is_Exposure(self.hid, ueye.IS_EXPOSURE_CMD_SET_EXPOSURE, ueye.c_double(1), 8 )
+        ueye.is_Exposure(self.hid, ueye.IS_EXPOSURE_CMD_GET_EXPOSURE, self.Exp, 8 )
+        # Set the right color mode
+        if int.from_bytes(self.sinfo.nColorMode.value, byteorder='big') == ueye.IS_COLORMODE_BAYER:
+            # setup the color depth to the current windows setting
+            ueye.is_GetColorDepth(self.hid, self.bitspixel, self.colorm)
+            self.bytesppixel = int(self.bitspixel / 8)
+
+        elif int.from_bytes(self.sinfo.nColorMode.value, byteorder='big') == ueye.IS_COLORMODE_CBYCRY:
+            # for color camera models use RGB32 mode
+            self.colorm = ueye.IS_CM_BGRA8_PACKED
+            self.bitspixel = ueye.INT(32)
+            self.bytesppixel = int(self.bitspixel / 8)
+
+        elif int.from_bytes(self.sinfo.nColorMode.value, byteorder='big') == ueye.IS_COLORMODE_MONOCHROME:
+            # for color camera models use RGB32 mode
+            self.colorm = ueye.IS_CM_MONO8
+            self.bitspixel = ueye.INT(8)
+            self.bytesppixel = int(self.bitspixel / 8)
+        else:
+            # for monochrome camera models use Y8 mode
+            self.colorm = ueye.IS_CM_MONO8
+            self.bitspixel = ueye.INT(8)
+            self.bytesppixel = int(self.bitspixel / 8)
+
+        self.nRet = ueye.is_AOI(self.hid, ueye.IS_AOI_IMAGE_GET_AOI, self.rect,
                            ueye.sizeof(self.rect))
         self.width = self.rect.s32Width
         self.height = self.rect.s32Height
-        print(self.width.value, self.height.value)
-        if nRet != ueye.IS_SUCCESS:
+
+        if self.nRet != ueye.IS_SUCCESS:
             print('AOI ERROR')
-        nRet = ueye.is_AllocImageMem(self.hid, self.width, self.height,
+        self.nRet = ueye.is_AllocImageMem(self.hid, self.width, self.height,
                                      self.bitspixel, self.ppcImgMem,
-                                     self.pid)
-        if nRet != ueye.IS_SUCCESS:
+                                     self.MemID)
+        if self.nRet != ueye.IS_SUCCESS:
             print('AllocImageMem ERROR')
-        nRet = ueye.is_SetImageMem(self.hid, self.ppcImgMem, self.pid)
-        if nRet != ueye.IS_SUCCESS:
-            print('SetImageMem ERROR')
-        nRet = ueye.is_SetColorMode(self.hid, self.colorm)
-        if nRet != ueye.IS_SUCCESS:
-            print('SetColorMode ERROR')
-        nRet = ueye.is_CaptureVideo(self.hid, ueye.IS_DONT_WAIT)
-        if nRet != ueye.IS_SUCCESS:
+        else:
+            self.nRet = ueye.is_SetImageMem(self.hid, self.ppcImgMem, self.MemID)
+            if self.nRet != ueye.IS_SUCCESS:
+                print('SetImageMem ERROR')
+            else:
+                self.nRet = ueye.is_SetColorMode(self.hid, self.colorm)
+
+        self.nRet = ueye.is_CaptureVideo(self.hid, ueye.IS_DONT_WAIT)
+        if self.nRet != ueye.IS_SUCCESS:
             print('CaptureVideo ERROR')
-        nRet = ueye.is_InquireImageMem(self.hid, self.ppcImgMem, self.pid,
-                               self.width, self.height, self.bitspixel,
-                               self.pitch)
-        if nRet != ueye.IS_SUCCESS:
+        self.nRet = ueye.is_InquireImageMem(self.hid, self.ppcImgMem, self.MemID,
+                                       self.width, self.height, self.bitspixel,
+                                       self.pitch)
+        if self.nRet != ueye.IS_SUCCESS:
             print('InquireImageMem ERROR')
-        ueye.is_Exposure(self.hid, ueye.IS_EXPOSURE_CMD_SET_EXPOSURE,
-                         ueye.double(100), 8)
-        array = ueye.get_data(self.ppcImgMem, self.width.value,
-                              self.height.value, self.bitspixel, self.pitch,
-                              copy=False)
-        array = np.reshape(array, (self.height.value, self.width.value,
-                                   int(self.bitspixel/8)))
-        a = np.all(array==0)
-        print(a)
-        print(array[int(len(array)/2), int(len(array)/2)-10:int(len(array)/2)+10])
-        frame = cv2.resize(array, (int(self.height.value*0.2), int(self.width*0.2)), (0,0))
-        print(frame)
+        for i in range(10):
+            self.measure()
         self.disconnect_device()
+
+    def measure(self):
+        print('Creating figure')
+        fig = plt.figure(figsize=(6,6))
+        ax = fig.add_subplot(111)
+        ax.set_title('colorMap')
+        ax.set_aspect('equal')
+        plt.imshow(np.zeros((10,10)), cmap='viridis')
+        plt.show()
+        if (self.nRet != ueye.IS_SUCCESS):
+            return
+        # Continuous image display
+        for i in range(2):
+            print('Starting loop')
+            # In order to display the image in an OpenCV window we need to...
+            # ...extract the data of our image memory
+            array = ueye.get_data(self.ppcImgMem, self.width, self.height, self.bitspixel, self.pitch, copy=False)
+            # bytes_per_pixel = int(nBitsPerPixel / 8)
+
+            # ...reshape it in an numpy array...
+            frame = np.reshape(array,(self.height.value, self.width.value, self.bytesppixel))
+            plt.imshow(frame[:,:,0], cmap='viridis')
+            # ...resize the image by a half
+            #frame = cv2.resize(frame,(0,0),fx=0.5, fy=0.5)
+
+            #-----------------------------------------------------------------------------------------------------------
+                #Include image data processing here
+
+            #------------------------------------------------------------------------------------------------------------
+
+            #...and finally display it
+            #cv2.imshow("SimpleLive_Python_uEye_OpenCV", frame)
+
+            # Press q if you want to end the loop
+            #if cv2.waitKey(1) & 0xFF == ord('q'):
+            #    break
+            plt.show()
+            time.sleep(1)
+#        array = ueye.get_data(self.ppcImgMem, self.width,
+#                              self.height, self.bitspixel, self.pitch,
+#                              copy=False)
+#        print(array)
+#        array = np.reshape(array, (self.height.value, self.width.value,
+#                                   self.bytesppixel))
+#
+#        frame = cv2.resize(array, (0,0), fx=0.5, fy=0.5)
+#        self.disconnect_device()
+#        cv2.imshow('simple live', frame)
 
     def configure_graph(self):
         pass

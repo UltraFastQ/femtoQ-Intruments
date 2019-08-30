@@ -23,17 +23,17 @@ class LinearStage:
             pass
         else:
             return
-        
+
         if (dev_name and type(dev_name)!=str):
             dev_name = dev_name.get()
         else:
             pass
-        
-        if (dev_ip and type(dev_ip)!=str):    
+
+        if (dev_ip and type(dev_ip)!=str):
             dev_ip = dev_ip.get()
         else:
             pass
-        
+
         dev_list = ['C-891', 'C-863.11']
         if dev_name not in dev_list:
             messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
@@ -151,7 +151,7 @@ class LinearStage:
         # 1 : 500 ...
         self.device.VEL(self.axes, factor*10)
         print(self.empty_var)
-        
+
     def set_velocity(self, vel=None):
         if not self.device or not vel:
             return

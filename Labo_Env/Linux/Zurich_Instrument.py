@@ -3,12 +3,11 @@ import Graphic
 import re
 import numpy as np
 import time
-import matplotlib.pyplot as plt
 
 
 class Zurich:
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, mainf=None):
+        self.mainf = mainf
         self.info = None
         self.default = None
         self.num = 1
@@ -93,10 +92,9 @@ class Zurich:
 
             daq.set(reset_settings)
             daq.sync()
-            print(self.paths)
 
-            if exp_dependencie:
-                experiments = self.parent.Frame[4].experiment_dict
+            if self.mainf:
+                experiments = self.mainf.Frame[4].experiment_dict
                 for experiment in experiments:
                     experiments[experiment].update_options('Zurich')
 
@@ -171,6 +169,7 @@ class Zurich:
             if type(setting_line) == str:
                 if type_ == 'combobox':
                     setting = ['/{}{}'.format(self.info['device'], setting_line), value.current()]
+                    print(setting)
                 elif type_ == 'combobox_external':
                     selected = value.current()
                     state = self.info['daq'].getInt('/{}{}/enable'.format(self.info['device'], setting_line))
@@ -208,6 +207,7 @@ class Zurich:
                     setting.append(['/{}{}/{}'.format(self.info['device'], setting_line[2][1], self.default), 2])
 
         setting = [setting]
+        print(setting)
         # This sets the item in the Zurich server
         self.info['daq'].set(setting)
         self.info['daq'].sync()
@@ -223,7 +223,6 @@ class Zurich:
 
         # This set the default demodulator parameter for initialization purpuses
         index = path.split('/demods/')
-        print(index)
         index = index[1].split('/enable')[0]
         import zhinst.utils as utils
         basics = [['/%s/demods/%s/enable' % (self.info['device'], index), value],
@@ -246,7 +245,6 @@ class Zurich:
         if not path:
             return
         while self.in_use:
-            print('0')
             time.sleep(0.1)
         for element in self.paths:
             if self.paths[element]:
@@ -268,27 +266,7 @@ class Zurich:
                     del self.subscribed[element]
         self.subscribing = False
 
-    def measure_guide(self):
-        t = 1000
-        if not self.info:
-            self.parent.after(t, self.measure_guide)
-            return
-        if not self.state:
-            self.parent.after(t, self.measure_guide)
-            return
-        if not self.state:
-            return
-        i = 0
-        for item in self.state:
-            if not self.state[item] and i == 3:
-                self.parent.after(t, self.measure_guide)
-                return
-            elif not self.state[item]:
-                i += 1
-            elif self.state[item]:
-                t = 100
-        while self.subscribing:
-            time.sleep(0.1)
+    def measure(self):
 
         if self.in_use:
             return
@@ -303,10 +281,8 @@ class Zurich:
         except:
             print("Size change")
         self.in_use = False
-        self.parent.after(t, self.measure_guide)
-   
 
-   
+
 class Scope:
 
     def __init__(self, zurich=None, line=None, axes=None, fig=None):
@@ -586,7 +562,6 @@ class Boxcar:
     def extract_data(self, data=None, path=None):
         if not(self.zurich.paths[path]):
             return
-
         if (not (self.window_start != min(self.line_list[0].x, self.line_list[1].x)) or not (
                 self.window_length != abs(self.line_list[0].x - self.line_list[1].x))):
             self.refresh(path=path)
@@ -595,6 +570,7 @@ class Boxcar:
         self.axes.axhline(0, color='k')
         boxcar_data['binphase'] = boxcar_data['binphase'] * self.xfactor
         phase = boxcar_data['binphase']
+        phase = np.multiply(phase, self.xfactor)
         amplitude = boxcar_data['x']
         # The inputpwa waveform is stored in 'x', currently 'y' is unused.
         self.axes.set_ylim([min(amplitude) - abs(min(amplitude) * 15 / 100),
@@ -603,3 +579,4 @@ class Boxcar:
                             max(1e6 * phase) + max(1e6 * phase) * 15 / 100])
         self.line.set_ydata(amplitude)
         self.line.set_xdata(phase)
+

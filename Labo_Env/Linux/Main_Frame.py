@@ -20,11 +20,10 @@ class MainFrame(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         # Variable that are spreaded throughout the program
-        self.Zurich = Zurich_Instrument.Zurich(self)
         self.width = self.winfo_screenwidth()
         self.height = self.winfo_screenheight()
         # List of all de frame
-        self.Frame = [HomePage(self), ZurichFrame(self), Mono_Physics(self, mainf=self),
+        self.Frame = [HomePage(self), ZurichFrame(self, mainf=self), Mono_Physics(self, mainf=self),
                       SpectroFrame(self, mainf=self)]
         # If experiment change from this position in this vector we need to
         # change some things in the other document in their connection method
@@ -110,15 +109,15 @@ class HomePage(tk.Frame):
 # Frame dispositions for the Zurich Instruments
 class ZurichFrame(tk.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, mainf=None):
         tk.Frame.__init__(self, parent)
         self.parent = parent
         self.config(bg='red', width=100, height=100)
+        self.Zurich = Zurich_Instrument.Zurich(mainf=mainf)
         for i in range(10):
             for j in range(7):
                 self.grid_columnconfigure(i, weight=1)
                 self.grid_rowconfigure(j, weight=1)
-        self.after(1000, self.parent.Zurich.measure_guide)
 
         def connectionframe():
             # Connection Frame
@@ -129,7 +128,7 @@ class ZurichFrame(tk.Frame):
             connect_var.set('dev2318')
             connect_e = tk.Entry(connectframe, textvariable=connect_var, width=8)
             connectbutton = tk.Button(connectframe, text='Connect',
-                                      command=lambda: self.parent.Zurich.connect_device(connect_var.get(),
+                                      command=lambda: self.Zurich.connect_device(connect_var.get(),
                                                                                         exp_dependencie=True))
             connectlbl.grid(row=0, column=0, padx=2, pady=2, sticky='nsew')
             connect_e.grid(row=0, column=1, padx=2, pady=2, sticky='nsew')
@@ -160,7 +159,7 @@ class ZurichFrame(tk.Frame):
             input150_var = tk.StringVar()
             input150_var.set('Disabled')
             input150button = tk.Checkbutton(inputframe, variable=input150_var, onvalue='Enabled', offvalue='Disabled')
-            inputframe.grid(row=1, column=0, sticky='nsew', rowspan=2)
+            inputframe.grid(row=1, column=0, sticky='nsew', rowspan=3)
             input1label.grid(row=0, column=0, columnspan=2, sticky='nsew')
             input1range.grid(row=1, column=0, columnspan=2, sticky='nsew')
             input1rangevalue.grid(row=1, column=2, columnspan=2, sticky='nsew')
@@ -209,28 +208,23 @@ class ZurichFrame(tk.Frame):
             input250.grid(row=8, column=2, sticky='nsew')
             input250button.grid(row=8, column=3, sticky='nsew')
 
-            entry_dict = {'input1_range': [input1rangevalue, input1range_var, 'double', '/sigins/0/range'],
-                          'input1_scale': [input1scaleratio, [input1scaleratio_var, input1scaleunit_var], 'tension',
-                                           '/sigins/0/scaling'],
-                          'input1_scale_unit': [input1scaleunit, [input1scaleratio_var, input1scaleunit_var], 'tension',
-                                                '/sigins/0/scaling'],
-                          'input2_range': [input2rangevalue, input2range_var, 'double', '/sigins/1/range'],
-                          'input2_scale': [input2scaleratio, [input2scaleratio_var, input2scaleunit_var], 'tension',
-                                           '/sigins/1/scaling'],
-                          'input2_scale_unit': [input2scaleunit, [input2scaleratio_var, input2scaleunit_var], 'tension',
-                                                '/sigins/1/scaling']
-                          }
-            self.create_bind(dict_=entry_dict, type_='entry')
-            check_dict = {'input1_ac': [input1acbutton, input1ac_var, 'T_F', '/sigins/0/ac'],
-                          'input1_50': [input150button, input150_var, 'T_F', '/sigins/0/imp50'],
-                          'input2_ac': [input2acbutton, input2ac_var, 'T_F', '/sigins/1/ac'],
-                          'input2_50': [input250button, input250_var, 'T_F', '/sigins/1/imp50']
-                          }
-            self.create_bind(dict_=check_dict, type_='check')
-            button_dict = {'input1_autorange': [input1autorange, '/sigins/0/autorange'],
-                           'input2_autorange': [input2autorange, '/sigins/1/autorange']
-                           }
-            self.create_bind(dict_=button_dict, type_='button')
+            self.create_bind([input1rangevalue, input1range_var, 'double', '/sigins/0/range'], type_='entry')
+            self.create_bind([input1scaleratio, [input1scaleratio_var, input1scaleunit_var],
+                              'tension', '/sigins/0/scaling'], type_='entry')
+            self.create_bind([input1scaleunit, [input1scaleratio_var, input1scaleunit_var],
+                              'tension','/sigins/0/scaling'], type_='entry')
+            self.create_bind([input2rangevalue, input2range_var, 'double', '/sigins/1/range']
+                             , type_='entry')
+            self.create_bind([input2scaleratio, [input2scaleratio_var, input2scaleunit_var], 'tension',
+                             '/sigins/1/scaling'], type_='entry')
+            self.create_bind([input2scaleunit, [input2scaleratio_var, input2scaleunit_var],
+                              'tension','/sigins/1/scaling'], type_='entry')
+            self.create_bind(list_=[input1acbutton, input1ac_var, 'T_F', '/sigins/0/ac'], type_='check')
+            self.create_bind(list_=[input150button, input150_var, 'T_F', '/sigins/0/imp50'], type_='check')
+            self.create_bind([input2acbutton, input2ac_var, 'T_F', '/sigins/1/ac'], type_='check')
+            self.create_bind([input250button, input250_var, 'T_F', '/sigins/1/imp50'], type_='check')
+            self.create_bind([input1autorange, '/sigins/0/autorange'], type_='button')
+            self.create_bind([input2autorange, '/sigins/1/autorange'], type_='button')
 
         def outputframe():
 
@@ -256,7 +250,7 @@ class ZurichFrame(tk.Frame):
             output150_var.set('Disabled')
             output150button = tk.Checkbutton(outputframe, variable=output150_var, onvalue='Enabled',
                                              offvalue='Disabled')
-            outputframe.grid(row=1, column=1, sticky='nsew', rowspan=2)
+            outputframe.grid(row=1, column=1, sticky='nsew', rowspan=3)
             output1label.grid(row=0, column=0, sticky='nsew')
             output1range.grid(row=2, column=0, sticky='nsew')
             output1rangevalue.grid(row=2, column=1, columnspan=2, sticky='nsew')
@@ -302,28 +296,27 @@ class ZurichFrame(tk.Frame):
             output250.grid(row=6, column=2, sticky='nsew')
             output250button.grid(row=6, column=3, sticky='nsew')
 
-            entry_dict = {'output1_range': [output1rangevalue, output1range_var, 'double', '/sigouts/0/range'],
-                          'output1_offset': [output1offset_entry, output1offset_var, 'double', '/sigouts/0/offset'],
-                          'output2_range': [output2rangevalue, output2range_var, 'double', '/sigouts/1/range'],
-                          'output2_offset': [output2offset_entry, output2offset_var, 'double', '/sigouts/1/offset']
-                          }
-            self.create_bind(dict_=entry_dict, type_='entry')
-            check_dict = {'output1_enable': [output1onbutton, output1on_var, 'T_F', ['output', '/sigouts/0/on', ['/sigouts/0/enables', '/sigouts/0/amplitudes']]],
-                          'output1_50': [output150button, output150_var, 'T_F', '/sigouts/0/imp50'],
-                          'output2_enable': [output2onbutton, output2on_var, 'T_F', ['output', '/sigouts/1/on', ['/sigouts/1/enables', '/sigouts/1/amplitudes']]],
-                          'output2_50': [output250button, output250_var, 'T_F', '/sigouts/1/imp50']
-                          }
-            self.create_bind(dict_=check_dict, type_='check')
-            button_dict = {'output1_autorange': [output1autorange, '/sigouts/0/autorange'],
-                           'output2_autorange': [output2autorange, '/sigouts/1/autorange']
-                           }
-            self.create_bind(dict_=button_dict, type_='button')
+            self.create_bind([output1rangevalue, output1range_var, 'double', '/sigouts/0/range'], type_='entry')
+            self.create_bind([output1offset_entry, output1offset_var, 'double', '/sigouts/0/offset'], type_='entry')
+            self.create_bind([output2rangevalue, output2range_var, 'double', '/sigouts/1/range'], type_='entry')
+            self.create_bind([output2offset_entry, output2offset_var, 'double', '/sigouts/1/offset'], type_='entry')
+            self.create_bind([output1onbutton, output1on_var, 'T_F',
+                              ['output', '/sigouts/0/on',
+                               ['/sigouts/0/enables', '/sigouts/0/amplitudes']]], type_='check')
+            self.create_bind([output150button, output150_var, 'T_F', '/sigouts/0/imp50'], type_='check')
+            self.create_bind([output2onbutton, output2on_var, 'T_F',
+                              ['output', '/sigouts/1/on',
+                               ['/sigouts/1/enables', '/sigouts/1/amplitudes']]], type_='check')
+            self.create_bind([output250button, output250_var, 'T_F', '/sigouts/1/imp50'], type_='check')
+
+            self.create_bind([output1autorange, '/sigouts/0/autorange'], type_='button')
+            self.create_bind([output2autorange, '/sigouts/1/autorange'], type_='button')
 
         def demodulatorframe():
 
             # Demodulator
             demoframe = ttk.Labelframe(self, text='Demodulator')
-            demoframe.grid(row=3, column=0, rowspan=4, columnspan=2, sticky='nsew')
+            demoframe.grid(row=4, column=0, rowspan=4, columnspan=2, sticky='nsew')
 
             # Demodulator numbering
             demo1 = tk.Label(demoframe, text='#1')
@@ -686,73 +679,77 @@ class ZurichFrame(tk.Frame):
             demo8datae = tk.Entry(demoframe, textvariable=demo8datae_var, width=6)
             demo8datae.grid(row=9, column=15, sticky='nsew')
 
-            spin_dict = {}
-            combo_dict = {}
-            entry_dict = {}
-            check_dict = {}
             # Input and Mode
             choice_list = [demo1choice, demo2choice, demo3choice, demo4choice, demo5choice, demo6choice, demo7choice,
                            demo8choice]
             for i in range(1, 9):
-                combo_dict['demo{}_input'.format(i)] = [choice_list[i-1], 'combobox',
-                                                        '/demods/{}/adcselect'.format(i-1)]
+                self.create_bind([choice_list[i-1], 'combobox', '/demods/{}/adcselect'.format(i-1)], type_='combo')
+
             mode_list = [demo4mode, demo8mode]
             for i in range(1, 2):
-                combo_dict['demo{}_mode'.format(i)] = [mode_list[i-1], 'combobox_external', '/extrefs/{}'.format(i-1)]
+                self.create_bind([mode_list[i-1], 'combobox_external', '/extrefs/{}'.format(i-1)], type_='combo')
 
             # Tools for the frequencie of each demodulator
             osc_list = [[demo1osc, demo1osc_var], [demo2osc, demo2osc_var], [demo3osc, demo3osc_var],
                         [demo4osc, demo4osc_var], [demo5osc, demo5osc_var], [demo6osc, demo6osc_var],
                         [demo7osc, demo7osc_var], [demo8osc, demo8osc_var]]
+
             for i in range(1, 9):
-                spin_dict['demo{}_osc'.format(i)] = [osc_list[i-1], 'int', '/demods/{}/oscselect'.format(i-1)]
+                self.create_bind([osc_list[i-1], 'int', '/demods/{}/oscselect'.format(i-1)], type_='spin')
 
             harm_list = [[demo1harm, demo1harm_var], [demo2harm, demo2harm_var], [demo3harm, demo3harm_var],
                         [demo4harm, demo4harm_var], [demo5harm, demo5harm_var], [demo6harm, demo6harm_var],
                         [demo7harm, demo7harm_var], [demo8harm, demo8harm_var]]
+
             for i in range(1, 9):
-                spin_dict['demo{}_harm'.format(i)] = [harm_list[i-1], 'int', '/demods/{}/harmonic'.format(i-1)]
+                self.create_bind([harm_list[i-1], 'int', '/demods/{}/harmonic'.format(i-1)], type_='spin')
+
             phase_list = [[demo1phase, demo1phase_var], [demo2phase, demo2phase_var], [demo3phase, demo3phase_var],
                         [demo4phase, demo4phase_var], [demo5phase, demo5phase_var], [demo6phase, demo6phase_var],
                         [demo7phase, demo7phase_var], [demo8phase, demo8phase_var]]
+
             for i in range(1, 9):
-                entry_dict['demo{}_phase'.format(i)] = [phase_list[i-1][0], phase_list[i-1][1], 'double',
-                                                        '/demods/{}/phaseshift'.format(i-1)]
+                self.create_bind([phase_list[i-1][0], phase_list[i-1][1], 'double','/demods/{}/phaseshift'.format(i-1)],
+                                 type_='entry')
+
             order_list = [[demo1order, demo1order_var], [demo2order, demo2order_var], [demo3order, demo3order_var],
                           [demo4order, demo4order_var], [demo5order, demo5order_var], [demo6order, demo6order_var],
                           [demo7order, demo7order_var], [demo8order, demo8order_var]]
+
             for i in range(1, 9):
-                spin_dict['demo{}_order'.format(i)] = [order_list[i-1], 'int', '/demods/{}/order'.format(i-1)]
+                self.create_bind([order_list[i-1], 'int', '/demods/{}/order'.format(i-1)], type_='spin')
+
             bw3db_list = [[demo1bw3dbe, [demo1bw3db_var, demo1order_var]], [demo2bw3dbe, [demo2bw3db_var, demo2order_var]],
                           [demo3bw3dbe, [demo3bw3db_var, demo3order_var]], [demo4bw3dbe, [demo4bw3db_var, demo4order_var]],
                           [demo5bw3dbe, [demo5bw3db_var, demo5order_var]], [demo6bw3dbe, [demo6bw3db_var, demo6order_var]],
                           [demo7bw3dbe, [demo7bw3db_var, demo7order_var]], [demo8bw3dbe, [demo8bw3db_var, demo8order_var]]]
             for i in range(1, 9):
-                entry_dict['demo{}_bw3db'.format(i)] = [bw3db_list[i-1][0], bw3db_list[i-1][1], 'double_bw2tc',
-                                                        '/demods/{}/timeconstant'.format(i-1)]
+                self.create_bind([bw3db_list[i-1][0], bw3db_list[i-1][1], 'double_bw2tc',
+                                  '/demods/{}/timeconstant'.format(i-1)], type_='entry')
+
             sinc_list = [[demo1sinc, demo1sinc_var], [demo2sinc, demo2sinc_var], [demo3sinc, demo3sinc_var],
                          [demo4sinc, demo4sinc_var], [demo5sinc, demo5sinc_var], [demo6sinc, demo6sinc_var],
                          [demo7sinc, demo7sinc_var], [demo8sinc, demo8sinc_var]]
+
             for i in range(1, 9):
-                check_dict['demo{}_sinc'.format(i)] = [sinc_list[i-1][0], sinc_list[i-1][1], 'T_F',
-                                                       '/demods/{}/sinc'.format(i-1)]
+                self.create_bind([sinc_list[i-1][0], sinc_list[i-1][1], 'T_F',
+                                  '/demods/{}/sinc'.format(i-1)], type_='check')
+
             on_list = [[demo1on, demo1on_var], [demo2on, demo2on_var], [demo3on, demo3on_var],
                          [demo4on, demo4on_var], [demo5on, demo5on_var], [demo6on, demo6on_var],
                          [demo7on, demo7on_var], [demo8on, demo8on_var]]
+
             for i in range(1, 9):
-                check_dict['demo{}_on'.format(i)] = [on_list[i-1][0], on_list[i-1][1], 'T_F',
-                                                     '/demods/{}/enable'.format(i-1)]
+                self.create_bind([on_list[i-1][0], on_list[i-1][1], 'T_F',
+                                  '/demods/{}/enable'.format(i-1)], type_='check')
+
             datae_list = [[demo1datae, demo1datae_var], [demo2datae, demo2datae_var], [demo3datae, demo3datae_var],
                           [demo4datae, demo4datae_var], [demo5datae, demo5datae_var], [demo6datae, demo6datae_var],
                           [demo7datae, demo7datae_var], [demo8datae, demo8datae_var]]
-            for i in range(1, 9):
-                entry_dict['demo{}_datae'.format(i)] = [datae_list[i-1][0], datae_list[i-1][1], 'double_str2db',
-                                                        '/demods/{}/rate'.format(i-1)]
 
-            self.create_bind(dict_=spin_dict, type_='spin')
-            self.create_bind(dict_=combo_dict, type_='combo')
-            self.create_bind(dict_=entry_dict, type_='entry')
-            self.create_bind(dict_=check_dict, type_='check')
+            for i in range(1, 9):
+                self.create_bind([datae_list[i-1][0], datae_list[i-1][1], 'double_str2db',
+                                  '/demods/{}/rate'.format(i-1)], type_='entry')
 
         def oscframe():
             # Boxcar
@@ -770,9 +767,8 @@ class ZurichFrame(tk.Frame):
             osc2_evar.set('100k')
             osc2_e = tk.Entry(osc_frame, textvariable=osc2_evar, width=8)
             osc2_e.grid(row=1, column=1, sticky='nsew')
-            entry_dict = {'osc1': [osc1_e, osc1_evar, 'double_str2db', '/oscs/0/freq'],
-                          'osc2': [osc2_e, osc2_evar, 'double_str2db', '/oscs/0/freq']}
-            self.create_bind(dict_=entry_dict, type_='entry')
+            self.create_bind([osc1_e, osc1_evar, 'double_str2db', '/oscs/0/freq'], type_='entry')
+            self.create_bind([osc2_e, osc2_evar, 'double_str2db', '/oscs/0/freq'], type_='entry')
 
         def graphicframe():
 
@@ -812,22 +808,22 @@ class ZurichFrame(tk.Frame):
                     self.Graph = Graphic.GraphicFrame(self, axis_name=axis, figsize=size)
                     self.bind('<Configure>', self.Graph.change_dimensions)
                     self.class_ = class_(line=self.Graph.Line, axes=self.Graph.axes, fig=self.Graph.Fig,
-                                         zurich=frame_class.parent.Zurich)
+                                         zurich=frame_class.Zurich)
 
             class ScopeOptionFrame(tk.Frame):
                 # For now I can only use the first channel and the first scope. It is to be done to work with both
                 def __init__(self, parent, assigned_graph, frame_class):
                     def off_on(state):
-                        if not frame_class.parent.Zurich.info:
+                        if not frame_class.Zurich.info:
                             messagebox.showinfo(title='Error', message='There is no device connected')
                             state.set('disable')
                             return
                         state = state.get()
                         if state == 'enable':
-                            frame_class.parent.Zurich.add_subscribed('/scopes/',
+                            frame_class.Zurich.add_subscribed('/scopes/',
                                                                      assigned_graph.class_, assigned_graph.Graph)
                         elif state == 'disable':
-                            frame_class.parent.Zurich.unsubscribed_path('/scopes/')
+                            frame_class.Zurich.unsubscribed_path('/scopes/')
 
                     tk.Frame.__init__(self, parent)
                     graph = assigned_graph
@@ -847,13 +843,13 @@ class ZurichFrame(tk.Frame):
                     control_label.grid(row=0, column=2, columnspan=3, sticky='nsew')
                     mode_label = tk.Label(self, text='Mode')
                     mode_label.grid(row=1, column=2, sticky='nw')
-                    mode_combo = ttk.Combobox(self, width=12, state='readonly', textvariable='')
+                    mode_combo = ttk.Combobox(self, width=12, state='readonly')
                     mode_combo['value'] = ('Time Domain', 'Freq. Domaine')
                     mode_combo.current(0)
                     mode_combo.grid(row=1, column=3, sticky='nsew')
                     sample_label = tk.Label(self, text='Sampling Rate')
                     sample_label.grid(row=2, column=2, sticky='nw')
-                    sample_combo = ttk.Combobox(self, width=12, state='readonly', textvariable='')
+                    sample_combo = ttk.Combobox(self, width=12, state='readonly')
                     sample_combo['value'] = ('1.80 GHz', '900 MHz', ' 450 MHz', '225 MHz', '113 MHz', '56.2 MHz',
                                              '28.1 MHz', '14.0 MHz', '7.03 MHz', '3.50 MHz', '1.75 MHz', '880 kHz',
                                              '440 kHz', '220 kHz', '110 kHz', '54.9 kHz', '27.5kHz')
@@ -868,17 +864,15 @@ class ZurichFrame(tk.Frame):
                     lenght_entry.grid(row=3, column=3, sticky='nsew')
                     sig_input = tk.Label(self, text='Scope Sig')
                     sig_input.grid(row=4, column=2, sticky='nw')
-                    cinput_sig = ttk.Combobox(self, textvariable='', width=8, state='readonly')
+                    cinput_sig = ttk.Combobox(self, width=8, state='readonly')
                     cinput_sig['value'] = ('Input 1', 'Input 2', 'Trig. 1', 'Trig. 2')
                     cinput_sig.current(0)
                     cinput_sig.grid(row=4, column=3, columnspan=2, sticky='nsew')
                     # This is only for a given scope. Work need to be done to add the second scope
-                    combo_dict = {'Mode': [mode_combo, 'combobox', '/scopes/0/'],
-                                  'rate': [sample_combo, 'combobox', '/scopes/0/Time'],
-                                  'input': [cinput_sig, 'combobox', '/scopes/0/channels/0/inputselect']}
-                    entry_dict = {'length': [lenght_entry, lenght_entry_var, 'int', '/scopes/0/length']}
-                    frame_class.create_bind(dict_=combo_dict, type_='combo')
-                    frame_class.create_bind(dict_=entry_dict, type_='entry')
+                    frame_class.create_bind([mode_combo, 'combobox', '/scopes/0/'], type_='combo')
+                    frame_class.create_bind([sample_combo, 'combobox', '/scopes/0/time'], type_='combo')
+                    frame_class.create_bind([cinput_sig, 'combobox', '/scopes/0/channels/0/inputselect'], type_='combo')
+                    frame_class.create_bind([lenght_entry, lenght_entry_var, 'int', '/scopes/0/length'], type_='entry')
 
                     s2 = ttk.Separator(self, orient='vertical')
                     s2.grid(row=0, column=5, rowspan=4, sticky='nsew', padx=2)
@@ -903,9 +897,10 @@ class ZurichFrame(tk.Frame):
                     slope_sig.grid(row=2, column=7, columnspan=2, sticky='nsew')
                     trig_enable.config(command=lambda: assigned_graph.class_.enable_trigger(scope=0, trigger=tin_sig,
                                                                                             variable_=trig_var))
-                    combo_dict = {'trigsig': [tin_sig, 'combobox', '/scopes/0/trigchannel'],
-                                  'slope': [slope_sig, 'combobox', '/scopes/0/trigslope']}
-                    frame_class.create_bind(dict_=combo_dict, type_='combo')
+                    cl2 = [tin_sig, 'combobox', '/scopes/0/trigchannel']
+                    cl1 = [slope_sig, 'combobox', '/scopes/0/trigslope']
+                    frame_class.create_bind(list_=cl2, type_='combo')
+                    frame_class.create_bind(list_=cl1, type_='combo')
 
                     # We need to add things related to the FFT analyser
                     s3 = ttk.Separator(self, orient='vertical')
@@ -951,16 +946,19 @@ class ZurichFrame(tk.Frame):
 
                 def __init__(self, parent, assigned_graph, frame_class):
                     def off_on(state):
-                        if not frame_class.parent.Zurich.info:
+                        if not frame_class.Zurich.info:
                             messagebox.showinfo(title='Error', message='There is no device connected')
                             state.set('disable')
                             return
                         state = state.get()
                         if state == 'enable':
-                            frame_class.parent.Zurich.add_subscribed('/boxcars/',
+                            frame_class.Zurich.add_subscribed('/inputpwas/',
                                                                      assigned_graph.class_, assigned_graph.Graph)
+#                            frame_class.Zurich.add_subscribed('/boxcars/',
+#                                                                     assigned_graph.class_, assigned_graph.Graph)
                         elif state == 'disable':
-                            frame_class.parent.Zurich.unsubscribed_path(assigned_graph.class_.path)
+                            frame_class.Zurich.unsubscribed_path('/inputpwas/')
+                            frame_class.Zurich.unsubscribed_path('/boxcars/')
 
                     tk.Frame.__init__(self, parent)
                     graph = assigned_graph
@@ -1037,16 +1035,16 @@ class ZurichFrame(tk.Frame):
                     run.config(command=lambda: graph.class_.enable_boxcar(pwa_input=pwa_combo, box_input=box_combo,
                                                                           variable=run_var))
                     show.config(command=lambda: off_on(show_var))
-                    combo_dict = {'pwa_input': [pwa_combo, 'combobox', '/inputpwas/0/inputselect'],
-                                  'box_input': [box_combo, 'combobox', '/boxcars/0/inputselect']}
-                    frame_class.create_bind(dict_=combo_dict, type_='combo')
-                    entry_dict = {'timeWidth': [width_entry, width_entry_var, 'double_str2db',
-                                                '/inputpwas/0/aquisitiontime'],
-                                  'sample': [sample_entry, sample_entry_var, 'double_str2db',
-                                             '/inputpwas/0/samplecount'],
-                                  'periods': [ave_entry, ave_entry_var, 'int', '/boxcars/0/periods'],
-                                  'rate': [rate_entry, rate_entry_var, 'double_str2db', '/boxcars/0/limitrate']}
-                    frame_class.create_bind(dict_=entry_dict, type_='entry')
+                    frame_class.create_bind([pwa_combo, 'combobox', '/inputpwas/0/inputselect'], type_='combo')
+                    frame_class.create_bind([box_combo, 'combobox', '/boxcars/0/inputselect'], type_='combo')
+                    frame_class.create_bind([width_entry, width_entry_var, 'double_str2db', '/inputpwas/0/aquisitiontime'],
+                                            type_='entry')
+                    frame_class.create_bind([sample_entry, sample_entry_var, 'double_str2db','/inputpwas/0/samplecount'],
+                                            type_='entry')
+                    frame_class.create_bind([ave_entry, ave_entry_var, 'int', '/boxcars/0/periods'],
+                                            type_='entry')
+                    frame_class.create_bind([rate_entry, rate_entry_var, 'double_str2db', '/boxcars/0/limitrate'],
+                                            type_='entry')
 
             class PlotterOptionFrame(tk.Frame):
 
@@ -1134,38 +1132,51 @@ class ZurichFrame(tk.Frame):
         demodulatorframe()
         oscframe()
         graphicframe()
+        self.after(1000, self.measure_guide)
+    # Need to had a better refresh rate
+    def measure_guide(self):
 
-    def create_bind(self, dict_=None, type_=None):
+        t = 1000
+        if not self.Zurich.info:
+            self.parent.after(t, self.measure_guide)
+            return
+        if not self.Zurich.state:
+            self.parent.after(t, self.measure_guide)
+            return
+        i=0
+        for item in self.Zurich.state:
+            if not self.Zurich.state[item] and i==3:
+                self.parent.after(t, self.measure_guide)
+                return
+            elif not self.Zurich.state[item]:
+                i += 1
+            elif self.Zurich.state[item]:
+                t=20
+        self.Zurich.measure()
+        self.parent.after(t, self.measure_guide)
 
-        if (not type_) or (not dict_):
+    def create_bind(self, list_=None, type_=None):
+
+        if (not type_) or (not list_):
             pass
 
-        function_ = self.parent.Zurich.update_settings
+        function_ = self.Zurich.update_settings
+        tk_item = list_
 
         if type_ == 'entry':
-            for element in dict_:
-                tk_item = dict_[element]
-                tk_item[0].bind('<Return>', lambda e: function_(value=tk_item[1], type_=tk_item[2],
+            tk_item[0].bind('<Return>', lambda e: function_(value=tk_item[1], type_=tk_item[2],
                                                                 setting_line=tk_item[3]))
         elif type_ == 'check':
-            for element in dict_:
-                tk_item = dict_[element]
-                tk_item[0].config(command=lambda: function_(value=tk_item[1], type_=tk_item[2],
+            tk_item[0].config(command=lambda: function_(value=tk_item[1], type_=tk_item[2],
                                                             setting_line=tk_item[3]))
         elif type_ == 'spin':
-            for element in dict_:
-                tk_item = dict_[element]
-                tk_item[0][0].config(command=lambda: function_(value=tk_item[0][1], type_=tk_item[1],
+            tk_item[0][0].config(command=lambda: function_(value=tk_item[0][1], type_=tk_item[1],
                                                                setting_line=tk_item[2]))
         elif type_ == 'combo':
-            for element in dict_:
-                tk_item = dict_[element]
-                tk_item[0].bind('<<ComboboxSelected>>', lambda e: function_(value=tk_item[0], type_=tk_item[1],
+            tk_item[0].bind('<<ComboboxSelected>>', lambda e: function_(value=tk_item[0], type_=tk_item[1],
                                                                             setting_line=tk_item[2]))
         elif type_ == 'button':
-            for element in dict_:
-                tk_item = dict_[element]
-                tk_item[0].config(command=lambda: function_(value=None, type_=None, setting_line=tk_item[1]))
+            tk_item[0].config(command=lambda: function_(value=None, type_=None, setting_line=tk_item[1]))
 
 
 # Frame dispositions for the Monochromator and the Linear Stage of physics Intrumente
