@@ -5,15 +5,10 @@ except:
     pass
 from tkinter import messagebox
 import numpy as np
-<<<<<<< HEAD
 import matplotlib.pyplot as plt
 plt.ion()
 import cv2
 import time
-=======
-
-
->>>>>>> 167ef592328b7afeaff8302fb7ce86a6d09ddb0d
 
 
 class UeyeCamera:
@@ -23,7 +18,6 @@ class UeyeCamera:
         self.graphic = graphic
         self.mainf = mainf
         self.detected_devices = {}
-<<<<<<< HEAD
         self.hid = ueye.HIDS()
         self.sinfo = ueye.SENSORINFO()
         self.hwnd = ueye.HWND()
@@ -41,7 +35,6 @@ class UeyeCamera:
         self.minExp = ueye.double()
         self.Exp = ueye.double()
         self.nRet = None
-=======
         try:
             self.hid = ueye.HIDS()
             self.sinfo = ueye.SENSORINFO()
@@ -58,7 +51,6 @@ class UeyeCamera:
             self.rect = ueye.IS_RECT()
         except:
             return
->>>>>>> 167ef592328b7afeaff8302fb7ce86a6d09ddb0d
 
     def return_devices(self, variable):
 

@@ -494,6 +494,7 @@ class Boxcar:
         self.zurich = zurich
         self.xfactor = 360/(2*np.pi)
         self.frequency = None
+        self.ugraph = 'phase'
         self.line_list = []
         self.line_list.append(Graphic.VerticalDraggableLine(self, axes=self.axes))
         self.line_list.append(Graphic.VerticalDraggableLine(self, axes=self.axes, x=150))
@@ -544,14 +545,26 @@ class Boxcar:
             self.frequency = self.zurich.info['daq'].getDouble('/{}/oscs/{}/freq'.format(self.zurich.info['device'], 0))
         current = variable.current()
         if current == 0:
-            self.xfactor = 1/(2*np.pi*360*self.frequency)
+            self.line_list[0].x = self.line_list[0].x/self.xfactor
+            self.line_list[1].x = self.line_list[1].x/self.xfactor
+            self.xfactor = 1/(2*np.pi)
+            self.ugraph = 'time'
+            self.line_list[0].x = self.line_list[0].x*self.xfactor/self.frequency
+            self.line_list[1].x = self.line_list[1].x*self.xfactor/self.frequency
         else:
+            self.line_list[0].x = self.line_list[0].x/self.xfactor*self.frequency
+            self.line_list[1].x = self.line_list[1].x/self.xfactor*self.frequency
             self.xfactor = 360/(2*np.pi)
+            self.ugraph = 'phase'
+            self.line_list[0].x = self.line_list[0].x*self.xfactor
+            self.line_list[1].x = self.line_list[1].x*self.xfactor
 
     def refresh(self, path):
         frequency_set = self.zurich.info['daq'].getDouble('/{}/oscs/{}/freq'.format(self.zurich.info['device'], 0))
-        self.window_start = min(self.line_list[0].x, self.line_list[1].x)
-        self.window_length = abs(self.line_list[0].x - self.line_list[1].x) / (2 * np.pi * 360 * frequency_set)
+        factor2 = 360/(2*np.pi*self.xfactor)
+        self.window_start = min(self.line_list[0].x, self.line_list[1].x)*factor2
+        self.window_length = abs(self.line_list[0].x - self.line_list[1].x)*factor2
+        self.window_length = self.window_length/ (2 * np.pi * 360 * frequency_set)
         self.zurich.info['daq'].unsubscribe(path)
         boxwindow = [['/%s/boxcars/%d/windowstart' % (self.zurich.info['device'], 0), self.window_start],
                      ['/%s/boxcars/%d/windowsize' % (self.zurich.info['device'], 0), self.window_length]]
@@ -562,21 +575,34 @@ class Boxcar:
     def extract_data(self, data=None, path=None):
         if not(self.zurich.paths[path]):
             return
-        if (not (self.window_start != min(self.line_list[0].x, self.line_list[1].x)) or not (
-                self.window_length != abs(self.line_list[0].x - self.line_list[1].x))):
-            self.refresh(path=path)
+
+        frequency = self.zurich.info['daq'].getDouble('/{}/oscs/{}/freq'.format(self.zurich.info['device'], 0))
+        if self.ugraph == 'time':
+            if (not (self.window_start != (min(self.line_list[0].x,
+                                              self.line_list[1].x)*frequency/self.xfactor)*360/(2*np.pi)) or not (
+                    self.window_length != (abs(self.line_list[0].x -
+                                              self.line_list[1].x)*frequency/self.xfactor)*360/(2*np.pi))):
+                self.refresh(path=path)
+        if self.ugraph == 'phase':
+            if (not (self.window_start != (min(self.line_list[0].x,
+                                              self.line_list[1].x)/self.xfactor)*360/(2*np.pi)) or not (
+                    self.window_length != (abs(self.line_list[0].x -
+                                              self.line_list[1].x)/self.xfactor)*360/(2*np.pi))):
+                self.refresh(path=path)
         # This takes the wave data stored in the daq and push them into the  it in the assigned figure
         boxcar_data = data[path][-1]
         self.axes.axhline(0, color='k')
-        boxcar_data['binphase'] = boxcar_data['binphase'] * self.xfactor
-        phase = boxcar_data['binphase']
-        phase = np.multiply(phase, self.xfactor)
         amplitude = boxcar_data['x']
+        if self.ugraph=='time':
+            boxcar_data['binphase'] = boxcar_data['binphase'] * self.xfactor/frequency
+        if self.ugraph=='phase':
+            boxcar_data['binphase'] = boxcar_data['binphase'] * self.xfactor
+        phase = boxcar_data['binphase']
         # The inputpwa waveform is stored in 'x', currently 'y' is unused.
         self.axes.set_ylim([min(amplitude) - abs(min(amplitude) * 15 / 100),
                             max(amplitude) + max(amplitude) * 15 / 100])
-        self.axes.set_xlim([min(1e6 * phase) - abs(min(1e6 * phase) * 15 / 100),
-                            max(1e6 * phase) + max(1e6 * phase) * 15 / 100])
+        self.axes.set_xlim([min(phase) - abs(min(phase) * 15 / 100),
+                            max(phase) + max(phase) * 15 / 100])
         self.line.set_ydata(amplitude)
         self.line.set_xdata(phase)
 
