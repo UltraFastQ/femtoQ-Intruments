@@ -7,7 +7,6 @@ from tkinter import messagebox
 import numpy as np
 import matplotlib.pyplot as plt
 plt.ion()
-import cv2
 import time
 
 
@@ -18,22 +17,6 @@ class UeyeCamera:
         self.graphic = graphic
         self.mainf = mainf
         self.detected_devices = {}
-        self.hid = ueye.HIDS()
-        self.sinfo = ueye.SENSORINFO()
-        self.hwnd = ueye.HWND()
-        self.width = None
-        self.height = None
-        self.psize = None
-        self.bitspixel = ueye.INT(24)
-        self.bytesppixel = int(self.bitspixel/8)
-        self.ppcImgMem = ueye.c_mem_p()
-        self.MemID = ueye.int()
-        self.colorm = ueye.INT()
-        self.pitch = ueye.INT()
-        self.rect = ueye.IS_RECT()
-        self.maxExp = ueye.double()
-        self.minExp = ueye.double()
-        self.Exp = ueye.double()
         self.nRet = None
         try:
             self.hid = ueye.HIDS()
@@ -43,12 +26,16 @@ class UeyeCamera:
             self.height = ueye.INT()
             self.psize = None
             self.bitspixel = ueye.INT(24)
+            self.bytesppixel = int(self.bitspixel/8)
             self.ppcImgMem = ueye.c_mem_p()
             self.pid = ueye.INT()
             self.MemID = ueye.INT()
             self.colorm = ueye.INT()
             self.pitch = ueye.INT()
             self.rect = ueye.IS_RECT()
+            self.maxExp = ueye.double()
+            self.minExp = ueye.double()
+            self.Exp = ueye.double()
         except:
             return
 
