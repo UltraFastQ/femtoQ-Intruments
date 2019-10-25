@@ -1,7 +1,7 @@
 "Python Seabreeze wrapper for the program"
 import tkinter as tk
 import numpy as np
-#from femtoQ import tools as fQ
+from femtoQ import tools as fQ
 import scipy.constants as sc
 from pathlib import Path
 from tkinter import messagebox
