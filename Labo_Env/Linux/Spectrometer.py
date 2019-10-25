@@ -140,7 +140,7 @@ class Spectro:
             return
         time = variable.get()
         if time == 0:
-            time = 1:
+            time = 1
         self.spectro.integration_time_micros(time*1000)
 
     def extract_intensities(self, ave, fwhm, save_current=False):
