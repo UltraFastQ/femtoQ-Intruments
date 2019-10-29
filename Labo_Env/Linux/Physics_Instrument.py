@@ -34,7 +34,7 @@ class LinearStage:
         else:
             pass
 
-        dev_list = ['C-891', 'C-863.11']
+        dev_list = ['C-891', 'C-863.11', 'E-816']
         if dev_name not in dev_list:
             messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
                                                        'compatible with the pipython software. If so add it to the list'
@@ -58,6 +58,22 @@ class LinearStage:
             # Case controller C-863.12
             elif dev_name == dev_list[1]:
                 gcs.ConnectUSB(serialnum = '0019550022')
+                self.device = gcs
+                self.axes = self.device.axes[0]
+                self.device.SVO(self.axes, 1)
+                
+                
+            # Case controller E-816
+            elif dev_name == dev_list[2]:
+                
+                comPorts = self.find_active_com_ports()
+                
+                for ii, comPort in enumerate(comPorts):
+                    try:
+                        gcs.ConnectRS232(comPort,115200)
+                        break
+                    except:
+                        pass
                 self.device = gcs
                 self.axes = self.device.axes[0]
                 self.device.SVO(self.axes, 1)
@@ -164,7 +180,7 @@ class LinearStage:
         # Pipython :
         from pipython import GCSDevice
 
-        dev_list = ['C-891', 'C-863.11']
+        dev_list = ['C-891', 'C-863.11', 'E-816']
 
         # Controller C-891
         if dev_name == dev_list[0]:
@@ -186,7 +202,19 @@ class LinearStage:
                     messagebox.showinfo(message='Calibration in progress')
                     i += 1
             messagebox.showinfo(message='Device is ready')
+        
+        # Controller E-816
+        if dev_name == dev_list[2]:
+            messagebox.showinfo(message='Device is ready')
 
+    def find_active_com_ports(self):
+        import serial.tools.list_ports
+        comlist = serial.tools.list_ports.comports()
+        connected = []
+        for element in comlist:
+            connected.append(element.device)
+            connected[-1] = int(connected[-1][-1])
+        return connected
 
 #class myThread(threading.Thread):
 #    def __init__(self, parent, min_pos, max_pos, iteration):
