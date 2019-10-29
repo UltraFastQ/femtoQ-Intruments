@@ -581,9 +581,11 @@ class Electro_Optic_Sampling:
         self.empty_var = []
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
+        self.Spectro = mainf.Frame[3].Spectro
         
     def create_frame(self, frame):
         # Define labels
+                # Delay line
         pos_lbl = tk.Label(frame, text = 'Go to position (mm):')
         vel_lbl = tk.Label(frame, text = 'Set velocity to:')
         param_lbl = tk.Label(frame, text = 'Experiment parameters')
@@ -591,11 +593,18 @@ class Electro_Optic_Sampling:
         max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
         step_lbl = tk.Label(frame, text = 'Step size (um):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
+                # 
+        
         # Define buttons and their action
+                # Pi Stage
         con_b = tk.Button(frame, text='Connect PI linear stage',
                                       command=lambda: self.PI.connect_identification(dev_name='C-863.11',
-                                                                                           exp_dependencie=True))
+                                                                                   exp_dependencie=True))
+                # 
+                
+                
         # Define variables
+                # PI stage
         pos_var = tk.DoubleVar()
         vel_var = tk.DoubleVar()
         min_var = tk.DoubleVar()
@@ -610,6 +619,7 @@ class Electro_Optic_Sampling:
         utime_var.set(1)
         
         # Define entry boxes
+                # PI stage
         pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
         vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
         min_e = tk.Entry(frame, width = 6, textvariable = min_var)
@@ -618,6 +628,7 @@ class Electro_Optic_Sampling:
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
         
         # Define position of all objects on the grid
+                # PI stage
         con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
         pos_lbl.grid(row=2, column=0, sticky='nsw')
         pos_e.grid(row=2, column=1, sticky='nse')
@@ -632,17 +643,46 @@ class Electro_Optic_Sampling:
         step_e.grid(row=7, column=1, sticky='nse')
         utime_lbl.grid(row=8, column=0, sticky='nsw')
         utime_e.grid(row=8, column=1, sticky='nse')
+                # 
         
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
         p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
+            # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
         
-        # this function contains at minimum :
+        
+        # Temporary Spectrometer things
+        cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: self.Spectro.connect(exp_dependencie=True))
+        cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        
+        inte_lbl = tk.Label(frame, text = 'Integration time (um):')
+        inte_var = tk.IntVar()
+        inte_var.set(10)
+        inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
+        inte_lbl.grid(row=14, column=0, sticky='nsw')
+        inte_e.grid(row=14, column=1,sticky='nse')
+        minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
+        maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
+        minwl_var = tk.IntVar()
+        maxwl_var = tk.IntVar()
+        minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
+        maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
+        minwl_lbl.grid(row=15, column=0, sticky='nsw')
+        maxwl_lbl.grid(row=16, column=0, sticky='nsw')
+        minwl_e.grid(row=15, column=1, sticky='nse')
+        maxwl_e.grid(row=16, column=1, sticky='nse')
+        
+        inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
+        
+        
+        
+        # Start & stop buttons :
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var))
+                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
+                                            inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
         self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
@@ -650,10 +690,13 @@ class Electro_Optic_Sampling:
                                      command=lambda: self.stop_experiment())
         self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
 
+        
+        
     def stop_experiment(self):
         self.running = False
 
-    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None):
+    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None,
+                         inte_time=None, minwl=None, maxwl=None):
 
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
@@ -694,8 +737,9 @@ class Electro_Optic_Sampling:
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
+        Si = np.zero(nsteps+1)
         
-        # Variables for the graph update
+            # Variables for the graph update
         last_gu = time.time()
         scan_graph = self.graph_dict['Scanning']
         scan_graph.axes.set_ylim([min_pos, max_pos])
@@ -706,6 +750,19 @@ class Electro_Optic_Sampling:
         scan_graph.Line.set_markersize(2)
         scan_graph.update_graph()
         
+            # Spectro
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.spectro.intensities()
+        self.Spectro.spectro.adjust_integration_time(inte_time)
+        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        spectro_graph.Line.set_xdata(wl)
+        spectro_graph.Line.set_ydata(S)
+        Signal_graph = self.graph_dict['Signal']
+        Signal_graph.axes.set_xlim([min_pos,max_pos])
+        Signal_graph.axes.set_ylim([0,1])
+        
             # Main scanning and measurements
         for i in range(nsteps+1):
             # Move stage to required position
@@ -713,6 +770,13 @@ class Electro_Optic_Sampling:
             pitools.waitontarget(self.PI.device)
             # Measure real position
             pos[i] = self.PI.device.qPOS()['1']
+            # Acquire spectrum and plot graph
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.spectro.intensities()
+            wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+            S = S[(wl>minwl)&(wl<maxwl)]
+            Si[i] = np.trapz(S,wl_crop) 
+            
             # Actualise progress bar
             if progress:
                 progress['value'] = (i)/(nsteps)
@@ -722,6 +786,10 @@ class Electro_Optic_Sampling:
                 scan_graph.Line.set_xdata(iteration[:i])
                 scan_graph.Line.set_ydata(pos[:i])
                 scan_graph.update_graph()
+                #Spectro integrated signal
+                Signal_graph.Line.set_xdata(pos[:i])
+                Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
+                
                 last_gu = time.time()
             if not self.running:
                 break       
