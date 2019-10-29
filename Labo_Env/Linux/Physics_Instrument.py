@@ -12,6 +12,7 @@ class LinearStage:
         self.device = None
         self.axes = None
         self.thread = None
+        self.dev_name = None
 
     def connect_identification(self, dev_name=None, dev_ip=None, exp_dependencie=False):
         if not dev_name and not dev_ip:
@@ -43,6 +44,8 @@ class LinearStage:
 
         if dev_name:
             gcs = GCSDevice(dev_name)
+            
+            self.dev_name = dev_name
 
             # Case controller C-891
             if dev_name == dev_list[0]:
@@ -135,9 +138,39 @@ class LinearStage:
         if not self.device or not position:
             return
         import pipython.pitools as pitools
+        
         position = position.get()
+        
+        if self.dev_name == 'E-816':
+            # Convert [-250,250] um input position to MOV() units for piezo
+            position = (position + 250)/5 # -> Convert to [0,100] range
+            
+            correctedMax = 15.1608
+
+            position = position * correctedMax / 100 # -> Convert to effective values for damaged piezo
+        
+        
         self.device.MOV(self.axes, position)
         pitools.waitontarget(self.device)
+        
+    def get_position(self):
+        if not self.device or not position:
+            return
+        
+        position = self.device.qPOS(self.ax).get(ax)
+        
+        if self.dev_name == 'E-816':
+            # Convert qPOS() values to [-250,250] um range for piezo
+            
+            correctedMax = 15.1608
+
+            position = position * 100 / correctedMax # -> Convert to [0,100] range
+        
+            
+            position = position*5 - 250 # -> Convert to [-250,250] range
+            
+        return position
+        
 
     def increment_move(self, position=None, increment=None,
                        direction = None):
