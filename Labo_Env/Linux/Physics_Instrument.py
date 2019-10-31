@@ -139,7 +139,7 @@ class LinearStage:
             return
         import pipython.pitools as pitools
         
-        position = position.get()
+#        position = position.get()
         
         if self.dev_name == 'E-816':
             # Convert [-250,250] um input position to MOV() units for piezo
@@ -154,10 +154,11 @@ class LinearStage:
         pitools.waitontarget(self.device)
         
     def get_position(self):
+
+        position = self.device.qPOS(self.axes)[self.axes]
         if not self.device or not position:
             return
-        
-        position = self.device.qPOS(self.ax).get(ax)
+    
         
         if self.dev_name == 'E-816':
             # Convert qPOS() values to [-250,250] um range for piezo
@@ -206,6 +207,9 @@ class LinearStage:
             return
         vel = vel.get()
         self.device.VEL(self.axes, vel)
+        # Controller E-816
+        if self.dev_name == 'E-816':
+            pass
 
     def calibration(self, dev_name):
         if not self.device:
