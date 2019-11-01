@@ -135,11 +135,14 @@ class LinearStage:
                 self.device.MOV(self.axes, max_pos)
 
     def go_2position(self, position=None):
-        if not self.device or not position:
+        if (not self.device) or (position is None):
             return
         import pipython.pitools as pitools
         
-#        position = position.get()
+        try:
+            position = position.get()
+        except:
+            pass
         
         if self.dev_name == 'E-816':
             # Convert [-250,250] um input position to MOV() units for piezo
@@ -206,10 +209,12 @@ class LinearStage:
         if not self.device or not vel:
             return
         vel = vel.get()
-        self.device.VEL(self.axes, vel)
         # Controller E-816
         if self.dev_name == 'E-816':
             pass
+        else:
+            self.device.VEL(self.axes, vel)
+
 
     def calibration(self, dev_name):
         if not self.device:

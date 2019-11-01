@@ -836,7 +836,7 @@ class Electro_Optic_Sampling:
         spectro_graph.Line.set_xdata(wl)
         spectro_graph.Line.set_ydata(S)
         Signal_graph = self.graph_dict['Signal']
-        Signal_graph.axes.set_xlim([min_pos,max_pos])
+        Signal_graph.axes.set_xlim([2*min_pos,2*max_pos])
         Signal_graph.axes.set_ylim([0,1])
         minwl = minwl.get()
         maxwl = maxwl.get()
@@ -868,7 +868,7 @@ class Electro_Optic_Sampling:
                 spectro_graph.Line.set_xdata(wl)
                 spectro_graph.Line.set_ydata(S)
                 spectro_graph.update_graph()
-                Signal_graph.Line.set_xdata(pos[:i])
+                Signal_graph.Line.set_xdata(2*pos[:i])
                 Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
                 Signal_graph.update_graph()
                 
@@ -893,7 +893,7 @@ class Electro_Optic_Sampling:
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)
             spectro_graph.update_graph()
-            Signal_graph.Line.set_xdata(pos)
+            Signal_graph.Line.set_xdata(2*pos)
             Signal_graph.Line.set_ydata(Si/np.max(Si))
             Signal_graph.update_graph()
             
@@ -1144,7 +1144,6 @@ class FROG:
         if self.PI.dev_name == 'E-816':
             maxp = 250
             minp = -250
-            print('Cool')
         else:
             maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
             minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
@@ -1183,7 +1182,7 @@ class FROG:
         spectro_graph.Line.set_xdata(wl)
         spectro_graph.Line.set_ydata(S)
         Signal_graph = self.graph_dict['Signal']
-        Signal_graph.axes.set_xlim([min_pos,max_pos])
+        Signal_graph.axes.set_xlim([2*min_pos,2*max_pos])
         Signal_graph.axes.set_ylim([0,1])
         minwl = minwl.get()
         maxwl = maxwl.get()
@@ -1215,7 +1214,7 @@ class FROG:
                 spectro_graph.Line.set_xdata(wl)
                 spectro_graph.Line.set_ydata(S)
                 spectro_graph.update_graph()
-                Signal_graph.Line.set_xdata(pos[:i])
+                Signal_graph.Line.set_xdata(2*pos[:i])
                 Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
                 Signal_graph.update_graph()
                 
@@ -1240,11 +1239,12 @@ class FROG:
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)
             spectro_graph.update_graph()
-            Signal_graph.Line.set_xdata(pos)
+            Signal_graph.Line.set_xdata(2*pos)
             Signal_graph.Line.set_ydata(Si/np.max(Si))
             Signal_graph.update_graph()
             
-            dp = np.std(pos-move)
+            
+            dp = np.std(pos-move)/1000
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
         
         # Going back to initial state
