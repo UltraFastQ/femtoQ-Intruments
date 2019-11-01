@@ -207,6 +207,10 @@ class LinearStage:
             return
         import pipython.pitools as pitools
 
+        if (not self.device) or (position is None):
+            return
+        import pipython.pitools as pitools
+
         try:
             position = position.get()
         except:
@@ -305,10 +309,12 @@ class LinearStage:
         if not self.device or not vel:
             return
         vel = vel.get()
-        self.device.VEL(self.axes, vel)
         # Controller E-816
         if self.dev_name == 'E-816':
             pass
+        else:
+            self.device.VEL(self.axes, vel)
+
 
     def calibration(self, dev_name):
         """
