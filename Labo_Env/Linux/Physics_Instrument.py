@@ -203,8 +203,6 @@ class LinearStage:
             position: This is the position you want to order your stage to
             go to.
         """
-        if not self.device or not position:
-            return
         import pipython.pitools as pitools
 
         if (not self.device) or (position is None):
@@ -233,7 +231,7 @@ class LinearStage:
         that is returned with device precision.
         """
         position = self.device.qPOS(self.axes)[self.axes]
-        if not self.device or not position:
+        if (not self.device) or (position is None):
             return
 
 
