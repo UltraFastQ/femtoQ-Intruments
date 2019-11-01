@@ -1,3 +1,4 @@
+"Python program used to combine all instrument functions"
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
@@ -7,37 +8,72 @@ import numpy as np
 import Graphic
 
 
-# Create a basic layont for every experiment
 class CreateLayout:
+    """
+    This class is used to create the layout in the MainFrame it is called in
+    the ExperimentFrame. This is only usable in this way, it creates only the
+    main characteristic of the layout but not all of the widget.
 
+    Attributes:
+        dependant_function: This is the Experiment class that contains all your
+        function in this class. You can see the class template below.
+        tools_names: This is all of the classes used in your experiment, ie
+        Monochromator and so on.
+        containing_frame: This is the frame that is directly linked to your
+        experiement in the big Experiement window.
+        free_frame: This is the part of your frame that is available for you to
+        display all of your widget.
+        graph_frame: This is the frame that contains all of your graphics under
+        the Combobox widget.
+    """
     def __init__(self, function_class=None, mainf=None, window=None, graph_names={}, tools_names=[]):
-        # function_class : This argument is the class of which you stored the experiment so it should be call as self,
-        # window is the tkinter Frame in which this layout will be put into: should be the experiment Frame called in
-        # the Main_Frame program
+        """
+        The constructor for the Create Class.
+
+        Parameters:
+            function_class : This argument is the class of which you stored the experiment so it should be call as self,
+            window is the tkinter Frame in which this layout will be put into: should be the experiment Frame called in
+            the Main_Frame program
+            graph_names : This has to contain every graphic names. We could have for the withelight a delay induced for a
+            designed wavelength format should be : { 'Wavelength' : [datax, datay], ... } this can be called in the
+            class experiment if needed
+            tools_names : This argument should be a list of the item necessary : [ 'Monochromator', ...] the possible
+            options are : 'Monochromator', 'Spectrometer', 'Physics_Linear_Stage', 'Zurich'
+        """
         if not window:
             pass
-        # graph_names : This has to contain every graphic names. We could have for the withelight a delay induced for a
-        # designed wavelength format should be : { 'Wavelength' : [datax, datay], ... } this can be called in the
-        # class experiment if needed
-        # tools_names : This argument should be a list of the item necessary : [ 'Monochromator', ...] the possible
-        # options are : 'Monochromator', 'Spectrometer', 'Physics_Linear_Stage', 'Zurich'
         self.dependant_function = function_class(mainf=mainf)
 
         self.tools_names = tools_names
 
         def grid_options(dict_, tools_):
+            """
+                This option displays the tools_names that are required to start
+                the experiement.
 
+                Parameters:
+                    dict_:Regroupement of tkinter widget that linked to
+                    laboratory tools
+                    tools_: List of tools wanted in the experiement.
+            """
             rw = 0
             for tool in tools_:
                 clm = 0
                 for tk_module in dict_[tool]:
                     tk_module.grid(row=rw, column=clm, sticky='nsew')
                     clm += 1
-
-                rw += 1
+               rw += 1
 
         def frame_switch(dict_, new):
+            """
+                This switch allows to change graphic that are displayed a
+                selected experiement.
 
+                Parameters:
+                    dict_:Regroupement of tkinter widget that linked to
+                    laboratory tools
+                    new: String of the given new frame that will be displayed.
+            """
             for frame in dict_:
                 dict_[frame].grid_forget()
             dict_[new].grid(column=0, row=0, sticky='nsew')
@@ -52,22 +88,24 @@ class CreateLayout:
         self.graph_frame.grid(row=0, column=1, rowspan=3, columnspan=4, sticky='nsew')
         graph_possible = {}
         values = []
-
+        # Going through every graphic to allow them to change shape and
+        # dimensions and to change inbetween them when you select the right
+        # combobox
         for item in graph_names:
             values.append(item)
             graph_possible[item] = tk.Frame(self.graph_frame)
             self.dependant_function.graph_dict[item] = Graphic.GraphicFrame(graph_possible[item],
                                                                             axis_name=graph_names[item])
             graph_possible[item].bind('<Configure>', self.dependant_function.graph_dict[item].change_dimensions)
-
+        # Setting up the initial value of the graph
         graph_available['value'] = tuple(values)
         graph_available.current(0)
         frame_switch(graph_possible, graph_available.get())
-
+        # Combobox that allows you to select the graphic
         graph_available.bind('<<ComboboxSelected>>', lambda x: frame_switch(graph_possible, graph_available.get()))
         option_window = ttk.LabelFrame(self.containing_frame, text='Needed Option')
         option_window.grid(row=0, column=0, sticky='nsew')
-
+        # Creating the initial state of every tools available
         mono_state = tk.StringVar()
         spectro_state = tk.StringVar()
         phs_lin_state = tk.StringVar()
@@ -81,6 +119,7 @@ class CreateLayout:
         spectro_state.set('disconnected')
         phs_lin_state.set('disconnected')
         zurich_state.set('disconnected')
+        # Tools dictionnairy that contains everything to be displayed
         tools_dict = {'Monochrom': [tk.Label(option_window, text='Monochromator'),
                                     tk.Checkbutton(option_window, state='disable', onvalue='ready',
                                                    offvalue='disconnected', variable=mono_state)],
@@ -95,7 +134,7 @@ class CreateLayout:
                                                 variable=zurich_state)],
                       }
         grid_options(tools_dict, tools_names)
-
+        # Allowing column and row to be modified in the frame.
         for i in range(1, 4):
             for j in range(1, 3):
                 self.containing_frame.grid_columnconfigure(i, weight=1)
@@ -106,7 +145,15 @@ class CreateLayout:
                 self.graph_frame.grid_rowconfigure(0, weight=1)
 
     def update_options(self, tool):
+        """
+            This function allow to change the state of a tkinter Checkbutton
+            that displays the state of a device
 
+            Parameters:
+                tool: This is the name of the tool for which the state is
+                updated.
+        """
+        # Changing state of the button
         current_state = self.state_dict[tool].get()
         if current_state == 'disconnected':
             self.state_dict[tool].set('ready')
@@ -114,7 +161,7 @@ class CreateLayout:
             self.state_dict[tool].set('disconnected')
 
         change_start = False
-
+        # Looking it the start button can be modified
         if len(self.tools_names) == 1:
             state = self.state_dict[self.tools_names[0]].get()
             change_start = (state == 'ready')
@@ -128,16 +175,43 @@ class CreateLayout:
             self.dependant_function.start_button['state'] = 'normal'
 
 
-# Here is the template for the experiement
 class TemplateForExperiment:
+    """
+    This is a template to create an experiment window it contains the main
+    functions that are required to make it functionnal. Your class does not
+    need to be called it is implicitly called during the CreateLayout class.
 
-    # This class is implicitly called in the main frame
+    Attributes:
+        empty_var: This is a random variable in your case it will probably be a
+        lot of different things. It is everything that you need to be global in
+        your class.
+        graph_dict: This is an element that is required, it will be updated and
+        will contain all of the Graphic by name that you decided to create in
+        the ExperimentFrame. Each key is a name of the graph. Therefore you can
+        acces each graph by calling the key of the dict.
+    """
+
     def __init__(self, mainf=None):
+        """
+        The constructor for your Experiment.
+
+        Parameters:
+            mainf : This is the Mainframe, it cannot be anything else.
+        """
         # here are the initiation of the item that will be called throughout the program as self
         self.empty_var = []
         self.graph_dict = {}
 
     def create_frame(self, frame):
+        """
+        This function is used to create the free frame mentionned in the
+        CreateLayout.This is where you place all of the widget you desire to
+        have in your experiment.
+
+        Parameters:
+            frame : This is the section attributed to your widget in the big
+            Experiment frame.
+        """
 
         # this function contains at minimum :
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
@@ -581,6 +655,7 @@ class Electro_Optic_Sampling:
         self.empty_var = []
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
+
         self.Spectro = mainf.Frame[3].Spectro
         
     def create_frame(self, frame):
@@ -617,7 +692,7 @@ class Electro_Optic_Sampling:
         max_var.set(20)
         step_var.set(1000)
         utime_var.set(1)
-        
+
         # Define entry boxes
                 # PI stage
         pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
@@ -626,7 +701,7 @@ class Electro_Optic_Sampling:
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
-        
+
         # Define position of all objects on the grid
                 # PI stage
         con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
@@ -643,8 +718,7 @@ class Electro_Optic_Sampling:
         step_e.grid(row=7, column=1, sticky='nse')
         utime_lbl.grid(row=8, column=0, sticky='nsw')
         utime_e.grid(row=8, column=1, sticky='nse')
-                # 
-        
+
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
         p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
@@ -652,7 +726,9 @@ class Electro_Optic_Sampling:
             # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
- 
+
+        # this function contains at minimum :
+
         def connect_spectrometer(self):
             self.Spectro.connect(exp_dependencie=True)
             self.spectro_start_button['state'] = 'normal'       
@@ -708,6 +784,7 @@ class Electro_Optic_Sampling:
         self.rescale_button.grid(row=21,column=0,sticky='nsew')
         
         # Start & stop buttons :
+
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
                                             inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
@@ -777,42 +854,44 @@ class Electro_Optic_Sampling:
         self.start_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
         self.running = True
-        
+
         # Imports
         from pipython import pitools
         import time
         # Main experiment
         if self.PI == None:
             self.PI = self.mainf.Frame[2].Linstage
-            
+
             # Parameters initialisation
         max_pos = max_pos.get()
         min_pos = min_pos.get()
         step = step.get()/1000
         update_time = update_time.get()
-        
+
             # Verification
         if not self.PI.device:
             return
 
         if not max_pos and not min_pos:
             return
-        
+
             # Getting the max and min possible value of the device
         maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
         minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
-        
+
             # This is a fail safe in case you don't know your device
         if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
                                 'of your physik instrument device')
             return
-            
+
             # Steps and position vector initialisation
         nsteps = int(np.ceil((max_pos - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
+
+        # Variables for the graph update
         Si = np.zeros(nsteps+1)
         
             # Variables for the graph update
@@ -825,6 +904,7 @@ class Electro_Optic_Sampling:
         scan_graph.Line.set_marker('o')
         scan_graph.Line.set_markersize(2)
         scan_graph.update_graph()
+
         
             # Spectro
         wl = self.Spectro.spectro.wavelengths()
@@ -874,7 +954,7 @@ class Electro_Optic_Sampling:
                 
                 last_gu = time.time()
             if not self.running:
-                break       
+                break
         if not self.running:
             return_vel = tk.IntVar()
             return_vel.set(10)
@@ -899,14 +979,14 @@ class Electro_Optic_Sampling:
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
-        
+
         # Going back to initial state
         self.running = False
         progress['value'] = 0
         progress.update()
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
-        self.spectro_start_button['state'] = 'normal'
+	self.spectro_start_button['state'] = 'normal'
         
         
         
@@ -1262,3 +1342,4 @@ class FROG:
         
         
         
+
