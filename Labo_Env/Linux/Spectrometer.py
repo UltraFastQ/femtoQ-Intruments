@@ -96,13 +96,19 @@ class Spectro:
         else:
             messagebox.showinfo(title='Error', message='It seems like no devices are connected')
             return
-
         self.spectro = sb.Spectrometer(device)
         self.adjust_wavelength_range()
         # Set basic integration time
         self.spectro.integration_time_micros(1000)
+        # Display message of successful connection
+        messagebox.showinfo(title='Spectrometer', message='Spectrometer is connected.')
         # Update of the Experimental window
         if self.mainf:
+            experiments = self.mainf.Frame[4].experiment_dict
+            for experiment in experiments:
+                experiments[experiment].update_options('Spectrometer')
+
+        if exp_dependencie:
             experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
                 experiments[experiment].update_options('Spectrometer')
@@ -197,6 +203,20 @@ class Spectro:
         # Changing ydata and update the Graphic
         self.wv_graphic.Line.set_ydata(intensities)
         self.wv_graphic.update_graph()
+        
+
+    def get_intensities(self):
+        """
+        Added by Étienne: Simpler version of extract_intensities
+        Function that extract and returns the intensities after removing the dark
+        spectrum if needed.
+        """
+        if not self.spectro:
+            return
+        intensities = self.spectro.intensities()
+        if self.dark_spectrum is True:
+            intensities = intensities - self.dark_array
+        return intensities
 
     def enable_darkspectrum(self, variable, dark_button):
         """

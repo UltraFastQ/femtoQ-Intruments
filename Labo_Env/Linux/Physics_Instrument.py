@@ -12,6 +12,7 @@ class LinearStage:
         self.device = None
         self.axes = None
         self.thread = None
+        self.dev_name = None
 
     def connect_identification(self, dev_name=None, dev_ip=None, exp_dependencie=False):
         if not dev_name and not dev_ip:
@@ -34,7 +35,7 @@ class LinearStage:
         else:
             pass
 
-        dev_list = ['C-891', 'C-863.11']
+        dev_list = ['C-891', 'C-863.11', 'E-816']
         if dev_name not in dev_list:
             messagebox.showinfo(title='Error', message='This device is not in the device list please make sure it is' +
                                                        'compatible with the pipython software. If so add it to the list'
@@ -43,6 +44,8 @@ class LinearStage:
 
         if dev_name:
             gcs = GCSDevice(dev_name)
+            
+            self.dev_name = dev_name
 
             # Case controller C-891
             if dev_name == dev_list[0]:
@@ -58,6 +61,22 @@ class LinearStage:
             # Case controller C-863.12
             elif dev_name == dev_list[1]:
                 gcs.ConnectUSB(serialnum = '0019550022')
+                self.device = gcs
+                self.axes = self.device.axes[0]
+                self.device.SVO(self.axes, 1)
+                
+                
+            # Case controller E-816
+            elif dev_name == dev_list[2]:
+                
+                comPorts = self.find_active_com_ports()
+                
+                for ii, comPort in enumerate(comPorts):
+                    try:
+                        gcs.ConnectRS232(comPort,115200)
+                        break
+                    except:
+                        pass
                 self.device = gcs
                 self.axes = self.device.axes[0]
                 self.device.SVO(self.axes, 1)
@@ -119,9 +138,40 @@ class LinearStage:
         if not self.device or not position:
             return
         import pipython.pitools as pitools
-        position = position.get()
+        
+#        position = position.get()
+        
+        if self.dev_name == 'E-816':
+            # Convert [-250,250] um input position to MOV() units for piezo
+            position = (position + 250)/5 # -> Convert to [0,100] range
+            
+            correctedMax = 15.1608
+
+            position = position * correctedMax / 100 # -> Convert to effective values for damaged piezo
+        
+        
         self.device.MOV(self.axes, position)
         pitools.waitontarget(self.device)
+        
+    def get_position(self):
+
+        position = self.device.qPOS(self.axes)[self.axes]
+        if not self.device or not position:
+            return
+    
+        
+        if self.dev_name == 'E-816':
+            # Convert qPOS() values to [-250,250] um range for piezo
+            
+            correctedMax = 15.1608
+
+            position = position * 100 / correctedMax # -> Convert to [0,100] range
+        
+            
+            position = position*5 - 250 # -> Convert to [-250,250] range
+            
+        return position
+        
 
     def increment_move(self, position=None, increment=None,
                        direction = None):
@@ -157,6 +207,9 @@ class LinearStage:
             return
         vel = vel.get()
         self.device.VEL(self.axes, vel)
+        # Controller E-816
+        if self.dev_name == 'E-816':
+            pass
 
     def calibration(self, dev_name):
         if not self.device:
@@ -164,7 +217,7 @@ class LinearStage:
         # Pipython :
         from pipython import GCSDevice
 
-        dev_list = ['C-891', 'C-863.11']
+        dev_list = ['C-891', 'C-863.11', 'E-816']
 
         # Controller C-891
         if dev_name == dev_list[0]:
@@ -186,7 +239,19 @@ class LinearStage:
                     messagebox.showinfo(message='Calibration in progress')
                     i += 1
             messagebox.showinfo(message='Device is ready')
+        
+        # Controller E-816
+        if dev_name == dev_list[2]:
+            messagebox.showinfo(message='Device is ready')
 
+    def find_active_com_ports(self):
+        import serial.tools.list_ports
+        comlist = serial.tools.list_ports.comports()
+        connected = []
+        for element in comlist:
+            connected.append(element.device)
+            connected[-1] = int(connected[-1][-1])
+        return connected
 
 #class myThread(threading.Thread):
 #    def __init__(self, parent, min_pos, max_pos, iteration):
