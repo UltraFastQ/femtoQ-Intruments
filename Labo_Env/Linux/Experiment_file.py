@@ -655,12 +655,9 @@ class Electro_Optic_Sampling:
         self.empty_var = []
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
-<<<<<<< HEAD
 
-=======
         self.Spectro = mainf.Frame[3].Spectro
         
->>>>>>> f2c56bbc75ffec1701cf6fd00dd00b52447e9167
     def create_frame(self, frame):
         # Define labels
                 # Delay line
@@ -721,12 +718,7 @@ class Electro_Optic_Sampling:
         step_e.grid(row=7, column=1, sticky='nse')
         utime_lbl.grid(row=8, column=0, sticky='nsw')
         utime_e.grid(row=8, column=1, sticky='nse')
-<<<<<<< HEAD
 
-=======
-                # 
-        
->>>>>>> f2c56bbc75ffec1701cf6fd00dd00b52447e9167
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
         p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
@@ -734,11 +726,9 @@ class Electro_Optic_Sampling:
             # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
-<<<<<<< HEAD
 
         # this function contains at minimum :
-=======
- 
+
         def connect_spectrometer(self):
             self.Spectro.connect(exp_dependencie=True)
             self.spectro_start_button['state'] = 'normal'       
@@ -794,7 +784,7 @@ class Electro_Optic_Sampling:
         self.rescale_button.grid(row=21,column=0,sticky='nsew')
         
         # Start & stop buttons :
->>>>>>> f2c56bbc75ffec1701cf6fd00dd00b52447e9167
+
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
                                             inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
@@ -900,14 +890,11 @@ class Electro_Optic_Sampling:
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
-<<<<<<< HEAD
 
         # Variables for the graph update
-=======
         Si = np.zeros(nsteps+1)
         
             # Variables for the graph update
->>>>>>> f2c56bbc75ffec1701cf6fd00dd00b52447e9167
         last_gu = time.time()
         scan_graph = self.graph_dict['Scanning']
         scan_graph.axes.set_ylim([min_pos, max_pos])
@@ -917,9 +904,7 @@ class Electro_Optic_Sampling:
         scan_graph.Line.set_marker('o')
         scan_graph.Line.set_markersize(2)
         scan_graph.update_graph()
-<<<<<<< HEAD
 
-=======
         
             # Spectro
         wl = self.Spectro.spectro.wavelengths()
@@ -936,7 +921,6 @@ class Electro_Optic_Sampling:
         minwl = minwl.get()
         maxwl = maxwl.get()
         
->>>>>>> f2c56bbc75ffec1701cf6fd00dd00b52447e9167
             # Main scanning and measurements
         for i in range(nsteps+1):
             # Move stage to required position
@@ -1002,9 +986,7 @@ class Electro_Optic_Sampling:
         progress.update()
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
-<<<<<<< HEAD
-=======
-        self.spectro_start_button['state'] = 'normal'
+	self.spectro_start_button['state'] = 'normal'
         
         
         
@@ -1360,4 +1342,4 @@ class FROG:
         
         
         
->>>>>>> f2c56bbc75ffec1701cf6fd00dd00b52447e9167
+
