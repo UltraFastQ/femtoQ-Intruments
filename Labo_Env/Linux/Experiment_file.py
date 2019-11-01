@@ -62,7 +62,7 @@ class CreateLayout:
                 for tk_module in dict_[tool]:
                     tk_module.grid(row=rw, column=clm, sticky='nsew')
                     clm += 1
-               rw += 1
+                rw += 1
 
         def frame_switch(dict_, new):
             """
@@ -872,7 +872,7 @@ class Electro_Optic_Sampling:
         if not self.PI.device:
             return
 
-        if not max_pos and not min_pos:
+        if (max_pos is None) or (min_pos is None):
             return
 
             # Getting the max and min possible value of the device
@@ -986,7 +986,7 @@ class Electro_Optic_Sampling:
         progress.update()
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
-	self.spectro_start_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
         
         
         
@@ -1217,7 +1217,7 @@ class FROG:
         if not self.PI.device:
             return
 
-        if not max_pos and not min_pos:
+        if (max_pos is None) or (min_pos is None):
             return
         
             # Getting the max and min possible value of the device
