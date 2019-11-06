@@ -344,14 +344,13 @@ class LinearStage:
 
         # Controller C-863.12
         if dev_name == dev_list[1]:
-            self.device.FRF(self.axes)
+            self.device.FRF()
             i = 0
             while self.device.IsControllerReady() != 1:
                 if i == 0:
                     messagebox.showinfo(message='Calibration in progress')
                     i += 1
             messagebox.showinfo(message='Device is ready')
-
         # Controller E-816
         if dev_name == dev_list[2]:
             messagebox.showinfo(message='Device is ready')
