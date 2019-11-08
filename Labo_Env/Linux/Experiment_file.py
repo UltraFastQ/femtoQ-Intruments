@@ -996,16 +996,33 @@ class Electro_Optic_Sampling:
         
         
 class FROG:
-
     # This class is implicitly called in the main frame
+    """
+    This is a class to create the user interface required to run a FROG experiment.
+    It allows to control and read a spectrometer, control a PI stage, and then
+    run an experiment synchronizing the movement of the stage and the spectra acquisition.
+    
+    Attributes:
+        
+        
+    """
+
     def __init__(self, mainf = None):
-        # here are the initiation of the item that will be called throughout the program as self
+        """
+        This is the constructor for the FROG class.
+        Parameters:
+            
+        """
         self.empty_var = []
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
         self.Spectro = mainf.Frame[3].Spectro
         
     def create_frame(self, frame):
+        """
+        The frame is created here, i.e. the labels, boxes and buttons are
+        defined here.
+        """
         # Define labels
                 # Delay line
         pos_lbl = tk.Label(frame, text = 'Go to position (um):')
