@@ -686,10 +686,10 @@ class Electro_Optic_Sampling:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
-        pos_var.set(0)
+        pos_var.set(77.5)
         vel_var.set(1)
-        min_var.set(0)
-        max_var.set(20)
+        min_var.set(75)
+        max_var.set(80)
         step_var.set(1000)
         utime_var.set(1)
 
@@ -957,15 +957,15 @@ class Electro_Optic_Sampling:
                 break
         if not self.running:
             return_vel = tk.IntVar()
-            return_vel.set(10)
+            return_vel.set(5)
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(0)
+            self.PI.go_2position(77.5)
             messagebox.showinfo(title='Error', message='Experiment was aborted')
         else:
             return_vel = tk.IntVar()
-            return_vel.set(10)
+            return_vel.set(5)
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(0)
+            self.PI.go_2position(77.5)
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
