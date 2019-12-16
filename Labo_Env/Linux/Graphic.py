@@ -6,6 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.animation import FuncAnimation
 plt.ion()
 # Numpy :
 import numpy as np
@@ -604,14 +605,15 @@ class UyeGraphFrame:
         # figsize is a list of two component the first one is the x and the other one is the y axis
         self.parent = parent
         self.Fig = Figure(dpi=100, figsize=figsize)
-        self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
-        self.axes.set_aspect('auto', adjustable='box')
-        self.axes.set_adjustable('box')
-        self.Line = self.axes.imshow(np.zeros((10,10)))
+        self.axes = self.Fig.add_axes([0.002, 0.1, 0.87, 0.87])
+        self.data = np.zeros((1000,1000))
+        self.im = self.axes.imshow(self.data, vmin=0, vmax=1,
+                                  origin='lower')
         self.axes.tick_params(axis='both', which='major', labelsize=8)
-        self.axes.grid()
         self.axes.set_xlabel(r'' + axis_name[0])
         self.axes.set_ylabel(r'' + axis_name[1])
+        cbar = self.Fig.colorbar(self.im, ax=self.axes,
+                                 location='left', shrink=0.6)
         # Create Image on top and right of the graph
         divider = make_axes_locatable(self.axes)
         self.maxx = divider.append_axes('top', 1, pad=0, sharex=self.axes)
@@ -619,13 +621,41 @@ class UyeGraphFrame:
         # Invisible label
         self.maxx.xaxis.set_tick_params(labelbottom=False)
         self.maxy.yaxis.set_tick_params(labelleft=False)
-
+        self.maxx.set_ylim(0-1e-1, 1+1e-1)
+        self.maxy.set_xlim(0-1e-1, 1+1e-1)
+        self.maxlx, = self.maxx.plot(np.max(self.data, axis=0))
+        self.maxly, = self.maxy.plot(np.max(self.data, axis=1),
+                                np.arange(0,self.data.shape[1],1))
         self.canvas = FigureCanvasTkAgg(self.Fig, parent)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(expand=True, fill='both')
         self.toolbar = NavigationToolbar2Tk(self.canvas, parent)
         self.toolbar.update()
         self.canvas._tkcanvas.pack()
+
+    def change_data(self,i,blit=False):
+        if blit:
+            axbackground = self.Fig.canvas.copy_from_bbox(self.axes.bbox)
+            axxbackground = self.Fig.canvas.copy_from_bbox(self.maxx.bbox)
+            axybackground = self.Fig.canvas.copy_from_bbox(self.maxy.bbox)
+
+        self.data[i,i] = 1*np.abs(500-i)/500
+        self.im.set_data(self.data)
+        self.maxlx.set_ydata(np.max(self.data, axis=0))
+        self.maxly.set_xdata(np.max(self.data, axis=1))
+        if blit:
+            self.Fig.canvas.restore_region(axbackground)
+            self.Fig.canvas.restore_region(axxbackground)
+            self.Fig.canvas.restore_region(axybackground)
+            self.axes.draw_artist(self.im)
+            self.maxx.draw_artist(self.maxlx)
+            self.maxy.draw_artist(self.maxly)
+            self.Fig.canvas.blit(self.axes.bbox)
+            self.Fig.canvas.blit(self.maxx.bbox)
+            self.Fig.canvas.blit(self.maxy.bbox)
+        else:
+            self.update_graph()
+
 
     def change_dimensions(self, event):
         width = event.width/self.Fig.get_dpi()
@@ -645,6 +675,115 @@ class UyeGraphFrame:
         self.update_graph()
 
     def lin_scale(self):
+        self.axes.set_yscale('linear')
+        self.update_graph()
+
+
+class TwoDFrame:
+    """
+    This is a class to create a matplotlib graphic using a non-pyplot format.
+    It consist in a simplification of the normally hard implementation of the
+    figure into a tkinter frame.
+
+    Attributes:
+        parent : tkinter frame in which the graphic is placed in.
+        Fig : Figure object of the matplotlib class analogue to pyplot.figure
+        axes : Matplotlib Axis object created to plot data
+        Line : Matplotlib Line object created to update data in the given axis
+        canvas : Matplotlib object that generates the 'drawing' in a tkinter
+        frame it is mainly used to update the graphic in real time.
+        toolbar : Matplotlib toolbar normally under any pyplot graph.
+
+    TODO :
+        This section is far from finished the updatable feature is still not
+        working for this part. I am currently using imshow to try and update it
+        but this is as far as it goes. Implementation and function remains the
+        same as GraphicFrame for now.
+    """
+
+    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1]):
+        # axis_name is a string tuple of the x and y axis in that order
+        # figsize is a list of two component the first one is the x and the other one is the y axis
+        self.parent = parent
+        self.Fig = Figure(dpi=100, figsize=figsize)
+        self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
+        self.data = np.zeros((1000,1000))
+        self.im = self.axes.imshow(self.data, vmin=0, vmax=1)
+        #self.axes.tick_params(axis='both', which='major', labelsize=8)
+        #self.axes.grid()
+        #self.axes.set_xlabel(r'' + axis_name[0])
+        #self.axes.set_ylabel(r'' + axis_name[1])
+        ## Create Image on top and right of the graph
+        #divider = make_axes_locatable(self.axes)
+        #self.maxx = divider.append_axes('top', 1, pad=0, sharex=self.axes)
+        #self.maxy = divider.append_axes('right', 1, pad=0, sharey=self.axes)
+        ## Invisible label
+        #self.maxx.xaxis.set_tick_params(labelbottom=False)
+        #self.maxy.yaxis.set_tick_params(labelleft=False)
+
+        self.canvas = FigureCanvasTkAgg(self.Fig, parent)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(expand=True, fill='both')
+        self.toolbar = NavigationToolbar2Tk(self.canvas, parent)
+        self.toolbar.update()
+        self.canvas._tkcanvas.pack()
+
+    def change_data(self,i):
+        self.data[i,i] = 1
+        self.im.set_data(self.data)
+        self.update_graph()
+
+
+    def change_dimensions(self, event):
+        """
+        This function is a way to update the size of the figure when you change
+        the size of your window automaticly it takes the width of your parent
+        and the dpi of your figure to update the height and width.
+
+        How to set it up : Your_Frame.bind('<Configure>', Your_Graph.change_dimensions)
+
+        Parameters:
+            event: An event is an object in tkinter that is created when you
+            click on the screen. See the given documentation for the specifics.
+            This parameter automaticly sent through when you click on the
+            line.
+        """
+        width = event.width/self.Fig.get_dpi()
+        height = event.height/self.Fig.get_dpi()
+        self.Fig.set_size_inches(w=width, h=height)
+
+    def update_graph(self):
+        """
+        This function is a compilation of two line to update the figure canvas
+        so it update the values displayed whitout recreating the figure in the
+        tkinter frame.
+
+        """
+        self.Fig.canvas.draw()
+        self.Fig.canvas.flush_events()
+
+    def destroy_graph(self):
+        """
+        This function is a compilation of two line to destroy a graph ie if
+        you want to replace it or just get rid of it. It does not destroy the
+        class itself so creating the canvas and the toolbar would make it
+        appear the same way it was before.
+
+        """
+        self.canvas.get_tk_widget().destroy()
+        self.toolbar.destroy()
+
+    def log_scale(self):
+        """
+        This function is changing the y axis to make it a logarithmic scale.
+        """
+        self.axes.set_yscale('log')
+        self.update_graph()
+
+    def lin_scale(self):
+        """
+        This function is changing/reverting the y axis back to a linear scale.
+        """
         self.axes.set_yscale('linear')
         self.update_graph()
 

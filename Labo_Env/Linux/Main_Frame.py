@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 from pathlib import Path
+import numpy as np
 from multiprocessing import Process
 # Import of classes
 import Zurich_Instrument
@@ -1754,8 +1755,8 @@ class Ueye_Frame(tk.Frame):
         graph_frame.grid_rowconfigure(0, weight=1)
         graph_frame.grid_columnconfigure(0, weight=1)
         self.graph = Graphic.UyeGraphFrame(graph_frame,
-                                           axis_name=['Position[/mu m]',
-                                                      'Position[/mu m]'],
+                                           axis_name=['Position [$\mu$m]',
+                                                      'Position [$\mu$m]'],
                                            figsize=[8, 6])
         self.bind('<Configure>', self.graph.change_dimensions)
         # Configuration of the different option of the window
@@ -1776,7 +1777,8 @@ class Ueye_Frame(tk.Frame):
         disc_b.grid(row=2, column=2, sticky='nsew', padx=2, pady=2)
         #####
         # This part is for the options
-        live_b = tk.Button(option_frame, text='Live', width=5)
+        live_b = tk.Button(option_frame, text='Live', width=5,
+                           command=lambda : self.live_update())
         live_b.grid(row=3, column=0, sticky='nsew')
         zoom_b = tk.Button(option_frame, text='Zoom', width=5)
         zoom_b.grid(row=4, column=0, sticky='nsew', rowspan=2)
@@ -1864,6 +1866,16 @@ class Ueye_Frame(tk.Frame):
             self.grid_columnconfigure(i, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
+    def live_update(self):
+        import time
+        t1 = time.time()
+        self.graph.data = np.zeros((1000,1000))
+        i = np.arange(0,1000,1)
+        # If you put blit as true it runs really faster
+        # but it occupies way more memory you can't click buttons
+        for j in i:
+            self.graph.change_data(j,True)
+        print(time.time()-t1)
     # It need to have Save Data, Statistics, Axis Modification, Overlaps
     def measure(self, button, variable, dual_p,
                 average, fwhm, click=False):
@@ -1948,7 +1960,7 @@ class Experiment(ttk.LabelFrame):
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],'Signal':['delay (mm)','signal (arb.u.)']})
         create_layout(name='FROG', function_=Experiment_file.FROG, option=['Physics_Linear_Stage','Spectrometer'],
                       graph={'Scanning': ['Step number', 'Measured stage position [um]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],'Signal':['delay (um)','signal (arb.u.)']})
-        
+
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
