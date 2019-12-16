@@ -707,7 +707,8 @@ class TwoDFrame:
         self.parent = parent
         self.Fig = Figure(dpi=100, figsize=figsize)
         self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
-        self.data = np.zeros((1000,1000))
+        data_size = (1000,1000)
+        self.data = np.zeros(data_size)
         self.im = self.axes.imshow(self.data, vmin=0, vmax=1)
         #self.axes.tick_params(axis='both', which='major', labelsize=8)
         #self.axes.grid()
@@ -728,10 +729,27 @@ class TwoDFrame:
         self.toolbar.update()
         self.canvas._tkcanvas.pack()
 
-    def change_data(self,i):
-        self.data[i,i] = 1
+    def change_data(self,data,blit):
+        if blit:
+            axbackground = self.Fig.canvas.copy_from_bbox(self.axes.bbox)
+            axxbackground = self.Fig.canvas.copy_from_bbox(self.maxx.bbox)
+            axybackground = self.Fig.canvas.copy_from_bbox(self.maxy.bbox)
+        self.data = data
         self.im.set_data(self.data)
-        self.update_graph()
+        self.maxlx.set_ydata(np.max(self.data, axis=0))
+        self.maxly.set_xdata(np.max(self.data, axis=1))
+        if blit:
+            self.Fig.canvas.restore_region(axbackground)
+            self.Fig.canvas.restore_region(axxbackground)
+            self.Fig.canvas.restore_region(axybackground)
+            self.axes.draw_artist(self.im)
+            self.maxx.draw_artist(self.maxlx)
+            self.maxy.draw_artist(self.maxly)
+            self.Fig.canvas.blit(self.axes.bbox)
+            self.Fig.canvas.blit(self.maxx.bbox)
+            self.Fig.canvas.blit(self.maxy.bbox)
+        else:
+            self.update_graph()
 
 
     def change_dimensions(self, event):
