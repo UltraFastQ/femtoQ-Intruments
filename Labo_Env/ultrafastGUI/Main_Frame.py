@@ -1955,12 +1955,14 @@ class Experiment(ttk.LabelFrame):
         create_layout(name='Zero Delay', function_=Experiment_file.ZeroDelay,
                       option=['Physics_Linear_Stage'],
                       graph={'Power': ['Stage position [um]', 'Normalized Voltage'], 'Else': ['a', 'b']})
-        create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
+        create_layout(name='Electro Optic Sampling Zero Delay', function_=Experiment_file.Electro_Optic_Sampling_ZeroDelay,
                       option=['Physics_Linear_Stage','Spectrometer'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],'Signal':['delay (mm)','signal (arb.u.)']})
         create_layout(name='FROG', function_=Experiment_file.FROG, option=['Physics_Linear_Stage','Spectrometer'],
                       graph={'Scanning': ['Step number', 'Measured stage position [um]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],'Signal':['delay (um)','signal (arb.u.)']})
-
+        create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
+                      option=['Physics_Linear_Stage'],
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['delay (mm)','signal (arb.u.)']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
