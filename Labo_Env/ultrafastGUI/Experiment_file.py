@@ -1451,23 +1451,22 @@ class Electro_Optic_Sampling:
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
         self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')   
-        tk.Button(frame, text='test_Zurich',command = lambda: self.test()).grid(row=15,column=0)
+        tk.Button(frame, text='test_Zurich',command = lambda: self.Zurich_acquire()).grid(row=15,column=0)
         
-    def test(self):
+    def Zurich_acquire(self):
         import time
-        path = '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
+        path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
         self.Zurich.info['daq'].subscribe(path)
-        print(self.Zurich.info['daq'])
-        time.sleep(1)
-        for i in range(10):
-            data_set = self.Zurich.info['daq'].poll(0.1,200,0,True)
-            print(data_set)
-            time.sleep(1)
-            try:
-                data = data_set[path]
-                print(data)
-            except:
-                pass
+#        time.sleep(1)
+        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+        try:
+            data = data_set[path]['x']
+#            print(data)
+#            print(len(data))
+        except:
+            pass
+        self.Zurich.info['daq'].unsubscribe(path)
+        return  data
         
     def stop_experiment(self):
         self.running = False
@@ -1481,6 +1480,9 @@ class Electro_Optic_Sampling:
         # Imports
         from pipython import pitools
         import time
+        import scipy
+        import femtoQ.tools as fQ
+        c = scipy.constants.c
         # Main experiment
         if self.PI == None:
             self.PI = self.mainf.Frame[2].Linstage
@@ -1513,9 +1515,10 @@ class Electro_Optic_Sampling:
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
+        S = np.zeros(nsteps+1)
+        t= np.zeros(nsteps+1)
 
         # Variables for the graph update
-        Si = np.zeros(nsteps+1)
         
             # Variables for the graph update
         last_gu = time.time()
@@ -1527,8 +1530,12 @@ class Electro_Optic_Sampling:
         scan_graph.Line.set_marker('o')
         scan_graph.Line.set_markersize(2)
         scan_graph.update_graph()
-
-        
+        EOS_graph = self.graph_dict['Signal']
+        EOS_graph.axes.set_ylim([-10,10])
+        EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e15, max_pos*2/1000/c*1e15])
+        EOS_graph.Line.set_xdata([])
+        EOS_graph.Line.set_ydata([])
+        EOS_graph.update_graph()
         
             # Main scanning and measurements
         for i in range(nsteps+1):
@@ -1536,6 +1543,9 @@ class Electro_Optic_Sampling:
             self.PI.go_2position(move[i])
             # Measure real position
             pos[i] = self.PI.get_position()
+            # Measure signal
+            t[i] = pos[i]*2/1000/c*1e15
+            S[i] = self.Zurich_acquire()[0]*1000
             
             # Actualise progress bar
             if progress:
@@ -1546,6 +1556,10 @@ class Electro_Optic_Sampling:
                 scan_graph.Line.set_xdata(iteration[:i])
                 scan_graph.Line.set_ydata(pos[:i])
                 scan_graph.update_graph()
+                EOS_graph.Line.set_xdata(t[:i])
+                EOS_graph.Line.set_ydata(S[:i])
+                EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
+                EOS_graph.update_graph()
                 
                 last_gu = time.time()
             if not self.running:
@@ -1564,11 +1578,29 @@ class Electro_Optic_Sampling:
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
-
+            EOS_graph.Line.set_xdata(t)
+            EOS_graph.Line.set_ydata(S)
+            EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
+            EOS_graph.update_graph()
+            print(len(S))
+            print(len(pos))
+            print(len(iteration))
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
-
+        
+        # Display spectrum graph
+        spec_t = t*1e-15
+        v,A = fQ.ezfft(spec_t,S)
+        A = np.abs(A)**2
+        A = A/np.max(A)
+        v = v/1e12
+        Spectrum_graph = self.graph_dict['Spectrum']
+        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(A)])
+        Spectrum_graph.axes.set_xlim([np.min(v), np.max(v)])
+        Spectrum_graph.Line.set_xdata([v])
+        Spectrum_graph.Line.set_ydata([A])
+        Spectrum_graph.update_graph()
         # Going back to initial state
         self.running = False
         progress['value'] = 0

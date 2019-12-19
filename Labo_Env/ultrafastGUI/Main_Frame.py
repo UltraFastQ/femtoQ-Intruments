@@ -1962,7 +1962,7 @@ class Experiment(ttk.LabelFrame):
                       graph={'Scanning': ['Step number', 'Measured stage position [um]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],'Signal':['delay (um)','signal (arb.u.)']})
         create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
                       option=['Physics_Linear_Stage'],
-                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['delay (mm)','signal (arb.u.)']})
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
