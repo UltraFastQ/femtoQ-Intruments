@@ -85,7 +85,7 @@ class Spectro:
         # Uses of Seabreeze to connect the device and retain it's information
         # in memory.
         import seabreeze
-        seabreeze.use('pyseabreeze')
+        seabreeze.use('cseabreeze')
         import seabreeze.spectrometers as sb
         devices = sb.list_devices()
         if type(devices) == list and devices:

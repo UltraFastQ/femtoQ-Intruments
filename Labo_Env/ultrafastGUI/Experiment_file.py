@@ -6,7 +6,7 @@ from tkinter import messagebox
 import matplotlib.pyplot as plt
 import numpy as np
 import Graphic
-
+import datetime
 
 class CreateLayout:
     """
@@ -1036,31 +1036,30 @@ class FROG:
         
         # Define buttons and their action
                 # Pi Stage
-        con_b = tk.Button(frame, text='Connect PI linear stage',
-                                      command=lambda: self.PI.connect_identification(dev_name='E-816',
-                                                                                   exp_dependencie=True))
+        self.con_b = tk.Button(frame, text='Connect PI linear stage',
+                                      command=lambda: connect_stage(self))
                 # 
                 
                 
         # Define variables
                 # PI stage
         pos_var = tk.DoubleVar()
-        vel_var = tk.DoubleVar()
+        #vel_var = tk.DoubleVar()
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         pos_var.set(0)
-        vel_var.set(1)
-        min_var.set(0)
+        #vel_var.set(1)
+        min_var.set(-20)
         max_var.set(20)
-        step_var.set(1000)
+        step_var.set(1)
         utime_var.set(1)
         
         # Define entry boxes
                 # PI stage
         pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
-        vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
+        #vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
         min_e = tk.Entry(frame, width = 6, textvariable = min_var)
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
@@ -1068,11 +1067,11 @@ class FROG:
         
         # Define position of all objects on the grid
                 # PI stage
-        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        self.con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
         pos_lbl.grid(row=2, column=0, sticky='nsw')
         pos_e.grid(row=2, column=1, sticky='nse')
-        vel_lbl.grid(row=3, column=0, sticky='nsw')
-        vel_e.grid(row=3, column=1, sticky='nse')
+        #vel_lbl.grid(row=3, column=0, sticky='nsw')
+        #vel_e.grid(row=3, column=1, sticky='nse')
         param_lbl.grid(row=4, column=0, columnspan=2, sticky='nsew')
         min_lbl.grid(row=5, column=0, sticky='nsw')
         min_e.grid(row=5, column=1, sticky='nse')
@@ -1088,13 +1087,18 @@ class FROG:
         p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
-            # PI stage
+            # PI stage[]{}
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
-        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
- 
+        #vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
+        
         def connect_spectrometer(self):
             self.Spectro.connect(exp_dependencie=True)
-            self.spectro_start_button['state'] = 'normal'       
+            self.spectro_start_button['state'] = 'normal'
+            self.cons_b['state'] = 'disabled'
+        
+        def connect_stage(self):
+            self.PI.connect_identification(dev_name='E-816',exp_dependencie=True)
+            self.con_b['state'] = 'disabled'
         
         def get_dark_spectrum(self):
             self.Spectro.measure_darkspectrum()
@@ -1105,13 +1109,13 @@ class FROG:
         
         def rescale(self):
             S = self.Spectro.get_intensities()
-            spectro_graph = self.graph_dict['Spectro']
+            spectro_graph = self.graph_dict['Spectrometer']
             spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
             spectro_graph.update_graph()
         
         # Temporary Spectrometer things
-        cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_spectrometer(self))
-        cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        self.cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_spectrometer(self))
+        self.cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
@@ -1166,6 +1170,42 @@ class FROG:
         self.spectro_stop_button.grid(row=18, column=0, sticky='nsew')
         
         
+        self.save_button = tk.Button(frame, text='Save trace', state='disabled',width=18,
+                                        command=lambda: self.save())
+        self.save_button.grid(row=22,column=0,sticky='nsew')
+        
+        autocorr_lbl = tk.Label(frame, text = 'Autocorrelation FWHM [fs]')
+        self.autocorr_var = tk.DoubleVar()
+        self.autocorr_var.set(0)
+        self.autocorr_e = tk.Entry(frame, width = 6, textvariable = self.autocorr_var, state = 'disabled')
+        autocorr_lbl.grid(row=23, column=0, sticky='nsw')
+        self.autocorr_e.grid(row=23, column=1, sticky='nse')
+        
+
+    def adjust_2dgraph(self):#, step=None):
+# =============================================================================
+#         step = step.get()
+#         if step == 0:
+#             step=1
+# =============================================================================
+        try:
+             wl = len(self.Spectro.spectro.wavelengths())
+        except:
+            return
+        
+        parent2d = self.graph_dict["FROG trace"].parent
+        self.graph_dict["FROG trace"].destroy_graph()
+        #print(wl, step)
+        self.graph_dict["FROG trace"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
+                                                       figsize=[2,2], data_size=self.trace.shape)
+        trace = (self.trace-np.min(self.trace))
+        trace = trace/np.max(trace)
+        self.graph_dict["FROG trace"].change_data(trace,False)
+        self.graph_dict["FROG trace"].im.set_extent((self.wl_crop[0],self.wl_crop[-1],self.timeDelay[-1],self.timeDelay[0]))
+        self.graph_dict["FROG trace"].axes.set_xlabel('Wavelengths [nm]')
+        self.graph_dict["FROG trace"].axes.set_ylabel('Delay [fs]')
+        cbar = self.graph_dict["FROG trace"].Fig.colorbar(self.graph_dict["FROG trace"].im)
+        cbar.set_label('Normalized intensity')
         
     def start_spectro(self, inte_time=None):
         self.dark_button['state'] = 'normal'
@@ -1178,7 +1218,7 @@ class FROG:
         self.Spectro.adjust_integration_time(inte_time)
         wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
-        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph = self.graph_dict['Spectrometer']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
@@ -1202,8 +1242,15 @@ class FROG:
         if self.PI.device:
             self.start_button['state'] = 'normal'
         
+    def save(self):
         
         
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        np.savez(timeStamp+'_FROG_trace_pythonformat',wavelengths = self.wl_crop,time = self.timeDelay,trace = self.trace)
+        
+        np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_M.dat', self.trace, fmt='%.18e', delimiter='\t', newline='\n')       
+        np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_L.dat', self.wl_crop, fmt='%.18e', delimiter='\t', newline='\n')  
+        np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_T.dat', self.timeDelay, fmt='%.18e', delimiter='\t', newline='\n')
         
     def stop_experiment(self):
         self.running = False
@@ -1212,8 +1259,10 @@ class FROG:
     def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None,
                          inte_time=None, minwl=None, maxwl=None):
 
+        self.save_button['state'] = 'disabled'
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
+        #self.update_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
         self.running = True
         
@@ -1273,16 +1322,19 @@ class FROG:
         wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
-        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph = self.graph_dict['Spectrometer']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         spectro_graph.Line.set_xdata(wl)
         spectro_graph.Line.set_ydata(S)
-        Signal_graph = self.graph_dict['Signal']
-        Signal_graph.axes.set_xlim([2*min_pos,2*max_pos])
+        Signal_graph = self.graph_dict['Autocorrelation']
+        Signal_graph.axes.set_xlim([2*min_pos*1e-6/299792458*1e15,2*max_pos*1e-6/299792458*1e15])
         Signal_graph.axes.set_ylim([0,1])
         minwl = minwl.get()
         maxwl = maxwl.get()
+        
+        self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+        self.trace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
         
             # Main scanning and measurements
         for i in range(nsteps+1):
@@ -1297,6 +1349,7 @@ class FROG:
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
             Si[i] = np.trapz(S_crop,wl_crop) 
+            self.trace[i] = S_crop
             
             # Actualise progress bar
             if progress:
@@ -1311,7 +1364,7 @@ class FROG:
                 spectro_graph.Line.set_xdata(wl)
                 spectro_graph.Line.set_ydata(S)
                 spectro_graph.update_graph()
-                Signal_graph.Line.set_xdata(2*pos[:i])
+                Signal_graph.Line.set_xdata(2*pos[:i]*1e-6/299792458*1e15)
                 Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
                 Signal_graph.update_graph()
                 
@@ -1336,7 +1389,7 @@ class FROG:
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)
             spectro_graph.update_graph()
-            Signal_graph.Line.set_xdata(2*pos)
+            Signal_graph.Line.set_xdata(2*pos*1e-6/299792458*1e15)
             Signal_graph.Line.set_ydata(Si/np.max(Si))
             Signal_graph.update_graph()
             
@@ -1346,14 +1399,28 @@ class FROG:
         
         # Going back to initial state
         self.running = False
+        self.timeDelay = 2*pos*1e-6/299792458*1e15
         progress['value'] = 0
         progress.update()
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+        #self.update_button['state'] = 'normal'
+        self.adjust_2dgraph()
         
+        autocorr = Si - np.min(Si)
+        autocorr = autocorr/np.max(autocorr)
         
+        T = self.timeDelay[-1] - self.timeDelay[0]
+        dt = 0.025
+        t = np.linspace(self.timeDelay[0],self.timeDelay[-1],int(T/dt))
         
+        sig = np.interp(t,self.timeDelay,autocorr)
+        
+        t0 = t[sig>=0.5][0]
+        t1 = t[sig>=0.5][-1]
+        self.autocorr_var.set(round(abs(t1-t0),1))
         
         
         

@@ -701,13 +701,12 @@ class TwoDFrame:
         same as GraphicFrame for now.
     """
 
-    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1]):
+    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1], data_size=(1000,1000)):
         # axis_name is a string tuple of the x and y axis in that order
         # figsize is a list of two component the first one is the x and the other one is the y axis
         self.parent = parent
         self.Fig = Figure(dpi=100, figsize=figsize)
         self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
-        data_size = (1000,1000)
         self.data = np.zeros(data_size)
         self.im = self.axes.imshow(self.data, vmin=0, vmax=1)
         #self.axes.tick_params(axis='both', which='major', labelsize=8)
@@ -736,8 +735,8 @@ class TwoDFrame:
             axybackground = self.Fig.canvas.copy_from_bbox(self.maxy.bbox)
         self.data = data
         self.im.set_data(self.data)
-        self.maxlx.set_ydata(np.max(self.data, axis=0))
-        self.maxly.set_xdata(np.max(self.data, axis=1))
+        #self.maxlx.set_ydata(np.max(self.data, axis=0))
+        #self.maxly.set_xdata(np.max(self.data, axis=1))
         if blit:
             self.Fig.canvas.restore_region(axbackground)
             self.Fig.canvas.restore_region(axxbackground)
