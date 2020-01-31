@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import Graphic
 import datetime
+import femtoQ.tools as fq
+import scipy.interpolate as interp
 
 class CreateLayout:
     """
@@ -1197,15 +1199,18 @@ class FROG:
         self.graph_dict["FROG trace"].destroy_graph()
         #print(wl, step)
         self.graph_dict["FROG trace"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
-                                                       figsize=[2,2], data_size=self.trace.shape)
+                                                       figsize=[2,2], data_size= np.transpose(self.trace).shape)
         trace = (self.trace-np.min(self.trace))
         trace = trace/np.max(trace)
-        self.graph_dict["FROG trace"].change_data(trace,False)
-        self.graph_dict["FROG trace"].im.set_extent((self.wl_crop[0],self.wl_crop[-1],self.timeDelay[-1],self.timeDelay[0]))
-        self.graph_dict["FROG trace"].axes.set_xlabel('Wavelengths [nm]')
-        self.graph_dict["FROG trace"].axes.set_ylabel('Delay [fs]')
+        self.graph_dict["FROG trace"].change_data(np.transpose(trace),False)
+        self.graph_dict["FROG trace"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl_crop[-1],self.wl_crop[0]))
+        aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
+        self.graph_dict["FROG trace"].axes.set_aspect(aspectRatio)
+        self.graph_dict["FROG trace"].axes.set_xlabel('Delay [fs]')
+        self.graph_dict["FROG trace"].axes.set_ylabel('Wavelengths [nm]')
         cbar = self.graph_dict["FROG trace"].Fig.colorbar(self.graph_dict["FROG trace"].im)
         cbar.set_label('Normalized intensity')
+        self.graph_dict["FROG trace"].update_graph()
         
     def start_spectro(self, inte_time=None):
         self.dark_button['state'] = 'normal'
@@ -1423,6 +1428,931 @@ class FROG:
         self.autocorr_var.set(round(abs(t1-t0),1))
         
         
+        
+        
+        
+class TwoDSI:
+    # This class is implicitly called in the main frame
+    """
+    This is a class to create the user interface required to run a FROG experiment.
+    It allows to control and read a spectrometer, control a PI stage, and then
+    run an experiment synchronizing the movement of the stage and the spectra acquisition.
+    
+    Attributes:
+        
+        
+    """
+
+    def __init__(self, mainf = None):
+        """
+        This is the constructor for the FROG class.
+        Parameters:
+            
+        """
+        self.empty_var = []
+        self.graph_dict = {}
+        self.PI = mainf.Frame[2].Linstage
+        self.Spectro = mainf.Frame[3].Spectro
+        
+    def create_frame(self, frame):
+        """
+        The frame is created here, i.e. the labels, boxes and buttons are
+        defined here.
+        """
+        # Define labels
+        
+        step1_lbl = tk.Label(frame, text = 'Step 1: Connect spectro & piezo')
+        
+        genCtrl_lbl = tk.Label(frame, text = 'Step 2: Setup spectro & piezo')
+        pos_lbl = tk.Label(frame, text = 'Go to position (um):')
+        inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
+        minwl_lbl = tk.Label(frame, text = 'Min wl for integration(nm)')
+        maxwl_lbl = tk.Label(frame, text = 'Max wl for integration(nm)')
+        utime_lbl = tk.Label(frame, text='Update figures after [s]:')
+        
+        step2_lbl = tk.Label(frame, text = 'Step 3: Block fixed stage & optimize signal')
+        
+        step3_lbl = tk.Label(frame, text = 'Step 4: Block piezo stage & optimize signal')
+        average_lbl = tk.Label(frame, text = 'Averaging:')
+        
+        step4_lbl = tk.Label(frame, text = 'Step 5: Block fixed stage & calibrate shear')
+        min_lbl = tk.Label(frame, text = 'Min. pos. (um):')
+        max_lbl = tk.Label(frame, text = 'Max. pos. (um):')
+        stepsize4_lbl = tk.Label(frame, text = 'Step size (um):')
+        
+        step5_lbl = tk.Label(frame, text = 'Step 6: Unblock all beams & measure')
+        minShear_lbl = tk.Label(frame, text = 'Min. shear (THz):')
+        maxShear_lbl = tk.Label(frame, text = 'Max. shear (THz):')
+        shear_lbl = tk.Label(frame, text = 'Shear freq. (THz):')
+        scanLength_lbl = tk.Label(frame, text = 'Scan length (um):')
+        stepsize5_lbl = tk.Label(frame, text = 'Step size (um):')
+        
+        
+                # 
+        
+        # Define buttons and their action
+        self.con_b = tk.Button(frame, text='Connect PI linear stage',
+                                      command=lambda: connect_stage(self))
+        self.cons_b = tk.Button(frame, text='Connect spectrometer',
+                                command=lambda: connect_spectrometer(self))
+        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
+                           command=lambda: get_dark_spectrum(self))
+        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
+                                    command=lambda: remove_dark(self))
+        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
+                                        command=lambda: rescale(self))
+        self.startShear_button = tk.Button(frame, text='Measure shear', state='disabled', width=18,
+                                      command=lambda: self.start_shearMeasurement(max_pos=max_var, min_pos=min_var, step=step4_var, progress=p_bar, update_time=utime_var,
+                                            inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
+        self.stopShear_button = tk.Button(frame, text='Stop shear measurement', state='disabled', width=18,
+                                     command=lambda: self.stop_shearMeasurement())
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+                                      command=lambda: self.start_experiment(shear=shear_var, scanLength=scanLength_var, minShear = self.minShear, maxShear=self.maxShear, step=step5_var, progress=p_bar, update_time=utime_var,
+                                            inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        
+        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
+                                        command=lambda: self.start_spectro(inte_time=inte_var))
+        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
+                                             command=lambda: self.stop_spectro())
+        self.saveRef_button = tk.Button(frame, text='Save reference', state='disabled',width=18,
+                                        command=lambda: self.saveRef())
+        self.saveRef2_button = tk.Button(frame, text='Save reference', state='disabled',width=18,
+                                        command=lambda: self.saveRef2(average = average_var))
+        self.save_button = tk.Button(frame, text='Save trace', state='disabled',width=18,
+                                        command=lambda: self.save())
+        
+                
+        # Define variables
+                # PI stage
+        pos_var = tk.DoubleVar()
+        min_var = tk.DoubleVar()
+        max_var = tk.DoubleVar()
+        step4_var = tk.DoubleVar()
+        shear_var = tk.DoubleVar()
+        self.minShear_var = tk.DoubleVar()
+        self.maxShear_var = tk.DoubleVar()
+        scanLength_var = tk.DoubleVar()
+        step5_var = tk.DoubleVar()
+        utime_var = tk.IntVar()
+        inte_var = tk.IntVar()
+        minwl_var = tk.DoubleVar()
+        maxwl_var = tk.DoubleVar()
+        average_var = tk.IntVar()
+        average_var.set(1)
+        minwl_var.set(350)
+        maxwl_var.set(500)
+        inte_var.set(10)
+        pos_var.set(0)
+        min_var.set(-20)
+        max_var.set(20)
+        step4_var.set(1)
+        shear_var.set(3)
+        scanLength_var.set(3)
+        step5_var.set(0.03)
+        utime_var.set(1)
+        self.minShear_var.set(0)
+        self.maxShear_var.set(0)
+        
+        # Define entry boxes
+                # PI stage
+        pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
+        min_e = tk.Entry(frame, width = 6, textvariable = min_var)
+        max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        step4_e = tk.Entry(frame, width = 6, textvariable = step4_var)
+        step5_e = tk.Entry(frame, width = 6, textvariable = step5_var)
+        shear_e = tk.Entry(frame, width = 6, textvariable = shear_var)
+        minShear_e = tk.Entry(frame, width = 6, textvariable = self.minShear_var, state = 'disabled')
+        maxShear_e = tk.Entry(frame, width = 6, textvariable = self.maxShear_var, state = 'disabled')
+        scanLength_e = tk.Entry(frame, width = 6, textvariable = scanLength_var)
+        utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
+        inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
+        minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
+        maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
+        average_e = tk.Entry(frame, width = 6, textvariable = average_var)
+        
+        
+        # Progress bar
+        p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
+        p_bar['maximum'] = 1
+        
+        
+        
+        
+        # Define position of all objects on the grid
+                # PI stage
+        
+        
+        step1_lbl.grid(row = 0, column = 0, sticky = 'nsw')
+        
+        self.con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        
+        self.cons_b.grid(row=2, column=0, columnspan=2, sticky='nsew')
+        
+        
+        genCtrl_lbl.grid(row = 3, column = 0, sticky = 'nsw')
+        
+        pos_lbl.grid(row=4, column=0, sticky='nsw')
+        pos_e.grid(row=4, column=1, sticky='nse')
+        
+        inte_lbl.grid(row=5, column=0, sticky='nsw')
+        inte_e.grid(row=5, column=1,sticky='nse')
+        
+        minwl_lbl.grid(row=6, column=0, sticky='nsw')
+        minwl_e.grid(row=6, column=1, sticky='nse')
+        
+        maxwl_lbl.grid(row=7, column=0, sticky='nsw')
+        maxwl_e.grid(row=7, column=1, sticky='nse')
+        
+        utime_lbl.grid(row=8, column=0, sticky='nsw')
+        utime_e.grid(row=8, column=1, sticky='nse')
+        
+        self.spectro_start_button.grid(row=9, column=0, sticky='nsew')
+        
+        self.dark_button.grid(row=10,column=0,sticky='nsew')
+        
+        self.sub_dark_button.grid(row=11,column=0,sticky='nsew')
+        
+        self.rescale_button.grid(row=12,column=0,sticky='nsew')
+        
+        
+        
+        
+        step2_lbl.grid(row = 13, column = 0, sticky = 'nsw')
+        
+        self.saveRef_button.grid(row=14, column=0, columnspan=2, sticky='nsew')
+        
+        
+        step3_lbl.grid(row = 15, column = 0, sticky = 'nsw')
+        
+        average_lbl.grid(row = 16, column = 0, sticky = 'nsw')
+        average_e.grid(row = 16, column = 1, sticky = 'nsw')
+    
+        self.saveRef2_button.grid(row=17, column=0, columnspan=2, sticky='nsew')
+        
+        
+        self.spectro_stop_button.grid(row=18, column=0,columnspan=2, sticky='nsew')
+        
+        
+        step4_lbl.grid(row = 19, column = 0, sticky = 'nsw')
+        
+        min_lbl.grid(row=20, column=0, sticky='nsw')
+        min_e.grid(row=20, column=1, sticky='nse')
+        
+        max_lbl.grid(row=21, column=0, sticky='nsw')
+        max_e.grid(row=21, column=1, sticky='nse')
+        
+        stepsize4_lbl.grid(row=22, column=0, sticky='nsw')
+        step4_e.grid(row=22, column=1, sticky='nse')
+        
+        self.startShear_button.grid(row=23, column=0, columnspan=2, sticky='nsew')
+        
+        self.stopShear_button.grid(row=24, column=0, columnspan=2, sticky='nsew')
+        
+        step5_lbl.grid(row = 25, column = 0, sticky = 'nsw')
+        
+        
+        minShear_lbl.grid(row=26, column=0, sticky='nsw')
+        minShear_e.grid(row=26, column=1, sticky='nse')
+        maxShear_lbl.grid(row=27, column=0, sticky='nsw')
+        maxShear_e.grid(row=27, column=1, sticky='nse')
+        
+        shear_lbl.grid(row=28, column=0, sticky='nsw')
+        shear_e.grid(row=28, column=1, sticky='nse')
+        
+        scanLength_lbl.grid(row=29, column=0, sticky='nsw')
+        scanLength_e.grid(row=29, column=1, sticky='nse')
+        
+        
+        stepsize5_lbl.grid(row=30, column=0, sticky='nsw')
+        step5_e.grid(row=30, column=1, sticky='nse')
+        
+        
+        self.start_button.grid(row=31, column=0, columnspan=2, sticky='nsew')
+        
+        self.stop_button.grid(row=32, column=0, columnspan=2, sticky='nsew')
+        
+        
+        
+        p_bar.grid(row=33, column=0, sticky='nsew', columnspan=2)
+        
+        
+        
+        self.save_button.grid(row=34,column=0,sticky='nsew')
+        
+        
+        
+        # Select a key and its effect when pressed in an entry box
+            # PI stage[]{}
+        pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
+        
+        inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
+        
+        
+        # Start & stop buttons :
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        
+            # For spectrometer :
+        
+        self.plotRefSpectrum = False
+        self.shearCalculated = False
+        self.allowShearMeasurement = False
+        
+        
+        def connect_spectrometer(self):
+            self.Spectro.connect(exp_dependencie=True)
+            self.spectro_start_button['state'] = 'normal'
+            self.cons_b['state'] = 'disabled'
+        
+        def connect_stage(self):
+            self.PI.connect_identification(dev_name='E-816',exp_dependencie=True)
+            self.con_b['state'] = 'disabled'
+        
+        def get_dark_spectrum(self):
+            self.Spectro.measure_darkspectrum()
+            self.sub_dark_button['state']='normal'
+        
+        def remove_dark(self):
+            self.Spectro.dark_spectrum = not self.Spectro.dark_spectrum
+        
+        def rescale(self):
+            S = self.Spectro.get_intensities()
+            spectro_graph = self.graph_dict['Spectrometer']
+            spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+            spectro_graph.update_graph()
+        
+        
+    def start_shearMeasurement(self,max_pos, min_pos, step, progress, update_time,
+                                            inte_time, minwl, maxwl):
+        
+        self.spectro_start_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+        self.stopShear_button['state'] = 'normal'
+        self.startShear_button['state'] = 'disabled'
+        self.running = True
+        
+         # Imports
+        from pipython import pitools
+        import time
+        # Main experiment
+        if self.PI == None:
+            self.PI = self.mainf.Frame[2].Linstage
+            
+            # Parameters initialisation
+        max_pos = max_pos.get()
+        min_pos = min_pos.get()
+        step = step.get()
+        update_time = update_time.get()
+        minwl = minwl.get()
+        maxwl = maxwl.get()
+        
+            # Verification
+        if not self.PI.device:
+            return
+
+        if (max_pos is None) or (min_pos is None):
+            return
+        
+            # Getting the max and min possible value of the device
+        if self.PI.dev_name == 'E-816':
+            maxp = 250
+            minp = -250
+        else:
+            maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
+            minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
+        
+            # This is a fail safe in case you don't know your device
+        if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
+            messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
+                                'of your physik instrument device')
+            return
+            
+            # Steps and position vector initialisation
+        nsteps = int(np.ceil((max_pos - min_pos)/step))
+        iteration = np.linspace(0, nsteps, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
+        pos = np.zeros(nsteps+1)
+        Si = np.zeros(nsteps+1)
+        
+            # Variables for the graph update
+        last_gu = time.time()
+        scan_graph = self.graph_dict['Scanning']
+        scan_graph.axes.set_ylim([min_pos, max_pos])
+        scan_graph.axes.set_xlim([0, nsteps])
+        scan_graph.Line.set_xdata([])
+        scan_graph.Line.set_ydata([])
+        scan_graph.Line.set_marker('o')
+        scan_graph.Line.set_markersize(2)
+        scan_graph.update_graph()
+        
+            # Spectro
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        self.Spectro.adjust_integration_time(inte_time)
+        spectro_graph = self.graph_dict['Spectrometer']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        spectro_graph.Line.set_xdata(wl)
+        spectro_graph.Line.set_ydata(S)
+        
+        
+        
+        self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+        self.shearTrace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
+        
+            # Main scanning and measurements
+        for i in range(nsteps+1):
+            # Move stage to required position
+            self.PI.go_2position(move[i])
+            # Measure real position
+            pos[i] = self.PI.get_position()
+            
+            # Acquire spectrum and plot graph 
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+            S_crop = S[(wl>minwl)&(wl<maxwl)]
+            Si[i] = np.trapz(S_crop,wl_crop) 
+            self.shearTrace[i] = S_crop
+            
+            # Actualise progress bar
+            if progress:
+                progress['value'] = (i)/(nsteps)
+                progress.update()
+            # Actualise graph if required
+            if (time.time() - last_gu) > update_time:
+                scan_graph.Line.set_xdata(iteration[:i])
+                scan_graph.Line.set_ydata(pos[:i])
+                scan_graph.update_graph()
+                #Spectro signal and integrated signal
+                spectro_graph.Line.set_xdata(wl)
+                spectro_graph.Line.set_ydata(S)
+                spectro_graph.update_graph()
+                
+                
+                last_gu = time.time()
+            if not self.running:
+                break       
+        if not self.running:
+            return_vel = tk.IntVar()
+            return_vel.set(10)
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(0)
+            messagebox.showinfo(title='Error', message='Experiment was aborted')
+        else:
+            return_vel = tk.IntVar()
+            return_vel.set(10)
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(0)
+            scan_graph.Line.set_xdata(iteration)
+            scan_graph.Line.set_ydata(pos)
+            scan_graph.update_graph()
+                #Spectro signal and integrated signal
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+            
+            
+            dp = np.std(pos-move)/1000
+            
+                
+            self.shearPos = pos
+            self.shearWL = wl_crop
+            self.adjust_sheargraph()
+            self.start_button['state'] = 'normal'
+            
+            
+            messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
+            
+            
+            
+            
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stopShear_button['state'] = 'disabled'
+        self.startShear_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
+        #self.update_button['state'] = 'normal'
+        
+        
+        
+        
+        
+        return
+    
+    def find_shear(self,wavelengths_copy, upconvPowerSpectrum, movingMirrorData, movingMirror_Z):
+        """ Calculate shear frequency as a function of stage position,
+        and take its value at the middle position as constant approximation """
+        
+        C =299792458
+        wavelengths = wavelengths_copy*1e-9
+        
+        
+        # Normalize spectra to max of one
+        upconvPowerSpectrum = upconvPowerSpectrum / np.max(upconvPowerSpectrum)
+        
+        maxValues = np.max(movingMirrorData, axis = 1)
+        tmp = wavelengths.shape[0]
+        maxValues = np.transpose( np.tile(maxValues, (tmp,1)) )
+        movingMirrorData = movingMirrorData / maxValues
+        
+    
+    
+        # Convert wavelengths to frequencies
+        frequencies = C / wavelengths
+        
+        frequencies = np.flip(frequencies) # Flipping from low to high frequencies
+        upconvPowerSpectrum = np.flip(upconvPowerSpectrum)
+        movingMirrorData = np.flip(movingMirrorData,axis = 1)
+        
+        # Interpolate to a linear spacing of frequencies
+        # Choice of datapoint position strongly affect results, here I am copying Matlab
+        # need to check if another strategy would work better
+        Df = frequencies[-1] - frequencies[0]
+        df = np.max( np.diff(frequencies) ) / 16
+        N = round(Df / df)
+        linFreqs = np.linspace(frequencies[-1]-(N-1)*df, frequencies[-1], N )
+        upconvPowerSpectrum = np.interp(linFreqs, frequencies, upconvPowerSpectrum)
+        
+        
+        newMovingMirrorData = np.zeros((movingMirrorData.shape[0], linFreqs.shape[0]))
+        
+        for ii in range( movingMirrorData.shape[0] ):
+            newMovingMirrorData[ii,:] = np.interp(linFreqs, frequencies, movingMirrorData[ii,:])
+        
+        movingMirrorData = newMovingMirrorData
+        frequencies = linFreqs
+        
+        
+        
+        #crossCorr = np.zeros( (movingMirrorData.shape[0], movingMirrorData.shape[1]))
+        crossCorr = np.zeros( (movingMirrorData.shape[0], movingMirrorData.shape[1]*2-1))
+    
+        lags = np.zeros_like(crossCorr)
+        shearMap = np.zeros( movingMirrorData.shape[0] )
+        
+        for ii in range( movingMirrorData.shape[0] ):
+            #lags[ii,:], crossCorr[ii,:] =fq.ezcorr(frequencies, movingMirrorData[ii,:], upconvPowerSpectrum) 
+            #shearMap[ii] = lags[ii,:][ crossCorr[ii,:] == np.max(crossCorr[ii,:]) ]
+            crossCorr[ii,:] =  np.correlate(movingMirrorData[ii,:], upconvPowerSpectrum,'full')
+            maxId = np.argmax(crossCorr[ii,:])
+            peakFreq = -(N - (maxId+1))*df
+            lags = -(N - np.linspace(1,2*N-1,2*N-1) ) *df
+            
+            
+            x,y = fq.ezdiff(lags, crossCorr[ii,:])
+            
+            f = interp.interp1d(x, y, kind = 'cubic')
+            
+            err = 1
+            threshold = 1e-5
+            maxIter = 1000
+            nIter = 0
+            x0 = peakFreq - 5*df
+            x1 = peakFreq + 5*df
+            
+            while err > threshold:
+                nIter += 1
+                if nIter > maxIter:
+                    break
+                
+                if x1<lags[0]:
+                    x1 = lags[0]
+                if x1>lags[-1]:
+                    x1 = lags[-1]
+                    
+                f0 = f(x0)
+                f1 = f(x1)
+                dfdx = (f1-f0) / (x1 - x0)
+                b = f0 - dfdx*x0
+                
+                x0 = x1
+                x1 = -b/dfdx
+                err = abs((x1-x0)/x0)
+                
+                
+                 
+            
+            shearMap[ii] = x1# -(N - (maxId+1))*df
+        
+        shearMap /= 1e12
+        self.shearFit = np.polyfit(movingMirror_Z,shearMap, 1)
+        self.shearMap = shearMap
+    
+    
+    
+    def stop_shearMeasurement(self):
+        
+        self.running = False
+        self.spectro_start_button['state'] = 'normal'
+        self.stopShear_button['state'] = 'normal'
+        self.startShear_button['state'] = 'disabled'
+        
+        
+        return
+    
+    
+    def saveRef(self):
+        
+        self.refSpectrum = self.Spectro.get_intensities()
+        if self.plotRefSpectrum is False:
+            self.plotRefSpectrum = True
+            self.graph_dict['Spectrometer'].LineRef, =  self.graph_dict['Spectrometer'].axes.plot([], [])
+            
+        return
+    
+    def saveRef2(self, average):
+        
+        average = average.get()
+        if average < 1:
+            average = 1
+        if average > 100:
+            average = 100
+        
+        self.allowShearMeasurement = True
+        
+        self.refSpectrum = np.zeros((average,self.Spectro.get_intensities().shape[0]))
+        for ii in range(average):
+            self.refSpectrum[ii,:] = self.Spectro.get_intensities()
+        self.refSpectrum = np.mean(self.refSpectrum,0)
+        
+        if self.plotRefSpectrum is False:
+            self.plotRefSpectrum = True
+            self.graph_dict['Spectrometer'].LineRef, =  self.graph_dict['Spectrometer'].axes.plot([], [])
+            
+        return
+    
+    
+    
+
+    def adjust_sheargraph(self):
+# =============================================================================
+#         try:
+#              wl = len(self.Spectro.spectro.wavelengths())
+#         except:
+#             return
+# =============================================================================
+        
+        if not self.shearCalculated:
+            self.graph_dict["Shear calc. curve"].LineFit, =  self.graph_dict["Shear calc. curve"].axes.plot([], [])
+        
+        wl = self.Spectro.spectro.wavelengths()
+        refSpectrum = self.refSpectrum[(wl >= self.shearWL[0])&(wl<=self.shearWL[-1])]
+        self.find_shear(self.shearWL, refSpectrum, self.shearTrace, self.shearPos)
+        
+        shearFitCurve = np.polyval(self.shearFit,self.shearPos)
+        self.shearCalculated = True
+        
+        
+        parent2d = self.graph_dict["Shear reference"].parent
+        self.graph_dict["Shear reference"].destroy_graph()
+        #print(wl, step)
+        self.graph_dict["Shear reference"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
+                                                       figsize=[2,2], data_size=self.shearTrace.shape)
+        trace = (self.shearTrace-np.min(self.shearTrace))
+        trace = trace/np.max(trace)
+        self.graph_dict["Shear reference"].change_data(trace,False)
+        self.graph_dict["Shear reference"].im.set_extent((self.shearWL[0],self.shearWL[-1],self.shearPos[-1],self.shearPos[0]))
+        aspectRatio = abs((self.shearWL[-1]-self.shearWL[0])/(self.shearPos[0]-self.shearPos[-1]))
+        self.graph_dict["Shear reference"].axes.set_aspect(aspectRatio)
+        self.graph_dict["Shear reference"].axes.set_xlabel('Wavelengths [nm]')
+        self.graph_dict["Shear reference"].axes.set_ylabel('Delay [um]')
+        cbar = self.graph_dict["Shear reference"].Fig.colorbar(self.graph_dict["Shear reference"].im)
+        cbar.set_label('Normalized intensity')
+        self.graph_dict["Shear reference"].update_graph()
+        
+        shearFit_graph = self.graph_dict["Shear calc. curve"]
+        shearFit_graph.axes.set_xlim([np.min(self.shearPos),np.max(self.shearPos)])
+        shearFit_graph.axes.set_ylim([np.min(self.shearMap),np.max(self.shearMap)])
+        shearFit_graph.Line.set_xdata(self.shearPos)
+        shearFit_graph.Line.set_ydata(self.shearMap)
+        
+        shearFit_graph.LineFit.set_xdata(self.shearPos)
+        shearFit_graph.LineFit.set_ydata(shearFitCurve)
+        self.minShear = np.min(shearFitCurve)
+        self.maxShear = np.max(shearFitCurve)
+        self.minShear_var.set( np.round( self.minShear , 1) )
+        self.maxShear_var.set( np.round( self.maxShear , 1) )
+        shearFit_graph.update_graph()
+        
+        
+        
+    def adjust_2dsigraph(self):
+        try:
+             wl = len(self.Spectro.spectro.wavelengths())
+        except:
+            return
+        
+        parent2d = self.graph_dict["2DSI trace"].parent
+        self.graph_dict["2DSI trace"].destroy_graph()
+        #print(wl, step)
+        self.graph_dict["2DSI trace"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
+                                                       figsize=[2,2], data_size=self.twoDSITrace.shape)
+        trace = (self.twoDSITrace-np.min(self.twoDSITrace))
+        trace = trace/np.max(trace)
+        self.graph_dict["2DSI trace"].change_data(trace,False)
+        self.graph_dict["2DSI trace"].im.set_extent((self.twoDSIWL[0],self.twoDSIWL[-1],self.twoDSIPos[-1],self.twoDSIPos[0]))
+        aspectRatio = abs((self.twoDSIWL[-1]-self.twoDSIWL[0])/(self.twoDSIPos[0]-self.twoDSIPos[-1]))
+        self.graph_dict["2DSI trace"].axes.set_aspect(aspectRatio)
+        self.graph_dict["2DSI trace"].axes.set_xlabel('Wavelengths [nm]')
+        self.graph_dict["2DSI trace"].axes.set_ylabel('Stage position [um]')
+        cbar = self.graph_dict["2DSI trace"].Fig.colorbar(self.graph_dict["2DSI trace"].im)
+        cbar.set_label('Normalized intensity')
+        self.graph_dict["2DSI trace"].update_graph()
+        
+    def start_spectro(self, inte_time=None):
+        self.dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'disabled'
+        self.start_button['state'] = 'disabled'
+        self.saveRef_button['state'] = 'normal'
+        self.saveRef2_button['state'] = 'normal'
+        self.startShear_button['state'] = 'disabled'
+        self.running = True
+        
+        self.Spectro.adjust_integration_time(inte_time)
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        spectro_graph = self.graph_dict['Spectrometer']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        
+        while self.running is True:            
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)     
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            if self.plotRefSpectrum:
+                spectro_graph.LineRef.set_xdata(wl)
+                spectro_graph.LineRef.set_ydata(self.refSpectrum)
+            spectro_graph.update_graph()
+        
+        
+    def stop_spectro(self):
+        self.running = False
+        self.dark_button['state'] = 'disabled'
+        self.sub_dark_button['state'] = 'disabled'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'normal' 
+        self.saveRef_button['state'] = 'disabled' 
+        self.saveRef2_button['state'] = 'disabled'
+        if self.PI.device:
+            if self.shearCalculated:
+                self.start_button['state'] = 'normal'
+        if self.allowShearMeasurement:
+            self.startShear_button['state'] = 'normal'
+        
+    def save(self):
+        
+        wl = self.Spectro.spectro.wavelengths()
+        refSpectrum = self.refSpectrum[(wl >= self.shearWL[0])&(wl<=self.shearWL[-1])]
+        
+        if not np.all( self.shearWL == self.twoDSIWL ):
+            messagebox.showinfo(title='INFO', message='Wavelengths integration range inconsistant between trace and shear calibration. Please repeat steps 5 & 6 without changing spectral range.')
+            return
+        
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        np.savez(timeStamp+'_2DSI_data',wavelengths = self.shearWL,shearStagePosition = self.shearPos, shearTrace = self.shearTrace,upconvSpectrum = refSpectrum, twoDSIStagePosition = self.twoDSIPos, twoDSITrace = self.twoDSITrace)
+        
+
+
+        
+    def stop_experiment(self):
+        self.running = False
+        self.spectro_start_button['state'] = 'normal'
+
+
+
+    def start_experiment(self, shear=None, scanLength=None,minShear = None, maxShear = None, step = None, progress=None, update_time=None,
+                         inte_time=None, minwl=None, maxwl=None):
+
+        self.spectro_start_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+        self.stop_button['state'] = 'normal'
+        self.startShear_button['state'] = 'disabled'
+        self.start_button['state'] = 'disabled'
+        self.running = True
+        
+         # Imports
+        from pipython import pitools
+        import time
+        # Main experiment
+        if self.PI == None:
+            self.PI = self.mainf.Frame[2].Linstage
+            
+            # Parameters initialisation
+        shear = shear.get()
+        scanLength = scanLength.get()
+        step = step.get()
+        update_time = update_time.get()
+        minwl = minwl.get()
+        maxwl = maxwl.get()
+        
+        
+        
+        central_pos = (shear - self.shearFit[1])/self.shearFit[0]
+        min_pos = central_pos - scanLength/2
+        max_pos = central_pos + scanLength/2
+        
+        
+            # Verification
+        if not self.PI.device:
+            return
+
+        if (max_pos is None) or (min_pos is None):
+            return
+        
+            # Getting the max and min possible value of the device
+        if self.PI.dev_name == 'E-816':
+            maxp = 250
+            minp = -250
+        else:
+            maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
+            minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
+        
+            # This is a fail safe in case you don't know your device
+        if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
+            messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
+                                'of your physik instrument device')
+            
+            self.stop_button['state'] = 'disabled'
+            self.start_button['state'] = 'normal'
+            self.startShear_button['state'] = 'normal'
+            self.spectro_start_button['state'] = 'normal'
+            return
+        
+        if (shear < minShear) or (shear > maxShear):
+            messagebox.showinfo(title='Error', message='Requested shear is outside of calibration range.')
+                
+            self.stop_button['state'] = 'disabled'
+            self.start_button['state'] = 'normal'
+            self.startShear_button['state'] = 'normal'
+            self.spectro_start_button['state'] = 'normal'
+            return
+        
+        
+            # Steps and position vector initialisation
+        nsteps = int(np.ceil((max_pos - min_pos)/step))
+        iteration = np.linspace(0, nsteps, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
+        pos = np.zeros(nsteps+1)
+        Si = np.zeros(nsteps+1)
+        
+            # Variables for the graph update
+        last_gu = time.time()
+        scan_graph = self.graph_dict['Scanning']
+        scan_graph.axes.set_ylim([min_pos, max_pos])
+        scan_graph.axes.set_xlim([0, nsteps])
+        scan_graph.Line.set_xdata([])
+        scan_graph.Line.set_ydata([])
+        scan_graph.Line.set_marker('o')
+        scan_graph.Line.set_markersize(2)
+        scan_graph.update_graph()
+        
+            # Spectro
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        self.Spectro.adjust_integration_time(inte_time)
+        spectro_graph = self.graph_dict['Spectrometer']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        spectro_graph.Line.set_xdata(wl)
+        spectro_graph.Line.set_ydata(S)
+        
+        
+        
+        self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+        self.twoDSITrace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
+        
+            # Main scanning and measurements
+        for i in range(nsteps+1):
+            # Move stage to required position
+            self.PI.go_2position(move[i])
+            # Measure real position
+            pos[i] = self.PI.get_position()
+            
+            # Acquire spectrum and plot graph 
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+            S_crop = S[(wl>minwl)&(wl<maxwl)]
+            Si[i] = np.trapz(S_crop,wl_crop) 
+            self.twoDSITrace[i] = S_crop
+            
+            # Actualise progress bar
+            if progress:
+                progress['value'] = (i)/(nsteps)
+                progress.update()
+            # Actualise graph if required
+            if (time.time() - last_gu) > update_time:
+                scan_graph.Line.set_xdata(iteration[:i])
+                scan_graph.Line.set_ydata(pos[:i])
+                scan_graph.update_graph()
+                #Spectro signal and integrated signal
+                spectro_graph.Line.set_xdata(wl)
+                spectro_graph.Line.set_ydata(S)
+                spectro_graph.update_graph()
+                
+                
+                last_gu = time.time()
+            if not self.running:
+                break       
+        if not self.running:
+            return_vel = tk.IntVar()
+            return_vel.set(10)
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(0)
+            messagebox.showinfo(title='Error', message='Experiment was aborted')
+        else:
+            return_vel = tk.IntVar()
+            return_vel.set(10)
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(0)
+            scan_graph.Line.set_xdata(iteration)
+            scan_graph.Line.set_ydata(pos)
+            scan_graph.update_graph()
+                #Spectro signal and integrated signal
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+            
+            
+            dp = np.std(pos-move)/1000
+            
+                
+            self.twoDSIPos = pos
+            self.twoDSIWL = wl_crop
+            self.adjust_2dsigraph()
+            self.save_button['state'] = 'normal'
+            
+            messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
+            
+            
+            
+            
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.startShear_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
+        #self.update_button['state'] = 'normal'
+        
+        
+        
+        
+        
+        return
         
 
 class Electro_Optic_Sampling:
