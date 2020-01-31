@@ -2364,6 +2364,10 @@ class Electro_Optic_Sampling:
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
         self.Zurich = mainf.Frame[1].Zurich
+        self.plotRefSignal = False
+        self.refSignal =[]
+        self.refTime =[]
+        self.refExists = False
     def create_frame(self, frame):
         # Define labels
                 # Delay line
@@ -2387,13 +2391,13 @@ class Electro_Optic_Sampling:
         # Define variables
                 # PI stage
         pos_var = tk.DoubleVar()
-        vel_var = tk.DoubleVar()
+        self.vel_var = tk.DoubleVar()
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         pos_var.set(77.5)
-        vel_var.set(1)
+        self.vel_var.set(1)
         min_var.set(75)
         max_var.set(80)
         step_var.set(1000)
@@ -2402,7 +2406,7 @@ class Electro_Optic_Sampling:
         # Define entry boxes
                 # PI stage
         pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
-        vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
+        vel_e = tk.Entry(frame, width = 6, textvariable = self.vel_var)
         min_e = tk.Entry(frame, width = 6, textvariable = min_var)
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
@@ -2411,27 +2415,27 @@ class Electro_Optic_Sampling:
         # Define position of all objects on the grid
                 # PI stage
         con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
-        pos_lbl.grid(row=2, column=0, sticky='nsw')
-        pos_e.grid(row=2, column=1, sticky='nse')
-        vel_lbl.grid(row=3, column=0, sticky='nsw')
-        vel_e.grid(row=3, column=1, sticky='nse')
-        param_lbl.grid(row=4, column=0, columnspan=2, sticky='nsew')
-        min_lbl.grid(row=5, column=0, sticky='nsw')
-        min_e.grid(row=5, column=1, sticky='nse')
-        max_lbl.grid(row=6, column=0, sticky='nsw')
-        max_e.grid(row=6, column=1, sticky='nse')
-        step_lbl.grid(row=7, column=0, sticky='nsw')
-        step_e.grid(row=7, column=1, sticky='nse')
-        utime_lbl.grid(row=8, column=0, sticky='nsw')
-        utime_e.grid(row=8, column=1, sticky='nse')
+        pos_lbl.grid(row=4, column=0, sticky='nsw')
+        pos_e.grid(row=4, column=1, sticky='nse')
+        vel_lbl.grid(row=5, column=0, sticky='nsw')
+        vel_e.grid(row=5, column=1, sticky='nse')
+        param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
+        min_lbl.grid(row=7, column=0, sticky='nsw')
+        min_e.grid(row=7, column=1, sticky='nse')
+        max_lbl.grid(row=8, column=0, sticky='nsw')
+        max_e.grid(row=8, column=1, sticky='nse')
+        step_lbl.grid(row=9, column=0, sticky='nsw')
+        step_e.grid(row=9, column=1, sticky='nse')
+        utime_lbl.grid(row=10, column=0, sticky='nsw')
+        utime_e.grid(row=10, column=1, sticky='nse')
 
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
-        p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
+        p_bar.grid(row=12, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
             # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
-        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
+        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(self.vel_var))
 
         # this function contains at minimum :
 
@@ -2442,19 +2446,60 @@ class Electro_Optic_Sampling:
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var))
-        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')   
-        tk.Button(frame, text='test_Zurich',command = lambda: self.Zurich_acquire()).grid(row=15,column=0)
+        self.stop_button.grid(row=13, column=0, columnspan=2, sticky='nsew')   
+        self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
+                                        command=lambda: self.save())
+        self.RefSignal_button = tk.Button(frame, text='Signal reference', state='disabled', command=lambda: self.SignalRef())
+        self.RefSignal_button.grid(row=14, column=0, sticky='nsw')
+        self.RefOff_button = tk.Button(frame, text='Ref ON/OFF', state='disabled',command=lambda: self.RemoveRef())
+        self.RefOff_button.grid(row=14, column=1, sticky='nse')
+        self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
         
+    
+    def save(self):
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        np.savez(timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
+     
+    def SignalRef(self):
+        if self.refExists is False:
+            self.graph_dict['Signal'].LineRef, =  self.graph_dict['Signal'].axes.plot([], [])
+            self.graph_dict['Spectrum'].LineRef, = self.graph_dict['Spectrum'].axes.plot([],[])
+            self.refExists = True
+        self.refSignal = self.S
+        self.refTime = self.t
+        self.refFreq = self.v
+        self.refSpec = self.A
+        if self.plotRefSignal is False:
+            self.plotRefSignal = True
+        return
+    def RemoveRef(self):
+        if self.refExists is True:
+            if self.plotRefSignal is True:    
+                self.plotRefSignal = False
+                self.graph_dict['Signal'].LineRef.set_xdata([])
+                self.graph_dict['Signal'].LineRef.set_ydata([])
+                self.graph_dict['Spectrum'].LineRef.set_xdata([])
+                self.graph_dict['Spectrum'].LineRef.set_ydata([])
+            elif self.plotRefSignal is False:
+                self.plotRefSignal = True
+                self.graph_dict['Signal'].LineRef.set_xdata(self.refTime)
+                self.graph_dict['Signal'].LineRef.set_ydata(self.refSignal)
+                self.graph_dict['Spectrum'].LineRef.set_xdata([self.refFreq])
+                self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
+            self.graph_dict['Signal'].update_graph()
+            self.graph_dict['Spectrum'].update_graph()
+        return
+    
     def Zurich_acquire(self):
         import time
         path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
         self.Zurich.info['daq'].subscribe(path)
-#        time.sleep(1)
+        time.sleep(0.050)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
         try:
             data = data_set[path]['x']
@@ -2464,14 +2509,16 @@ class Electro_Optic_Sampling:
             pass
         self.Zurich.info['daq'].unsubscribe(path)
         return  data
-        
+    
     def stop_experiment(self):
         self.running = False
 
     def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None):
-
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+        self.RefSignal_button['state'] = 'disabled'
+        self.RefOff_button['state'] = 'disabled'
         self.running = True
 
         # Imports
@@ -2512,8 +2559,8 @@ class Electro_Optic_Sampling:
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
-        S = np.zeros(nsteps+1)
-        t= np.zeros(nsteps+1)
+        self.S = np.zeros(nsteps+1)
+        self.t= np.zeros(nsteps+1)
 
         # Variables for the graph update
         
@@ -2532,8 +2579,15 @@ class Electro_Optic_Sampling:
         EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e15, max_pos*2/1000/c*1e15])
         EOS_graph.Line.set_xdata([])
         EOS_graph.Line.set_ydata([])
+        if self.plotRefSignal is True:
+            EOS_graph.LineRef.set_xdata(self.refTime)
+            EOS_graph.LineRef.set_ydata(self.refSignal)
+            EOS_graph.LineRef.set_linestyle('--')
+            self.graph_dict['Spectrum'].LineRef.set_xdata([self.refFreq])
+            self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
+            self.graph_dict['Spectrum'].LineRef.set_linestyle('--')
         EOS_graph.update_graph()
-        
+        self.graph_dict['Spectrum'].update_graph()
             # Main scanning and measurements
         for i in range(nsteps+1):
             # Move stage to required position
@@ -2541,8 +2595,8 @@ class Electro_Optic_Sampling:
             # Measure real position
             pos[i] = self.PI.get_position()
             # Measure signal
-            t[i] = pos[i]*2/1000/c*1e15
-            S[i] = self.Zurich_acquire()[0]*1000
+            self.t[i] = pos[i]*2/1000/c*1e15
+            self.S[i] = self.Zurich_acquire()[0]*1000
             
             # Actualise progress bar
             if progress:
@@ -2553,9 +2607,9 @@ class Electro_Optic_Sampling:
                 scan_graph.Line.set_xdata(iteration[:i])
                 scan_graph.Line.set_ydata(pos[:i])
                 scan_graph.update_graph()
-                EOS_graph.Line.set_xdata(t[:i])
-                EOS_graph.Line.set_ydata(S[:i])
-                EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
+                EOS_graph.Line.set_xdata(self.t[:i])
+                EOS_graph.Line.set_ydata(self.S[:i])
+                EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
                 EOS_graph.update_graph()
                 
                 last_gu = time.time()
@@ -2566,42 +2620,44 @@ class Electro_Optic_Sampling:
             return_vel.set(5)
             self.PI.set_velocity(return_vel)
             self.PI.go_2position(77.5)
+            self.PI.set_velocity(self.vel_var)
             messagebox.showinfo(title='Error', message='Experiment was aborted')
         else:
             return_vel = tk.IntVar()
             return_vel.set(5)
             self.PI.set_velocity(return_vel)
             self.PI.go_2position(77.5)
+            self.PI.set_velocity(self.vel_var)
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
-            EOS_graph.Line.set_xdata(t)
-            EOS_graph.Line.set_ydata(S)
-            EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
+            EOS_graph.Line.set_xdata(self.t)
+            EOS_graph.Line.set_ydata(self.S)
+            EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
             EOS_graph.update_graph()
-            print(len(S))
-            print(len(pos))
-            print(len(iteration))
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
         
         # Display spectrum graph
-        spec_t = t*1e-15
-        v,A = fQ.ezfft(spec_t,S)
-        A = np.abs(A)**2
-        A = A/np.max(A)
-        v = v/1e12
+        spec_t = self.t*1e-15
+        self.v,self.A = fQ.ezfft(spec_t,self.S)
+        self.A = np.abs(self.A)**2
+        self.A = self.A/np.max(self.A)
+        self.v = self.v/1e12
         Spectrum_graph = self.graph_dict['Spectrum']
-        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(A)])
-        Spectrum_graph.axes.set_xlim([np.min(v), np.max(v)])
-        Spectrum_graph.Line.set_xdata([v])
-        Spectrum_graph.Line.set_ydata([A])
+        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.A)])
+        Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
+        Spectrum_graph.Line.set_xdata([self.v])
+        Spectrum_graph.Line.set_ydata([self.A])
         Spectrum_graph.update_graph()
+        
         # Going back to initial state
         self.running = False
         progress['value'] = 0
         progress.update()
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
-        self.spectro_start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+        self.RefSignal_button['state'] = 'normal'
+        self.RefOff_button['state'] = 'normal'
