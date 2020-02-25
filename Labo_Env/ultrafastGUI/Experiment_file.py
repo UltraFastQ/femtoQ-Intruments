@@ -2368,6 +2368,7 @@ class Electro_Optic_Sampling:
         self.refSignal =[]
         self.refTime =[]
         self.refExists = False
+        self.LogSpec = False
     def create_frame(self, frame):
         # Define labels
                 # Delay line
@@ -2458,13 +2459,33 @@ class Electro_Optic_Sampling:
         self.RefSignal_button.grid(row=14, column=0, sticky='nsw')
         self.RefOff_button = tk.Button(frame, text='Ref ON/OFF', state='disabled',command=lambda: self.RemoveRef())
         self.RefOff_button.grid(row=14, column=1, sticky='nse')
+        self.Log_button = tk.Button(frame, text='Log Spectrum ON/OFF', state='disabled',command=lambda: self.LogSpectrum())
+        self.Log_button.grid(row=15, columnspan=2, sticky='nsew')
         self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
         
     
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
-     
+        
+    def LogSpectrum(self):
+        if self.LogSpec is False:
+            self.LogSpec = True
+            LogAA = np.log(self.AA)
+            self.graph_dict['Spectrum'].Line.set_ydata(LogAA)
+            if ((self.refExists is True)&(self.plotRefSignal is True)):
+                LogAref = np.log(self.refSpec)
+                self.graph_dict['Spectrum'].LineRef.set_ydata(LogAref)
+            self.graph_dict['Spectrum'].axes.set_ylim([np.min(LogAA),1.2*np.max(LogAA)])
+            self.graph_dict['Spectrum'].update_graph()
+        elif self.LogSpec is True:
+            self.LogSpec = False
+            self.graph_dict['Spectrum'].Line.set_ydata(self.AA)
+            if ((self.refExists is True)&(self.plotRefSignal is True)):
+                self.graph_dict['Spectrum'].LineRef.set_ydata(self.refSpec)
+            self.graph_dict['Spectrum'].axes.set_ylim([1.2*np.min(self.AA),1.2*np.max(self.AA)])
+            self.graph_dict['Spectrum'].update_graph()
+            
     def SignalRef(self):
         if self.refExists is False:
             self.graph_dict['Signal'].LineRef, =  self.graph_dict['Signal'].axes.plot([], [])
@@ -2473,7 +2494,7 @@ class Electro_Optic_Sampling:
         self.refSignal = self.S
         self.refTime = self.t
         self.refFreq = self.v
-        self.refSpec = self.A
+        self.refSpec = self.AA
         if self.plotRefSignal is False:
             self.plotRefSignal = True
         return
@@ -2490,7 +2511,10 @@ class Electro_Optic_Sampling:
                 self.graph_dict['Signal'].LineRef.set_xdata(self.refTime)
                 self.graph_dict['Signal'].LineRef.set_ydata(self.refSignal)
                 self.graph_dict['Spectrum'].LineRef.set_xdata([self.refFreq])
-                self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
+                if self.LogSpec is True:
+                    self.graph_dict['Spectrum'].LineRef.set_ydata(np.log(self.refSpec))
+                else:
+                    self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
             self.graph_dict['Signal'].update_graph()
             self.graph_dict['Spectrum'].update_graph()
         return
@@ -2519,6 +2543,7 @@ class Electro_Optic_Sampling:
         self.save_button['state'] = 'disabled'
         self.RefSignal_button['state'] = 'disabled'
         self.RefOff_button['state'] = 'disabled'
+        self.Log_button['state'] = 'disabled'
         self.running = True
 
         # Imports
@@ -2576,7 +2601,7 @@ class Electro_Optic_Sampling:
         scan_graph.update_graph()
         EOS_graph = self.graph_dict['Signal']
         EOS_graph.axes.set_ylim([-10,10])
-        EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e15, max_pos*2/1000/c*1e15])
+        EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e12, max_pos*2/1000/c*1e12])
         EOS_graph.Line.set_xdata([])
         EOS_graph.Line.set_ydata([])
         if self.plotRefSignal is True:
@@ -2595,8 +2620,8 @@ class Electro_Optic_Sampling:
             # Measure real position
             pos[i] = self.PI.get_position()
             # Measure signal
-            self.t[i] = pos[i]*2/1000/c*1e15
-            self.S[i] = self.Zurich_acquire()[0]*1000
+            self.t[i] = pos[i]*2/1000/c*1e12
+            self.S[i] = np.mean(self.Zurich_acquire())*1000
             
             # Actualise progress bar
             if progress:
@@ -2640,16 +2665,16 @@ class Electro_Optic_Sampling:
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
         
         # Display spectrum graph
-        spec_t = self.t*1e-15
+        spec_t = self.t*1e-12
         self.v,self.A = fQ.ezfft(spec_t,self.S)
-        self.A = np.abs(self.A)**2
-        self.A = self.A/np.max(self.A)
+        self.AA = np.abs(self.A)**2
+        self.AA = self.AA/np.max(self.AA)
         self.v = self.v/1e12
         Spectrum_graph = self.graph_dict['Spectrum']
-        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.A)])
+        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.AA)])
         Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
         Spectrum_graph.Line.set_xdata([self.v])
-        Spectrum_graph.Line.set_ydata([self.A])
+        Spectrum_graph.Line.set_ydata([self.AA])
         Spectrum_graph.update_graph()
         
         # Going back to initial state
@@ -2661,3 +2686,4 @@ class Electro_Optic_Sampling:
         self.save_button['state'] = 'normal'
         self.RefSignal_button['state'] = 'normal'
         self.RefOff_button['state'] = 'normal'
+        self.Log_button['state'] = 'normal'
