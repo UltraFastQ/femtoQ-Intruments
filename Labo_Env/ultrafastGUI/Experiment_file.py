@@ -2675,6 +2675,13 @@ class Electro_Optic_Sampling:
         Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
         Spectrum_graph.Line.set_xdata([self.v])
         Spectrum_graph.Line.set_ydata([self.AA])
+        
+        phi = np.arctan2(self.A.imag,self.A.real)
+        Phase_graph_ax = Spectrum_graph.axes.twinx()
+        LinePhase, = Phase_graph_ax.plot([],[],'m')
+        Phase_graph_ax.set_ylim([np.min(phi),np.max(phi)])
+        LinePhase.set_xdata(self.v)
+        LinePhase.set_ydata([phi])
         Spectrum_graph.update_graph()
         
         # Going back to initial state
