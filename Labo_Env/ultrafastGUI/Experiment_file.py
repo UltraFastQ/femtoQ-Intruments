@@ -2369,6 +2369,7 @@ class Electro_Optic_Sampling:
         self.refTime =[]
         self.refExists = False
         self.LogSpec = False
+        self.phaseExists = False
     def create_frame(self, frame):
         # Define labels
                 # Delay line
@@ -2676,12 +2677,16 @@ class Electro_Optic_Sampling:
         Spectrum_graph.Line.set_xdata([self.v])
         Spectrum_graph.Line.set_ydata([self.AA])
         
+        if self.phaseExists is False:
+                    self.Phase_graph_ax = Spectrum_graph.axes.twinx()
+                    self.LinePhase, = self.Phase_graph_ax.plot([],[],'m')
+                    self.phaseExists = True
         phi = np.arctan2(self.A.imag,self.A.real)
-        Phase_graph_ax = Spectrum_graph.axes.twinx()
-        LinePhase, = Phase_graph_ax.plot([],[],'m')
-        Phase_graph_ax.set_ylim([np.min(phi),np.max(phi)])
-        LinePhase.set_xdata(self.v)
-        LinePhase.set_ydata([phi])
+        phi = np.unwrap(phi)
+
+        self.Phase_graph_ax.set_ylim([np.min(phi),np.max(phi)])
+        self.LinePhase.set_xdata(self.v)
+        self.LinePhase.set_ydata([phi])
         Spectrum_graph.update_graph()
         
         # Going back to initial state
