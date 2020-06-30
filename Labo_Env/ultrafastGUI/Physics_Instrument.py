@@ -96,9 +96,9 @@ class LinearStage:
                 self.axes = self.device.axes[0]
                 self.device.EAX(self.axes, True)
 
-            # Case controller C-863.12
+            # Case controller C-863.11
             elif dev_name == dev_list[1]:
-                gcs.ConnectUSB(serialnum = '0019550022')
+                gcs.ConnectUSB(serialnum = '0195500433')
                 self.device = gcs
                 self.axes = self.device.axes[0]
                 self.device.SVO(self.axes, 1)
@@ -342,7 +342,7 @@ class LinearStage:
             messagebox.showinfo(message='Device is ready')
             self.device.SVO(self.axes, 1)
 
-        # Controller C-863.12
+        # Controller C-863.11
         if dev_name == dev_list[1]:
             self.device.FRF()
             i = 0
