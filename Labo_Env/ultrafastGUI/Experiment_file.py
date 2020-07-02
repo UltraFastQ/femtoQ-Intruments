@@ -2605,3 +2605,77 @@ class Electro_Optic_Sampling:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
+
+
+
+class LaserCooling:
+    """
+    This is a template to create an experiment window it contains the main
+    functions that are required to make it functionnal. Your class does not
+    need to be called it is implicitly called during the CreateLayout class.
+
+    Attributes:
+        empty_var: This is a random variable in your case it will probably be a
+        lot of different things. It is everything that you need to be global in
+        your class.
+        graph_dict: This is an element that is required, it will be updated and
+        will contain all of the Graphic by name that you decided to create in
+        the ExperimentFrame. Each key is a name of the graph. Therefore you can
+        acces each graph by calling the key of the dict.
+    """
+
+    def __init__(self, mainf=None):
+        """
+        The constructor for your Experiment.
+
+        Parameters:
+            mainf : This is the Mainframe, it cannot be anything else.
+        """
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+
+    def create_frame(self, frame):
+        """
+        This function is used to create the free frame mentionned in the
+        CreateLayout.This is where you place all of the widget you desire to
+        have in your experiment.
+
+        Parameters:
+            frame : This is the section attributed to your widget in the big
+            Experiment frame.
+        """
+
+        # this function contains at minimum :
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+                                      command=lambda: self.start_experiment())
+        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+
+    def stop_experiment(self):
+        self.running = False
+
+    def start_experiment(self):
+
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        self.running = True
+
+        # Here should be all of your experiment for here we have a huge program where we print literally nothing
+        print(self.empty_var)
+        # You can add a break variable to get out of anyloop you might have like in the Zero Delay Program with
+        # The self.running variable
+
+        #if not self.running:
+        #    break
+
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
