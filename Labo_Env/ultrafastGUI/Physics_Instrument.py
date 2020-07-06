@@ -88,13 +88,14 @@ class LinearStage:
             return
         # Follow the right procedure assigned to a specific device
         if dev_name:
+
             if dev_name==dev_list[3]:
                 # Case controller is SMC100CC
                 self.dev_name='SMC100'
                 self.device=SMC100CC.SMC100(1,'COM5')
             else:
                 gcs = GCSDevice(dev_name)
-    
+
                 self.dev_name = dev_name
     
                 # Case controller C-891
@@ -108,9 +109,9 @@ class LinearStage:
                     self.axes = self.device.axes[0]
                     self.device.EAX(self.axes, True)
     
-                # Case controller C-863.12
+                # Case controller C-863.11
                 elif dev_name == dev_list[1]:
-                    gcs.ConnectUSB(serialnum = '0019550022')
+                    gcs.ConnectUSB(serialnum = '0195500433')
                     self.device = gcs
                     self.axes = self.device.axes[0]
                     self.device.SVO(self.axes, 1)
@@ -131,7 +132,6 @@ class LinearStage:
                     self.axes = self.device.axes[0]
                     self.device.SVO(self.axes, 1)
             
-
 
 
             self.calibration(dev_name = dev_name)
@@ -377,7 +377,7 @@ class LinearStage:
             messagebox.showinfo(message='Device is ready')
             self.device.SVO(self.axes, 1)
 
-        # Controller C-863.12
+        # Controller C-863.11
         if dev_name == dev_list[1]:
             self.device.FRF()
             i = 0

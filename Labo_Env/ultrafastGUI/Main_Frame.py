@@ -1965,7 +1965,7 @@ class Experiment(ttk.LabelFrame):
                              'Autocorrelation':['Delay [fs]','Normalized intensity']})
         create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
                       option=['Physics_Linear_Stage'],
-                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (ps)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         create_layout(name='2DSI', function_=Experiment_file.TwoDSI, option=['Physics_Linear_Stage','Spectrometer'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
                              '2DSI trace': ['Wavelengths [nm]', 'Delay [um]'], 
