@@ -2609,73 +2609,251 @@ class Electro_Optic_Sampling:
 
 
 class LaserCooling:
-    """
-    This is a template to create an experiment window it contains the main
-    functions that are required to make it functionnal. Your class does not
-    need to be called it is implicitly called during the CreateLayout class.
-
-    Attributes:
-        empty_var: This is a random variable in your case it will probably be a
-        lot of different things. It is everything that you need to be global in
-        your class.
-        graph_dict: This is an element that is required, it will be updated and
-        will contain all of the Graphic by name that you decided to create in
-        the ExperimentFrame. Each key is a name of the graph. Therefore you can
-        acces each graph by calling the key of the dict.
-    """
-
-    def __init__(self, mainf=None):
-        """
-        The constructor for your Experiment.
-
-        Parameters:
-            mainf : This is the Mainframe, it cannot be anything else.
-        """
+    # This class is implicitly called in the main frame
+    def __init__(self, mainf = None):
         # here are the initiation of the item that will be called throughout the program as self
         self.empty_var = []
         self.graph_dict = {}
-
+        self.PI = mainf.Frame[2].Linstage
+        self.Zurich = mainf.Frame[1].Zurich
     def create_frame(self, frame):
-        """
-        This function is used to create the free frame mentionned in the
-        CreateLayout.This is where you place all of the widget you desire to
-        have in your experiment.
+        # Define labels
+                # Delay line
+        pos_lbl = tk.Label(frame, text = 'Go to position (mm):')
+        vel_lbl = tk.Label(frame, text = 'Set velocity to:')
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+        min_lbl = tk.Label(frame, text = 'Min. pos. (mm):')
+        max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
+        step_lbl = tk.Label(frame, text = 'Step size (um):')
+        utime_lbl = tk.Label(frame, text='Update graph after [s]:')
+                # 
+        
+        # Define buttons and their action
+                # Pi Stage
+        con_b = tk.Button(frame, text='Connect PI linear stage',
+                                      command=lambda: self.PI.connect_identification(dev_name='SMC100',
+                                                                                   exp_dependencie=True))
+                # 
+                
+                
+        # Define variables
+                # PI stage
+        pos_var = tk.DoubleVar()
+        vel_var = tk.DoubleVar()
+        min_var = tk.DoubleVar()
+        max_var = tk.DoubleVar()
+        step_var = tk.DoubleVar()
+        utime_var = tk.IntVar()
+        pos_var.set(0)
+        vel_var.set(1)
+        min_var.set(-45)
+        max_var.set(45)
+        step_var.set(1)
+        utime_var.set(1)
 
-        Parameters:
-            frame : This is the section attributed to your widget in the big
-            Experiment frame.
-        """
+        # Define entry boxes
+                # PI stage
+        pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
+        vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
+        min_e = tk.Entry(frame, width = 6, textvariable = min_var)
+        max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        step_e = tk.Entry(frame, width = 6, textvariable = step_var)
+        utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
+
+        # Define position of all objects on the grid
+                # PI stage
+        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        pos_lbl.grid(row=2, column=0, sticky='nsw')
+        pos_e.grid(row=2, column=1, sticky='nse')
+        vel_lbl.grid(row=3, column=0, sticky='nsw')
+        vel_e.grid(row=3, column=1, sticky='nse')
+        param_lbl.grid(row=4, column=0, columnspan=2, sticky='nsew')
+        min_lbl.grid(row=5, column=0, sticky='nsw')
+        min_e.grid(row=5, column=1, sticky='nse')
+        max_lbl.grid(row=6, column=0, sticky='nsw')
+        max_e.grid(row=6, column=1, sticky='nse')
+        step_lbl.grid(row=7, column=0, sticky='nsw')
+        step_e.grid(row=7, column=1, sticky='nse')
+        utime_lbl.grid(row=8, column=0, sticky='nsw')
+        utime_e.grid(row=8, column=1, sticky='nse')
+
+        p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
+        p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
+        p_bar['maximum'] = 1
+        # Select a key and its effect when pressed in an entry box
+            # PI stage
+        pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
+        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
 
         # this function contains at minimum :
+
+        
+            
+                
+        # Start & stop buttons :
+
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-                                      command=lambda: self.start_experiment())
+                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var))
         self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
-
+        self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')   
+        tk.Button(frame, text='test_Zurich',command = lambda: self.Zurich_acquire()).grid(row=15,column=0)
+        
+    def Zurich_acquire(self):
+        import time
+        path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
+        self.Zurich.info['daq'].subscribe(path)
+#        time.sleep(1)
+        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+        try:
+            data = data_set[path]['x']
+#            print(data)
+#            print(len(data))
+        except:
+            pass
+        self.Zurich.info['daq'].unsubscribe(path)
+        return  data
+        
     def stop_experiment(self):
         self.running = False
 
-    def start_experiment(self):
+    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None):
 
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
         self.running = True
 
-        # Here should be all of your experiment for here we have a huge program where we print literally nothing
-        print(self.empty_var)
-        # You can add a break variable to get out of anyloop you might have like in the Zero Delay Program with
-        # The self.running variable
+        # Imports
+        from pipython import pitools
+        import time
+        import scipy
+        import femtoQ.tools as fQ
+        c = scipy.constants.c
+        # Main experiment
+        if self.PI == None:
+            self.PI = self.mainf.Frame[2].Linstage
 
-        #if not self.running:
-        #    break
+            # Parameters initialisation
+        max_pos = max_pos.get()
+        min_pos = min_pos.get()
+        step = step.get()/1000
+        update_time = update_time.get()
 
+            # Verification
+        if not self.PI.device:
+            return
+
+        if (max_pos is None) or (min_pos is None):
+            return
+
+            # Getting the max and min possible value of the device
+        maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
+        minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
+
+            # This is a fail safe in case you don't know your device
+        if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
+            messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
+                                'of your physik instrument device')
+            return
+
+            # Steps and position vector initialisation
+        nsteps = int(np.ceil((max_pos - min_pos)/step))
+        iteration = np.linspace(0, nsteps, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
+        pos = np.zeros(nsteps+1)
+        S = np.zeros(nsteps+1)
+        t= np.zeros(nsteps+1)
+
+        # Variables for the graph update
+        
+            # Variables for the graph update
+        last_gu = time.time()
+        scan_graph = self.graph_dict['Scanning']
+        scan_graph.axes.set_ylim([min_pos, max_pos])
+        scan_graph.axes.set_xlim([0, nsteps])
+        scan_graph.Line.set_xdata([])
+        scan_graph.Line.set_ydata([])
+        scan_graph.Line.set_marker('o')
+        scan_graph.Line.set_markersize(2)
+        scan_graph.update_graph()
+        EOS_graph = self.graph_dict['Signal']
+        EOS_graph.axes.set_ylim([-10,10])
+        EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e15, max_pos*2/1000/c*1e15])
+        EOS_graph.Line.set_xdata([])
+        EOS_graph.Line.set_ydata([])
+        EOS_graph.update_graph()
+        
+            # Main scanning and measurements
+        for i in range(nsteps+1):
+            # Move stage to required position
+            self.PI.go_2position(move[i])
+            # Measure real position
+            pos[i] = self.PI.get_position()
+            # Measure signal
+            t[i] = pos[i]*2/1000/c*1e15
+            S[i] = self.Zurich_acquire()[0]*1000
+            
+            # Actualise progress bar
+            if progress:
+                progress['value'] = (i)/(nsteps)
+                progress.update()
+            # Actualise graph if required
+            if (time.time() - last_gu) > update_time:
+                scan_graph.Line.set_xdata(iteration[:i])
+                scan_graph.Line.set_ydata(pos[:i])
+                scan_graph.update_graph()
+                EOS_graph.Line.set_xdata(t[:i])
+                EOS_graph.Line.set_ydata(S[:i])
+                EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
+                EOS_graph.update_graph()
+                
+                last_gu = time.time()
+            if not self.running:
+                break
+        if not self.running:
+            return_vel = tk.IntVar()
+            return_vel.set(5)
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(0)
+            messagebox.showinfo(title='Error', message='Experiment was aborted')
+        else:
+            return_vel = tk.IntVar()
+            return_vel.set(5)
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(0)
+            scan_graph.Line.set_xdata(iteration)
+            scan_graph.Line.set_ydata(pos)
+            scan_graph.update_graph()
+            EOS_graph.Line.set_xdata(t)
+            EOS_graph.Line.set_ydata(S)
+            EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
+            EOS_graph.update_graph()
+            print(len(S))
+            print(len(pos))
+            print(len(iteration))
+            
+            dp = np.std(pos-move)
+            messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
+        
+        # Display spectrum graph
+        spec_t = t*1e-15
+        v,A = fQ.ezfft(spec_t,S)
+        A = np.abs(A)**2
+        A = A/np.max(A)
+        v = v/1e12
+        Spectrum_graph = self.graph_dict['Spectrum']
+        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(A)])
+        Spectrum_graph.axes.set_xlim([np.min(v), np.max(v)])
+        Spectrum_graph.Line.set_xdata([v])
+        Spectrum_graph.Line.set_ydata([A])
+        Spectrum_graph.update_graph()
         # Going back to initial state
         self.running = False
         progress['value'] = 0
         progress.update()
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
