@@ -2740,11 +2740,11 @@ class LaserCooling:
         
         # Define buttons and their action
                 # Pi Stage
-        con_b = tk.Button(frame, text='Connect PI linear stage',
-                                      command=lambda: self.PI.connect_identification(dev_name='SMC100',
-                                                                                   exp_dependencie=True))
+        self.con_b = tk.Button(frame, text='Connect PI linear stage',
+                                      command=lambda: self.connect_and_disable_stage(dev_name='SMC100'))
                 # 
-                
+
+
                 
         # Define variables
                 # PI stage
@@ -2772,7 +2772,7 @@ class LaserCooling:
 
         # Define position of all objects on the grid
                 # PI stage
-        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        self.con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
         pos_lbl.grid(row=2, column=0, sticky='nsw')
         pos_e.grid(row=2, column=1, sticky='nse')
         vel_lbl.grid(row=3, column=0, sticky='nsw')
@@ -2815,7 +2815,7 @@ class LaserCooling:
             spectro_graph.update_graph()
         
         # Temporary Spectrometer things
-        cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_spectrometer(self))
+        cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_and_disablespectro(self))
         cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
@@ -2871,7 +2871,16 @@ class LaserCooling:
                                              command=lambda: self.stop_spectro())
         self.spectro_stop_button.grid(row=18, column=0, sticky='nsew')
         
-        
+    def connect_and_disable_stage(self,dev_name=None):
+        self.PI.connect_identification(dev_name=dev_name,exp_dependencie=True)
+        self.con_b['state']='disabled'
+        return
+      
+    def connect_and_disable_spectro(self):
+        self.connect_spectrometer(self)
+        self.cons_b['state']='disabled'
+        return
+
         
     def start_spectro(self, inte_time=None):
         self.dark_button['state'] = 'normal'
