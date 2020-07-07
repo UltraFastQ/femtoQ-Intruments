@@ -2708,7 +2708,8 @@ class LaserCooling:
         self.empty_var = []
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
-        self.Zurich = mainf.Frame[1].Zurich
+        self.Spectro = mainf.Frame[3].Spectro
+
     def create_frame(self, frame):
         # Define labels
                 # Delay line
