@@ -2702,6 +2702,7 @@ class Electro_Optic_Sampling:
 
 
 class LaserCooling:
+
     # This class is implicitly called in the main frame
     def __init__(self, mainf = None):
         # here are the initiation of the item that will be called throughout the program as self
@@ -2709,7 +2710,7 @@ class LaserCooling:
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
         self.Spectro = mainf.Frame[3].Spectro
-
+        
     def create_frame(self, frame):
         # Define labels
                 # Delay line
@@ -2738,11 +2739,11 @@ class LaserCooling:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
-        pos_var.set(0)
+        pos_var.set(77.5)
         vel_var.set(1)
-        min_var.set(-45)
-        max_var.set(45)
-        step_var.set(1)
+        min_var.set(75)
+        max_var.set(80)
+        step_var.set(1000)
         utime_var.set(1)
 
         # Define entry boxes
@@ -2781,51 +2782,135 @@ class LaserCooling:
 
         # this function contains at minimum :
 
+        def connect_spectrometer(self):
+            self.Spectro.connect(exp_dependencie=True)
+            self.spectro_start_button['state'] = 'normal'       
         
-            
-                
+        def get_dark_spectrum(self):
+            self.Spectro.measure_darkspectrum()
+            self.sub_dark_button['state']='normal'
+        
+        def remove_dark(self):
+            self.Spectro.dark_spectrum = not self.Spectro.dark_spectrum
+        
+        def rescale(self):
+            S = self.Spectro.get_intensities()
+            spectro_graph = self.graph_dict['Spectro']
+            spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+            spectro_graph.update_graph()
+        
+        # Temporary Spectrometer things
+        cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_spectrometer(self))
+        cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        
+        inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
+        inte_var = tk.IntVar()
+        inte_var.set(10)
+        inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
+        inte_lbl.grid(row=14, column=0, sticky='nsw')
+        inte_e.grid(row=14, column=1,sticky='nse')
+        minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
+        maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
+        minwl_var = tk.DoubleVar()
+        maxwl_var = tk.DoubleVar()
+        minwl_var.set(350)
+        maxwl_var.set(500)
+        minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
+        maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
+        minwl_lbl.grid(row=15, column=0, sticky='nsw')
+        maxwl_lbl.grid(row=16, column=0, sticky='nsw')
+        minwl_e.grid(row=15, column=1, sticky='nse')
+        maxwl_e.grid(row=16, column=1, sticky='nse')
+        
+        inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
+        
+        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
+                           command=lambda: get_dark_spectrum(self))
+        self.dark_button.grid(row=19,column=0,sticky='nsew')
+        
+        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
+                                    command=lambda: remove_dark(self))
+        self.sub_dark_button.grid(row=20,column=0,sticky='nsew')
+        
+        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
+                                        command=lambda: rescale(self))
+        self.rescale_button.grid(row=21,column=0,sticky='nsew')
+        
         # Start & stop buttons :
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var))
+                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
+                                            inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
         self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')   
-        tk.Button(frame, text='test_Zurich',command = lambda: self.Zurich_acquire()).grid(row=15,column=0)
+        self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
+
+            # For spectrometer :
+        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
+                                        command=lambda: self.start_spectro(inte_time=inte_var))
+        self.spectro_start_button.grid(row=17, column=0, sticky='nsew')
+        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
+                                             command=lambda: self.stop_spectro())
+        self.spectro_stop_button.grid(row=18, column=0, sticky='nsew')
         
-    def Zurich_acquire(self):
-        import time
-        path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
-        self.Zurich.info['daq'].subscribe(path)
-#        time.sleep(1)
-        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
-        try:
-            data = data_set[path]['x']
-#            print(data)
-#            print(len(data))
-        except:
-            pass
-        self.Zurich.info['daq'].unsubscribe(path)
-        return  data
+        
+        
+    def start_spectro(self, inte_time=None):
+        self.dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'disabled'
+        self.start_button['state'] = 'disabled'
+        self.running = True
+        
+        self.Spectro.adjust_integration_time(inte_time)
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        
+        while self.running is True:            
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)     
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+        
+        
+    def stop_spectro(self):
+        self.running = False
+        self.dark_button['state'] = 'disabled'
+        self.sub_dark_button['state'] = 'disabled'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'normal'  
+        if self.PI.device:
+            self.start_button['state'] = 'normal'
+        
+        
+        
         
     def stop_experiment(self):
         self.running = False
+        self.spectro_start_button['state'] = 'normal'
 
-    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None):
+    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None,
+                         inte_time=None, minwl=None, maxwl=None):
 
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'disabled'
         self.running = True
 
         # Imports
         from pipython import pitools
         import time
-        import scipy
-        import femtoQ.tools as fQ
-        c = scipy.constants.c
         # Main experiment
         if self.PI == None:
             self.PI = self.mainf.Frame[2].Linstage
@@ -2858,10 +2943,9 @@ class LaserCooling:
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
-        S = np.zeros(nsteps+1)
-        t= np.zeros(nsteps+1)
 
         # Variables for the graph update
+        Si = np.zeros(nsteps+1)
         
             # Variables for the graph update
         last_gu = time.time()
@@ -2873,12 +2957,22 @@ class LaserCooling:
         scan_graph.Line.set_marker('o')
         scan_graph.Line.set_markersize(2)
         scan_graph.update_graph()
-        EOS_graph = self.graph_dict['Signal']
-        EOS_graph.axes.set_ylim([-10,10])
-        EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e15, max_pos*2/1000/c*1e15])
-        EOS_graph.Line.set_xdata([])
-        EOS_graph.Line.set_ydata([])
-        EOS_graph.update_graph()
+
+        
+            # Spectro
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        self.Spectro.adjust_integration_time(inte_time)
+        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        spectro_graph.Line.set_xdata(wl)
+        spectro_graph.Line.set_ydata(S)
+        Signal_graph = self.graph_dict['Signal']
+        Signal_graph.axes.set_xlim([2*min_pos,2*max_pos])
+        Signal_graph.axes.set_ylim([0,1])
+        minwl = minwl.get()
+        maxwl = maxwl.get()
         
             # Main scanning and measurements
         for i in range(nsteps+1):
@@ -2886,9 +2980,13 @@ class LaserCooling:
             self.PI.go_2position(move[i])
             # Measure real position
             pos[i] = self.PI.get_position()
-            # Measure signal
-            t[i] = pos[i]*2/1000/c*1e15
-            S[i] = self.Zurich_acquire()[0]*1000
+            
+            # Acquire spectrum and plot graph 
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+            S_crop = S[(wl>minwl)&(wl<maxwl)]
+            Si[i] = np.trapz(S_crop,wl_crop) 
             
             # Actualise progress bar
             if progress:
@@ -2899,10 +2997,13 @@ class LaserCooling:
                 scan_graph.Line.set_xdata(iteration[:i])
                 scan_graph.Line.set_ydata(pos[:i])
                 scan_graph.update_graph()
-                EOS_graph.Line.set_xdata(t[:i])
-                EOS_graph.Line.set_ydata(S[:i])
-                EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
-                EOS_graph.update_graph()
+                #Spectro signal and integrated signal
+                spectro_graph.Line.set_xdata(wl)
+                spectro_graph.Line.set_ydata(S)
+                spectro_graph.update_graph()
+                Signal_graph.Line.set_xdata(2*pos[:i])
+                Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
+                Signal_graph.update_graph()
                 
                 last_gu = time.time()
             if not self.running:
@@ -2911,41 +3012,32 @@ class LaserCooling:
             return_vel = tk.IntVar()
             return_vel.set(5)
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(0)
+            self.PI.go_2position(77.5)
             messagebox.showinfo(title='Error', message='Experiment was aborted')
         else:
             return_vel = tk.IntVar()
             return_vel.set(5)
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(0)
+            self.PI.go_2position(77.5)
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
-            EOS_graph.Line.set_xdata(t)
-            EOS_graph.Line.set_ydata(S)
-            EOS_graph.axes.set_ylim([1.2*np.min(S),1.2*np.max(S)])
-            EOS_graph.update_graph()
-            print(len(S))
-            print(len(pos))
-            print(len(iteration))
+                #Spectro signal and integrated signal
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+            Signal_graph.Line.set_xdata(2*pos)
+            Signal_graph.Line.set_ydata(Si/np.max(Si))
+            Signal_graph.update_graph()
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
-        
-        # Display spectrum graph
-        spec_t = t*1e-15
-        v,A = fQ.ezfft(spec_t,S)
-        A = np.abs(A)**2
-        A = A/np.max(A)
-        v = v/1e12
-        Spectrum_graph = self.graph_dict['Spectrum']
-        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(A)])
-        Spectrum_graph.axes.set_xlim([np.min(v), np.max(v)])
-        Spectrum_graph.Line.set_xdata([v])
-        Spectrum_graph.Line.set_ydata([A])
-        Spectrum_graph.update_graph()
+
         # Going back to initial state
         self.running = False
         progress['value'] = 0
         progress.update()
         self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
+        

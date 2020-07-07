@@ -78,8 +78,8 @@ class Spectro:
         # connected. This function is still untested. How it works is that it
         # creates a window that will ask you to select one device to be
         # connected.
-        def device_popup(items=None):
-            device = PopUp(values=items).mainloop()
+        def device_popup(items=None, lib=None):
+            device = PopUp(values=items, lib_=lib).mainloop()
             device = device.value
             return device
         # Uses of Seabreeze to connect the device and retain it's information
@@ -88,9 +88,10 @@ class Spectro:
         seabreeze.use('cseabreeze')
         import seabreeze.spectrometers as sb
         devices = sb.list_devices()
+        print(devices)
         if type(devices) == list and devices:
             if len(devices) > 1:
-                device = device_popup(value=devices, lib_=sb)
+                device = device_popup(items=devices, lib=sb)
             else:
                 device = devices[0]
         else:
@@ -450,6 +451,9 @@ class Spectro:
 
 class PopUp(tk.Tk):
     def __init__(self, values=None, lib_=None, *args, **kwargs):
+        import seabreeze
+        seabreeze.use('cseabreeze')
+        import seabreeze.spectrometers as sb
         tk.Tk.__init__(self, *args, **kwargs)
         listbox_val = self.find_id(values)
         self.value = {}
@@ -473,7 +477,21 @@ class PopUp(tk.Tk):
 
     def find_id(self, values):
         spec_id = ()
-        for value in values:
-            spec_id = spec_id + (self.lib_.Spectrometer(value).serial_number, )
-            self.value[spec_id] = value
+        for valeur in values:
+            spec_id = spec_id + (sb.Spectrometer(valeur).serial_number, )
+            self.value[spec_id] = valeur
         return spec_id
+
+
+
+
+
+
+
+
+
+
+
+
+
+
