@@ -93,6 +93,7 @@ class LinearStage:
                 # Case controller is SMC100CC
                 self.dev_name='SMC100'
                 self.device=SMC100CC.SMC100(1,'COM5')
+                self.initialize()
             else:
                 gcs = GCSDevice(dev_name)
 
@@ -145,6 +146,19 @@ class LinearStage:
             experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
                 experiments[experiment].update_options('Physics_Linear_Stage')
+
+
+
+    def initialize(self):
+        if self.dev_name=='SMC100':
+            if (not self.device):
+                return
+
+            self.device.reset_and_configure()
+            self.device.home()
+        
+        else:
+            return
 
 
     def scanning(self, min_pos=None, max_pos=None, iteration=None,

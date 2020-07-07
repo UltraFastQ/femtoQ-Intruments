@@ -2701,6 +2701,21 @@ class Electro_Optic_Sampling:
         self.Log_button['state'] = 'normal'
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class LaserCooling:
 
     # This class is implicitly called in the main frame
@@ -2739,11 +2754,11 @@ class LaserCooling:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
-        pos_var.set(77.5)
+        pos_var.set(0)
         vel_var.set(1)
-        min_var.set(75)
-        max_var.set(80)
-        step_var.set(1000)
+        min_var.set(-45)
+        max_var.set(45)
+        step_var.set(1)
         utime_var.set(1)
 
         # Define entry boxes
