@@ -2737,11 +2737,15 @@ class LaserCooling:
         step_lbl = tk.Label(frame, text = 'Step size (um):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
                 # 
+        def connect_and_disable_stage(self,dev_name=None):
+            self.PI.connect_identification(dev_name=dev_name,exp_dependencie=True)
+            con_b['state']='disabled'
+            return
         
         # Define buttons and their action
                 # Pi Stage
-        self.con_b = tk.Button(frame, text='Connect PI linear stage',
-                                      command=lambda: self.connect_and_disable_stage(dev_name='SMC100'))
+        con_b = tk.Button(frame, text='Connect PI linear stage',
+                                      command=lambda: connect_and_disable_stage(self,dev_name='SMC100'))
                 # 
 
 
@@ -2772,7 +2776,7 @@ class LaserCooling:
 
         # Define position of all objects on the grid
                 # PI stage
-        self.con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
         pos_lbl.grid(row=2, column=0, sticky='nsw')
         pos_e.grid(row=2, column=1, sticky='nse')
         vel_lbl.grid(row=3, column=0, sticky='nsw')
@@ -2814,9 +2818,14 @@ class LaserCooling:
             spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
             spectro_graph.update_graph()
         
+        def connect_and_disable_spectro(self):
+            connect_spectrometer(self)
+            cons_b['state']='disabled'
+            return
+        
         # Temporary Spectrometer things
-        self.cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: self.connect_and_disable_spectro())
-        self.cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_and_disable_spectro(self))
+        cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
@@ -2871,15 +2880,9 @@ class LaserCooling:
                                              command=lambda: self.stop_spectro())
         self.spectro_stop_button.grid(row=18, column=0, sticky='nsew')
         
-    def connect_and_disable_stage(self,dev_name=None):
-        self.PI.connect_identification(dev_name=dev_name,exp_dependencie=True)
-        self.con_b['state']='disabled'
-        return
+
       
-    def connect_and_disable_spectro(self):
-        self.connect_spectrometer(self)
-        self.cons_b['state']='disabled'
-        return
+
 
         
     def start_spectro(self, inte_time=None):

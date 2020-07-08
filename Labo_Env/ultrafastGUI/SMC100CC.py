@@ -122,7 +122,7 @@ class SMC100(object):
     stage parameters from an ESP compatible stage. This is then followed
     by a homing action.
     """
-    self._sleepfunc(1)
+    self._sleepfunc(0.5)
 
     self.sendcmd('RS',expect_response=False)
 
@@ -161,7 +161,7 @@ class SMC100(object):
     Calling this method is necessary to take the controller out of not referenced
     state after a restart.
     """
-    self._sleepfunc(1)
+    self._sleepfunc(0.5)
 
     self.sendcmd('OR',expect_response=False)
     if waitStop:
