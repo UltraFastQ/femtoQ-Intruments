@@ -2815,8 +2815,8 @@ class LaserCooling:
             spectro_graph.update_graph()
         
         # Temporary Spectrometer things
-        cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_and_disablespectro(self))
-        cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        self.cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: self.connect_and_disable_spectro())
+        self.cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
