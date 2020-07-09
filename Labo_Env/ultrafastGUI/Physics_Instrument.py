@@ -92,7 +92,7 @@ class LinearStage:
             if dev_name==dev_list[3]:
                 # Case controller is SMC100CC
                 self.dev_name='SMC100'
-                self.device=SMC100CC.SMC100(1,'COM5')
+                self.device=SMC100CC.SMC100(1,'COM5',silent=False)
                 self.initialize()
             else:
                 gcs = GCSDevice(dev_name)
@@ -235,7 +235,7 @@ class LinearStage:
         if self.dev_name=='SMC100':
             if (not self.device) or (position is None):
                 return
-            device.move_absolute_mm(position)
+            self.device.move_absolute_mm(position)
         
         else:
             import pipython.pitools as pitools
@@ -306,7 +306,7 @@ class LinearStage:
                 return
             if direction == 'left':
                 increment = -increment
-            device.move_relative_mm(increment)
+            self.device.move_relative_mm(increment)
 
 
         else:
@@ -357,6 +357,11 @@ class LinearStage:
             return
         vel = vel.get()
         # Controller E-816
+        if self.dev_name=='SMC100':
+            if vel<0 or vel>20:
+                return
+            self.device.set_speed(vel)
+
         if self.dev_name == 'E-816':
             pass
         else:

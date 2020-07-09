@@ -12,11 +12,11 @@ import time
 from math import floor
 
 # never wait for more than this e.g. during wait_states
-MAX_WAIT_TIME_SEC = 10
+MAX_WAIT_TIME_SEC = 600
 
 # time to wait after sending a command. This number has been arrived at by
 # trial and error
-COMMAND_WAIT_TIME_SEC = 0.48
+COMMAND_WAIT_TIME_SEC = 1
 
 # States from page 65 of the manual
 STATE_NOT_REFERENCED_FROM_RESET = '0A'
@@ -173,6 +173,7 @@ class SMC100(object):
       self.move_absolute_um(0, waitStop=False)
 
   def stop(self):
+    self._sleepfunc(0.5)
     self.sendcmd('ST')
 
   def get_status(self):
@@ -180,7 +181,7 @@ class SMC100(object):
     Executes TS? and returns the the error code as integer and state as string
     as specified on pages 64 - 65 of the manual.
     """
-
+    self._sleepfunc(0.5)
     resp = self.sendcmd('TS', '?', expect_response=True, retry=10)
     errors = int(resp[0:4], 16)
     state = resp[4:]
@@ -189,6 +190,7 @@ class SMC100(object):
     return errors, state
 
   def get_position_mm(self):
+    self._sleepfunc(0.5)
     dist_mm = float(self.sendcmd('TP', '?', expect_response=True, retry=10))
     return dist_mm
 
@@ -200,6 +202,7 @@ class SMC100(object):
     Moves the stage relatively to the current position by the given distance given in mm
     If waitStop is True then this method returns when the move is completed.
     """
+    self._sleepfunc(0.5)
     self.sendcmd('PR', dist_mm, expect_response=False)
     if waitStop:
       # If we were previously homed, then something like PR0 will have no
@@ -225,6 +228,7 @@ class SMC100(object):
     Moves the stage to the given absolute position given in mm.
     If waitStop is True then this method returns when the move is completed.
     """
+    self._sleepfunc(0.5)
     self.sendcmd('PA', position_mm, expect_response=False)
     if waitStop:
       # If we were previously homed, then something like PR0 will have no
@@ -244,7 +248,9 @@ class SMC100(object):
     return self.move_absolute_mm(pos_mm, **kwargs)
 
   def set_speed(self, speed):
-      return
+    self._sleepfunc(0.5)
+    self.sendcmd('VA', speed, expect_response=False)
+    return
 
 
   def wait_states(self, targetstates, ignore_disabled_states=False):

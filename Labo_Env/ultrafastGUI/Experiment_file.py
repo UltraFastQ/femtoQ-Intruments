@@ -2752,22 +2752,22 @@ class LaserCooling:
                 
         # Define variables
                 # PI stage
-        pos_var = tk.DoubleVar()
+        self.pos_var = tk.DoubleVar()
         vel_var = tk.DoubleVar()
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
-        pos_var.set(0)
+        self.pos_var.set(0)
         vel_var.set(1)
-        min_var.set(-45)
-        max_var.set(45)
-        step_var.set(1)
+        min_var.set(-5)
+        max_var.set(5)
+        step_var.set(100)
         utime_var.set(1)
 
         # Define entry boxes
                 # PI stage
-        pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
+        pos_e = tk.Entry(frame, width = 6, textvariable = self.pos_var)
         vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
         min_e = tk.Entry(frame, width = 6, textvariable = min_var)
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
@@ -2796,7 +2796,7 @@ class LaserCooling:
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
             # PI stage
-        pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
+        pos_e.bind('<Return>', lambda e: self.PI.go_2position(self.pos_var))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
 
         # this function contains at minimum :
@@ -2837,8 +2837,8 @@ class LaserCooling:
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
-        minwl_var.set(350)
-        maxwl_var.set(500)
+        minwl_var.set(1000)
+        maxwl_var.set(1100)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
         minwl_lbl.grid(row=15, column=0, sticky='nsw')
@@ -2956,9 +2956,8 @@ class LaserCooling:
             return
 
             # Getting the max and min possible value of the device
-        maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
-        minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
-
+        maxp = 50 #mm
+        minp = -50 #mm
             # This is a fail safe in case you don't know your device
         if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
@@ -3039,13 +3038,13 @@ class LaserCooling:
             return_vel = tk.IntVar()
             return_vel.set(5)
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(77.5)
+            self.PI.go_2position(self.pos_var)
             messagebox.showinfo(title='Error', message='Experiment was aborted')
         else:
             return_vel = tk.IntVar()
             return_vel.set(5)
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(77.5)
+            self.PI.go_2position(self.pos_var)
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
