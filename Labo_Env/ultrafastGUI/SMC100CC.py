@@ -16,7 +16,7 @@ MAX_WAIT_TIME_SEC = 600
 
 # time to wait after sending a command. This number has been arrived at by
 # trial and error
-COMMAND_WAIT_TIME_SEC = 1
+COMMAND_WAIT_TIME_SEC = 0.12
 
 # States from page 65 of the manual
 STATE_NOT_REFERENCED_FROM_RESET = '0A'
@@ -182,7 +182,7 @@ class SMC100(object):
     as specified on pages 64 - 65 of the manual.
     """
     self._sleepfunc(0.5)
-    resp = self.sendcmd('TS', '?', expect_response=True, retry=10)
+    resp = self.sendcmd('TS', '?', expect_response=True, retry=20)
     errors = int(resp[0:4], 16)
     state = resp[4:]
 
@@ -191,7 +191,7 @@ class SMC100(object):
 
   def get_position_mm(self):
     self._sleepfunc(0.5)
-    dist_mm = float(self.sendcmd('TP', '?', expect_response=True, retry=10))
+    dist_mm = float(self.sendcmd('TP', '?', expect_response=True, retry=20))
     return dist_mm
 
   def get_position_um(self):
@@ -297,7 +297,7 @@ class SMC100(object):
         self._sleepfunc(1)
         continue
 
-  def sendcmd(self, command, argument=None, expect_response=True, retry=10):
+  def sendcmd(self, command, argument=None, expect_response=True, retry=20):
     """
     Send the specified command along with the argument, if any. The response
     is checked to ensure it has the correct prefix, and is returned WITHOUT
