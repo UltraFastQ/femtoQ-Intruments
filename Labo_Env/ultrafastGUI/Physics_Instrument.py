@@ -356,13 +356,13 @@ class LinearStage:
         if not self.device or not vel:
             return
         vel = vel.get()
-        # Controller E-816
-        if self.dev_name=='SMC100':
+
+        if self.dev_name =='SMC100':
             if vel<0 or vel>20:
                 return
             self.device.set_speed(vel)
 
-        if self.dev_name == 'E-816':
+        elif self.dev_name == 'E-816':
             pass
         else:
             self.device.VEL(self.axes, vel)

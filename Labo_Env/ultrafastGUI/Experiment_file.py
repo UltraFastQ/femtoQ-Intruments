@@ -2753,22 +2753,22 @@ class LaserCooling:
         # Define variables
                 # PI stage
         self.pos_var = tk.DoubleVar()
-        vel_var = tk.DoubleVar()
+        self.vel_var = tk.DoubleVar()
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.pos_var.set(0)
-        vel_var.set(1)
-        min_var.set(-5)
-        max_var.set(5)
-        step_var.set(100)
+        self.vel_var.set(1)
+        min_var.set(-10)
+        max_var.set(-9.5)
+        step_var.set(10)
         utime_var.set(1)
 
         # Define entry boxes
                 # PI stage
         pos_e = tk.Entry(frame, width = 6, textvariable = self.pos_var)
-        vel_e = tk.Entry(frame, width = 6, textvariable = vel_var)
+        vel_e = tk.Entry(frame, width = 6, textvariable = self.vel_var)
         min_e = tk.Entry(frame, width = 6, textvariable = min_var)
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
@@ -2797,7 +2797,7 @@ class LaserCooling:
         # Select a key and its effect when pressed in an entry box
             # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(self.pos_var))
-        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
+        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(self.vel_var))
 
         # this function contains at minimum :
 
@@ -2963,6 +2963,8 @@ class LaserCooling:
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
                                 'of your physik instrument device')
             return
+        
+        self.PI.set_velocity(vel=self.vel_var)
 
             # Steps and position vector initialisation
         nsteps = int(np.ceil((max_pos - min_pos)/step))
