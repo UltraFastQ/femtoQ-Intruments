@@ -92,7 +92,7 @@ class LinearStage:
             if dev_name==dev_list[3]:
                 # Case controller is SMC100CC
                 self.dev_name='SMC100'
-                self.device=SMC100CC.SMC100(1,'COM5',silent=False)
+                self.device=SMC100CC.SMC100(1,'COM5')
                 self.initialize()
             else:
                 gcs = GCSDevice(dev_name)

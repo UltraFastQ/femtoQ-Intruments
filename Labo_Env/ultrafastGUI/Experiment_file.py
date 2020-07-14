@@ -2754,12 +2754,14 @@ class LaserCooling:
                 # PI stage
         self.pos_var = tk.DoubleVar()
         self.vel_var = tk.DoubleVar()
+        self.vel_disp = tk.DoubleVar()
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.pos_var.set(0)
-        self.vel_var.set(1)
+        self.vel_var.set(0.1)
+        self.vel_disp.set(5)
         min_var.set(-10)
         max_var.set(-9.5)
         step_var.set(10)
@@ -2893,6 +2895,7 @@ class LaserCooling:
         self.start_button['state'] = 'disabled'
         self.running = True
         
+        self.Spectro.set_trigger(3)         #Setting an external hardware edge trigger
         self.Spectro.adjust_integration_time(inte_time)
         wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
@@ -2956,21 +2959,25 @@ class LaserCooling:
             return
 
             # Getting the max and min possible value of the device
-        maxp = 50 #mm
-        minp = -50 #mm
+        maxp = 49.999 #mm
+        minp = -49.999 #mm
             # This is a fail safe in case you don't know your device
         if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
                                 'of your physik instrument device')
             return
         
-        self.PI.set_velocity(vel=self.vel_var)
 
             # Steps and position vector initialisation
         nsteps = int(np.ceil((max_pos - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
+
+        self.PI.set_velocity(vel=self.vel_disp)
+        self.PI.go_2position(move[0]-0.001)
+        self.PI.set_velocity(vel=self.vel_var)
+
 
         # Variables for the graph update
         Si = np.zeros(nsteps+1)

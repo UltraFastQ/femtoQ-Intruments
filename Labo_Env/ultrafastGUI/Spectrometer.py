@@ -96,6 +96,7 @@ class Spectro:
         else:
             messagebox.showinfo(title='Error', message='It seems like no devices are connected')
             return
+        print(device)
         self.spectro = sb.Spectrometer(device)
         self.adjust_wavelength_range()
         # Set basic integration time
@@ -148,6 +149,21 @@ class Spectro:
         if time == 0:
             time = 1
         self.spectro.integration_time_micros(time*1000)
+
+
+    def set_trigger(self, mode):
+        """
+        Function that sets the trigger mode of the sectro (see manual for description)
+        Mode=0 : Free running
+        Mode=1 : Software trigger
+        Mode=2 : External hardware level trigger
+        Mode=3 : External synchronization trigger
+        Mode=4 : External hardware edge trigger
+        """
+        if not self.spectro:
+            return
+        self.spectro.trigger_mode(mode)
+
 
     def extract_intensities(self, ave, fwhm, save_current=False):
         """
