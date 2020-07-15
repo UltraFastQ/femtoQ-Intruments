@@ -2523,6 +2523,7 @@ class Electro_Optic_Sampling:
     def Zurich_acquire(self):
         import time
         path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
+        time.sleep(0.050)
         self.Zurich.info['daq'].subscribe(path)
         time.sleep(0.050)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
