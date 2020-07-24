@@ -2684,8 +2684,10 @@ class Electro_Optic_Sampling:
                     self.phaseExists = True
         phi = np.arctan2(self.A.imag,self.A.real)
         phi = np.unwrap(phi)
-
-        self.Phase_graph_ax.set_ylim([np.min(phi),np.max(phi)])
+        a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
+        slope = a*self.v+b
+        phi = phi - slope
+        self.Phase_graph_ax.set_ylim([-3*np.pi,3*np.pi])
         self.LinePhase.set_xdata(self.v)
         self.LinePhase.set_ydata([phi])
         Spectrum_graph.update_graph()
