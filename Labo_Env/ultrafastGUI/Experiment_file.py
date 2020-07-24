@@ -2895,7 +2895,7 @@ class LaserCooling:
         self.start_button['state'] = 'disabled'
         self.running = True
         
-        self.Spectro.set_trigger(3)         #Setting an external hardware edge trigger
+        self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
         self.Spectro.adjust_integration_time(inte_time)
         wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
