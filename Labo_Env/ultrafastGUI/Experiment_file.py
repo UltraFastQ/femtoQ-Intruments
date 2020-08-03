@@ -2398,13 +2398,16 @@ class Electro_Optic_Sampling:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
+        self.wait_var = tk.StringVar()
         pos_var.set(77.5)
         self.vel_var.set(1)
         min_var.set(75)
         max_var.set(80)
         step_var.set(1000)
         utime_var.set(1)
-
+        self.wait_var.set('disabled')
+        
+        
         # Define entry boxes
                 # PI stage
         pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
@@ -2428,42 +2431,40 @@ class Electro_Optic_Sampling:
         max_e.grid(row=8, column=1, sticky='nse')
         step_lbl.grid(row=9, column=0, sticky='nsw')
         step_e.grid(row=9, column=1, sticky='nse')
-        utime_lbl.grid(row=10, column=0, sticky='nsw')
-        utime_e.grid(row=10, column=1, sticky='nse')
+        utime_lbl.grid(row=11, column=0, sticky='nsw')
+        utime_e.grid(row=11, column=1, sticky='nse')
 
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
-        p_bar.grid(row=12, column=0, sticky='nsew', columnspan=2)
+        p_bar.grid(row=13, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
             # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(self.vel_var))
-
-        # this function contains at minimum :
-
-        
             
-                
         # Start & stop buttons :
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var))
-        self.start_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=13, column=0, columnspan=2, sticky='nsew')   
+        self.stop_button.grid(row=14, column=0, columnspan=2, sticky='nsew')   
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save())
         self.RefSignal_button = tk.Button(frame, text='Signal reference', state='disabled', command=lambda: self.SignalRef())
-        self.RefSignal_button.grid(row=14, column=0, sticky='nsw')
+        self.RefSignal_button.grid(row=15, column=0, sticky='nsw')
         self.RefOff_button = tk.Button(frame, text='Ref ON/OFF', state='disabled',command=lambda: self.RemoveRef())
-        self.RefOff_button.grid(row=14, column=1, sticky='nse')
+        self.RefOff_button.grid(row=15, column=1, sticky='nse')
         self.Log_button = tk.Button(frame, text='Log Spectrum ON/OFF', state='disabled',command=lambda: self.LogSpectrum())
-        self.Log_button.grid(row=15, columnspan=2, sticky='nsew')
+        self.Log_button.grid(row=16, columnspan=2, sticky='nsew')
         self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
-        
+        self.wait = tk.Checkbutton(frame, variable=self.wait_var,
+                       text='Settling wait time',
+                       onvalue='enabled', offvalue='disabled')   
+        self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
     
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
@@ -2527,17 +2528,23 @@ class Electro_Optic_Sampling:
         path3 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/order'
         tc= self.Zurich.info['daq'].getDouble(path2)
         order= self.Zurich.info['daq'].getDouble(path3)
-        if order == 1:
-            Settling_time = 4.61*tc
-        elif order == 2:
-            Settling_time = 6.64*tc
-        elif order == 3:
-            Settling_time = 8.41*tc
-        elif order == 4:
-            Settling_time = 10.05*tc
-        time.sleep(Settling_time)
+        if self.wait_var == 'enabled':
+            if order == 1:
+                Settling_time = 4.61*tc
+            elif order == 2:
+                Settling_time = 6.64*tc
+            elif order == 3:
+                Settling_time = 8.41*tc
+            elif order == 4:
+                Settling_time = 10.05*tc
+            time.sleep(Settling_time)
+            print('wait on')
+        else:
+            print('wait off')
         self.Zurich.info['daq'].subscribe(path)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+
+
         try:
             data = data_set[path]['x']
 #            print(data)
