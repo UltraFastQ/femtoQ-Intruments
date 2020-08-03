@@ -2523,7 +2523,19 @@ class Electro_Optic_Sampling:
     def Zurich_acquire(self):
         import time
         path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
-        time.sleep(0.050)
+        path2 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/timeconstant'
+        path3 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/order'
+        tc= self.Zurich.info['daq'].getDouble(path2)
+        order= self.Zurich.info['daq'].getDouble(path3)
+        if order == 1:
+            Settling_time = 4.61*tc
+        elif order == 2:
+            Settling_time = 6.64*tc
+        elif order == 3:
+            Settling_time = 8.41*tc
+        elif order == 4:
+            Settling_time = 10.05*tc
+        time.sleep(Settling_time)
         self.Zurich.info['daq'].subscribe(path)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
         try:
