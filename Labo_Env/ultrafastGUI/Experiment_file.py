@@ -2525,7 +2525,6 @@ class Electro_Optic_Sampling:
         path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
         time.sleep(0.050)
         self.Zurich.info['daq'].subscribe(path)
-        time.sleep(0.050)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
         try:
             data = data_set[path]['x']
@@ -2668,7 +2667,10 @@ class Electro_Optic_Sampling:
         
         # Display spectrum graph
         spec_t = self.t*1e-12
-        self.v,self.A = fQ.ezfft(spec_t,self.S)
+        func = interp.interp1d(spec_t, self.S,kind='quadratic')
+        t_interp = np.arange(spec_t.min(),spec_t.max(),(spec_t.max()-spec_t.min())/len(spec_t))
+        E_interp = func(t_interp)
+        self.v,self.A = fQ.ezfft(t_interp,E_interp)
         self.AA = np.abs(self.A)**2
         self.AA = self.AA/np.max(self.AA)
         self.v = self.v/1e12
