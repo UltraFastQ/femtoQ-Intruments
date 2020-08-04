@@ -2764,7 +2764,7 @@ class LaserCooling:
         
         # Define buttons and their action
                 # Pi Stage
-        con_b = tk.Button(frame, text='Connect PI linear stage',
+        con_b = tk.Button(frame, text='Connect SMC linear stage',
                                       command=lambda: connect_and_disable_stage(self,dev_name='SMC100'))
                 # 
 
@@ -2852,7 +2852,7 @@ class LaserCooling:
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
-        inte_var.set(50)
+        inte_var.set(48)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=14, column=0, sticky='nsw')
         inte_e.grid(row=14, column=1,sticky='nse')
@@ -3024,7 +3024,7 @@ class LaserCooling:
 
 
         # Define Arduino
-        arduino=serial.Serial('COM9',115200)
+        arduino=serial.Serial('COM9',115200,timeout=2000)
 
 
             # Spectro
@@ -3036,13 +3036,11 @@ class LaserCooling:
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         spectro_graph.Line.set_xdata(wl)
         spectro_graph.Line.set_ydata(S)
-        Signal_graph = self.graph_dict['Signal']
-        Signal_graph.axes.set_xlim([2*min_pos,2*max_pos])
-        Signal_graph.axes.set_ylim([0,1])
         minwl = minwl.get()
         maxwl = maxwl.get()
-        
-        print("before experiment")
+        spectra_brut=np.array([[],[]])
+        spectra=np.array([[],[]])
+
         
             # Main scanning and measurements
         for i in range(nsteps+1):
@@ -3053,18 +3051,14 @@ class LaserCooling:
             
             # Acquire spectrum and plot graph 
             start_daq=time.time()
-            print("before DAQ")
             while time.time()-start_daq < int_period/1000. :
-                print("in DAQ")
-                c=arduino.readline()[:-2]
-                if c:
-                    on_off=str(c.decode('utf-8'))
-                    print(on_off)
-                # wl = self.Spectro.spectro.wavelengths()
-                # S = self.Spectro.get_intensities()
-                # wl_crop = wl[(wl>minwl)&(wl<maxwl)]
-                # S_crop = S[(wl>minwl)&(wl<maxwl)]
-                # Si[i] = np.trapz(S_crop,wl_crop) 
+                c=arduino.readline()
+                on_off=int(c.decode('utf-8'))
+                print(on_off)
+                np.append(spectra_brut[on_off],self.Spectro.get_intensities())
+            np.append(spectra[0],np.sum(spectra_brut[0],axis=0))
+            np.append(spectra[1],np.sum(spectra_brut[1],axis=0))
+
             
             # Actualise progress bar
             if progress:
@@ -3077,11 +3071,9 @@ class LaserCooling:
                 scan_graph.update_graph()
                 #Spectro signal and integrated signal
                 spectro_graph.Line.set_xdata(wl)
-                spectro_graph.Line.set_ydata(S)
+                spectro_graph.Line.set_ydata(spectra[0,-1])
                 spectro_graph.update_graph()
-                Signal_graph.Line.set_xdata(2*pos[:i])
-                Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
-                Signal_graph.update_graph()
+
                 
                 last_gu = time.time()
             if not self.running:
@@ -3102,11 +3094,9 @@ class LaserCooling:
             scan_graph.update_graph()
                 #Spectro signal and integrated signal
             spectro_graph.Line.set_xdata(wl)
-            spectro_graph.Line.set_ydata(S)
+            spectro_graph.Line.set_ydata(spectra[0,-1])
             spectro_graph.update_graph()
-            Signal_graph.Line.set_xdata(2*pos)
-            Signal_graph.Line.set_ydata(Si/np.max(Si))
-            Signal_graph.update_graph()
+
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
