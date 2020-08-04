@@ -2776,6 +2776,7 @@ class LaserCooling:
         self.pos_var = tk.DoubleVar()
         self.vel_var = tk.DoubleVar()
         self.vel_disp = tk.DoubleVar()
+
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
@@ -2783,6 +2784,7 @@ class LaserCooling:
         self.pos_var.set(0)
         self.vel_var.set(0.1)
         self.vel_disp.set(5)
+        self.int_time.set(1)
         min_var.set(-10)
         max_var.set(-9.5)
         step_var.set(10)
@@ -2796,7 +2798,8 @@ class LaserCooling:
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
-
+        int_time_e = tk.Entry(frame, width = 6, textvariable = self.int_time)
+        
         # Define position of all objects on the grid
                 # PI stage
         con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
@@ -2821,6 +2824,7 @@ class LaserCooling:
             # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(self.pos_var))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(self.vel_var))
+
 
         # this function contains at minimum :
 
@@ -2852,10 +2856,17 @@ class LaserCooling:
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
-        inte_var.set(10)
+        inte_var.set(50)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=14, column=0, sticky='nsw')
         inte_e.grid(row=14, column=1,sticky='nse')
+        int_period_lbl. tk.Label(frame, text = 'Integration period length (ms):')
+        int_period_var = tk.IntVar()
+        int_period_var.set(1000)
+        int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
+        int_period_lbl.grid(row=15, column=0, sticky='nsw')
+        int_period_e.grid(row=15, column=1,sticky='nse')
+
         minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
         minwl_var = tk.DoubleVar()
@@ -2864,24 +2875,24 @@ class LaserCooling:
         maxwl_var.set(1100)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
-        minwl_lbl.grid(row=15, column=0, sticky='nsw')
-        maxwl_lbl.grid(row=16, column=0, sticky='nsw')
-        minwl_e.grid(row=15, column=1, sticky='nse')
-        maxwl_e.grid(row=16, column=1, sticky='nse')
+        minwl_lbl.grid(row=16, column=0, sticky='nsw')
+        maxwl_lbl.grid(row=17, column=0, sticky='nsw')
+        minwl_e.grid(row=16, column=1, sticky='nse')
+        maxwl_e.grid(row=17, column=1, sticky='nse')
         
         inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
         
         self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
                            command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=19,column=0,sticky='nsew')
+        self.dark_button.grid(row=20,column=0,sticky='nsew')
         
         self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
                                     command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=20,column=0,sticky='nsew')
+        self.sub_dark_button.grid(row=21,column=0,sticky='nsew')
         
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                         command=lambda: rescale(self))
-        self.rescale_button.grid(row=21,column=0,sticky='nsew')
+        self.rescale_button.grid(row=22,column=0,sticky='nsew')
         
         # Start & stop buttons :
 
