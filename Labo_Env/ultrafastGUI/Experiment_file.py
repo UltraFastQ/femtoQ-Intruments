@@ -2768,8 +2768,6 @@ class LaserCooling:
                                       command=lambda: connect_and_disable_stage(self,dev_name='SMC100'))
                 # 
 
-        # Define Arduino
-        arduino=serial.Serial('COM9',115200)
                 
         # Define variables
                 # PI stage
@@ -2784,7 +2782,6 @@ class LaserCooling:
         self.pos_var.set(0)
         self.vel_var.set(0.1)
         self.vel_disp.set(5)
-        self.int_time.set(1)
         min_var.set(-10)
         max_var.set(-9.5)
         step_var.set(10)
@@ -2798,7 +2795,6 @@ class LaserCooling:
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
-        int_time_e = tk.Entry(frame, width = 6, textvariable = self.int_time)
         
         # Define position of all objects on the grid
                 # PI stage
@@ -2860,7 +2856,7 @@ class LaserCooling:
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=14, column=0, sticky='nsw')
         inte_e.grid(row=14, column=1,sticky='nse')
-        int_period_lbl. tk.Label(frame, text = 'Integration period length (ms):')
+        int_period_lbl = tk.Label(frame, text = 'Integration period length (ms):')
         int_period_var = tk.IntVar()
         int_period_var.set(1000)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
@@ -2898,7 +2894,7 @@ class LaserCooling:
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
-                                            inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
+                                            inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
         self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
@@ -2909,10 +2905,10 @@ class LaserCooling:
             # For spectrometer :
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
                                         command=lambda: self.start_spectro(inte_time=inte_var))
-        self.spectro_start_button.grid(row=17, column=0, sticky='nsew')
+        self.spectro_start_button.grid(row=18, column=0, sticky='nsew')
         self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
                                              command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=18, column=0, sticky='nsew')
+        self.spectro_stop_button.grid(row=19, column=0, sticky='nsew')
         
 
       
@@ -2963,7 +2959,7 @@ class LaserCooling:
         self.spectro_start_button['state'] = 'normal'
 
     def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None,
-                         inte_time=None, minwl=None, maxwl=None):
+                         inte_time=None, int_period=None, minwl=None, maxwl=None):
 
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
@@ -2982,6 +2978,7 @@ class LaserCooling:
         min_pos = min_pos.get()
         step = step.get()/1000
         update_time = update_time.get()
+        int_period=int_period.get()
 
             # Verification
         if not self.PI.device:
@@ -3025,7 +3022,11 @@ class LaserCooling:
         scan_graph.Line.set_markersize(2)
         scan_graph.update_graph()
 
-        
+
+        # Define Arduino
+        arduino=serial.Serial('COM9',115200)
+
+
             # Spectro
         wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
@@ -3041,6 +3042,8 @@ class LaserCooling:
         minwl = minwl.get()
         maxwl = maxwl.get()
         
+        print("before experiment")
+        
             # Main scanning and measurements
         for i in range(nsteps+1):
             # Move stage to required position
@@ -3049,11 +3052,17 @@ class LaserCooling:
             pos[i] = self.PI.get_position()
             
             # Acquire spectrum and plot graph 
-            wl = self.Spectro.spectro.wavelengths()
-            S = self.Spectro.get_intensities()
-            wl_crop = wl[(wl>minwl)&(wl<maxwl)]
-            S_crop = S[(wl>minwl)&(wl<maxwl)]
-            Si[i] = np.trapz(S_crop,wl_crop) 
+            start_daq=time.time()
+            print("before DAQ")
+            while time.time()-start_daq < int_period/1000. :
+                print("in DAQ")
+                on_off=arduino.readline()[:-2]
+                print(on_off)
+                # wl = self.Spectro.spectro.wavelengths()
+                # S = self.Spectro.get_intensities()
+                # wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+                # S_crop = S[(wl>minwl)&(wl<maxwl)]
+                # Si[i] = np.trapz(S_crop,wl_crop) 
             
             # Actualise progress bar
             if progress:
