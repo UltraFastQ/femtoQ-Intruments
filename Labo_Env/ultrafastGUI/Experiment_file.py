@@ -3038,8 +3038,11 @@ class LaserCooling:
         spectro_graph.Line.set_ydata(S)
         minwl = minwl.get()
         maxwl = maxwl.get()
-        spectra_brut=np.array([[],[]])
-        spectra=np.array([[],[]])
+        spectra_brut_on=np.empty(len(S))
+        spectra_brut_off=np.empty(len(S))
+        spectra_brut=np.empty([2,len(S)])
+
+        spectra=np.empty([2,len(S)])
 
         
             # Main scanning and measurements
@@ -3054,10 +3057,22 @@ class LaserCooling:
             while time.time()-start_daq < int_period/1000. :
                 c=arduino.readline()
                 on_off=int(c.decode('utf-8'))
-                print(on_off)
-                np.append(spectra_brut[on_off],self.Spectro.get_intensities())
-            np.append(spectra[0],np.sum(spectra_brut[0],axis=0))
-            np.append(spectra[1],np.sum(spectra_brut[1],axis=0))
+                if on_off==1:
+                    print("on")
+                    spectra_brut_on=np.append(spectra_brut_on,self.Spectro.get_intensities(),axis=0)
+                    print(spectra_brut_on)
+                if on_off==0:
+                    print("off")
+                    spectra_brut_off=np.append(spectra_brut_off,self.Spectro.get_intensities(),axis=0)
+                    print(spectra_brut_off)
+                    
+            spectra_brut[0]=spectra_brut_off
+            spectra_brut[1]=spectra_brut_on
+            
+            print(spectra_brut)
+            
+            spectra[0]=np.append(spectra[0],np.sum(spectra_brut[0],axis=0))
+            spectra[1]=np.append(spectra[1],np.sum(spectra_brut[1],axis=0))
 
             
             # Actualise progress bar
