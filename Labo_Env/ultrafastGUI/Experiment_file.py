@@ -2380,16 +2380,13 @@ class Electro_Optic_Sampling:
         max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
         step_lbl = tk.Label(frame, text = 'Step size (um):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
-                # 
         
         # Define buttons and their action
                 # Pi Stage
         con_b = tk.Button(frame, text='Connect PI linear stage',
                                       command=lambda: self.PI.connect_identification(dev_name='C-863.11',
                                                                                    exp_dependencie=True))
-                # 
-                
-                
+
         # Define variables
                 # PI stage
         pos_var = tk.DoubleVar()
@@ -2398,13 +2395,15 @@ class Electro_Optic_Sampling:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
+        self.wait_var = tk.IntVar()
         pos_var.set(77.5)
         self.vel_var.set(1)
         min_var.set(75)
         max_var.set(80)
         step_var.set(1000)
         utime_var.set(1)
-
+        
+        
         # Define entry boxes
                 # PI stage
         pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
@@ -2428,43 +2427,38 @@ class Electro_Optic_Sampling:
         max_e.grid(row=8, column=1, sticky='nse')
         step_lbl.grid(row=9, column=0, sticky='nsw')
         step_e.grid(row=9, column=1, sticky='nse')
-        utime_lbl.grid(row=10, column=0, sticky='nsw')
-        utime_e.grid(row=10, column=1, sticky='nse')
+        utime_lbl.grid(row=11, column=0, sticky='nsw')
+        utime_e.grid(row=11, column=1, sticky='nse')
 
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
-        p_bar.grid(row=12, column=0, sticky='nsew', columnspan=2)
+        p_bar.grid(row=13, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
             # PI stage
         pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(self.vel_var))
-
-        # this function contains at minimum :
-
-        
             
-                
         # Start & stop buttons :
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var))
-        self.start_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=13, column=0, columnspan=2, sticky='nsew')   
+        self.stop_button.grid(row=14, column=0, columnspan=2, sticky='nsew')   
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save())
         self.RefSignal_button = tk.Button(frame, text='Signal reference', state='disabled', command=lambda: self.SignalRef())
-        self.RefSignal_button.grid(row=14, column=0, sticky='nsw')
+        self.RefSignal_button.grid(row=15, column=0, sticky='nsw')
         self.RefOff_button = tk.Button(frame, text='Ref ON/OFF', state='disabled',command=lambda: self.RemoveRef())
-        self.RefOff_button.grid(row=14, column=1, sticky='nse')
+        self.RefOff_button.grid(row=15, column=1, sticky='nse')
         self.Log_button = tk.Button(frame, text='Log Spectrum ON/OFF', state='disabled',command=lambda: self.LogSpectrum())
-        self.Log_button.grid(row=15, columnspan=2, sticky='nsew')
+        self.Log_button.grid(row=16, columnspan=2, sticky='nsew')
         self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
-        
-    
+        self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
+        self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
@@ -2523,10 +2517,28 @@ class Electro_Optic_Sampling:
     def Zurich_acquire(self):
         import time
         path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
-        time.sleep(0.050)
+        path2 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/timeconstant'
+        path3 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/order'
+        tc= self.Zurich.info['daq'].getDouble(path2)
+        order= self.Zurich.info['daq'].getDouble(path3)
+        if self.wait_var.get() == 1:
+            # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
+            if order == 1:
+                Settling_time = 4.61*tc
+            elif order == 2:
+                Settling_time = 6.64*tc
+            elif order == 3:
+                Settling_time = 8.41*tc
+            elif order == 4:
+                Settling_time = 10.05*tc
+            time.sleep(Settling_time)
+            print('wait on')
+        else:
+            print('wait off')
         self.Zurich.info['daq'].subscribe(path)
-        time.sleep(0.050)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+
+
         try:
             data = data_set[path]['x']
 #            print(data)
@@ -2668,7 +2680,10 @@ class Electro_Optic_Sampling:
         
         # Display spectrum graph
         spec_t = self.t*1e-12
-        self.v,self.A = fQ.ezfft(spec_t,self.S)
+        func = interp.interp1d(spec_t, self.S,kind='quadratic')
+        t_interp = np.arange(spec_t.min(),spec_t.max(),(spec_t.max()-spec_t.min())/len(spec_t))
+        E_interp = func(t_interp)
+        self.v,self.A = fQ.ezfft(t_interp,E_interp)
         self.AA = np.abs(self.A)**2
         self.AA = self.AA/np.max(self.AA)
         self.v = self.v/1e12
@@ -2684,8 +2699,10 @@ class Electro_Optic_Sampling:
                     self.phaseExists = True
         phi = np.arctan2(self.A.imag,self.A.real)
         phi = np.unwrap(phi)
-
-        self.Phase_graph_ax.set_ylim([np.min(phi),np.max(phi)])
+        a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
+        slope = a*self.v+b
+        phi = phi - slope
+        self.Phase_graph_ax.set_ylim([-3*np.pi,3*np.pi])
         self.LinePhase.set_xdata(self.v)
         self.LinePhase.set_ydata([phi])
         Spectrum_graph.update_graph()
