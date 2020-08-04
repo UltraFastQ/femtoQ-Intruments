@@ -2380,16 +2380,13 @@ class Electro_Optic_Sampling:
         max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
         step_lbl = tk.Label(frame, text = 'Step size (um):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
-                # 
         
         # Define buttons and their action
                 # Pi Stage
         con_b = tk.Button(frame, text='Connect PI linear stage',
                                       command=lambda: self.PI.connect_identification(dev_name='C-863.11',
                                                                                    exp_dependencie=True))
-                # 
-                
-                
+
         # Define variables
                 # PI stage
         pos_var = tk.DoubleVar()
@@ -2398,14 +2395,13 @@ class Electro_Optic_Sampling:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
-        self.wait_var = tk.StringVar()
+        self.wait_var = tk.IntVar()
         pos_var.set(77.5)
         self.vel_var.set(1)
         min_var.set(75)
         max_var.set(80)
         step_var.set(1000)
         utime_var.set(1)
-        self.wait_var.set('disabled')
         
         
         # Define entry boxes
@@ -2461,11 +2457,8 @@ class Electro_Optic_Sampling:
         self.Log_button = tk.Button(frame, text='Log Spectrum ON/OFF', state='disabled',command=lambda: self.LogSpectrum())
         self.Log_button.grid(row=16, columnspan=2, sticky='nsew')
         self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
-        self.wait = tk.Checkbutton(frame, variable=self.wait_var,
-                       text='Settling wait time',
-                       onvalue='enabled', offvalue='disabled')   
+        self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
         self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
-    
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
@@ -2528,7 +2521,8 @@ class Electro_Optic_Sampling:
         path3 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/order'
         tc= self.Zurich.info['daq'].getDouble(path2)
         order= self.Zurich.info['daq'].getDouble(path3)
-        if self.wait_var == 'enabled':
+        if self.wait_var.get() == 1:
+            # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
             if order == 1:
                 Settling_time = 4.61*tc
             elif order == 2:
