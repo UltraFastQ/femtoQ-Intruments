@@ -9,6 +9,8 @@ import Graphic
 import datetime
 import femtoQ.tools as fq
 import scipy.interpolate as interp
+import serial
+
 
 class CreateLayout:
     """
@@ -2766,7 +2768,8 @@ class LaserCooling:
                                       command=lambda: connect_and_disable_stage(self,dev_name='SMC100'))
                 # 
 
-
+        # Define Arduino
+        arduino=serial.Serial('COM9',115200)
                 
         # Define variables
                 # PI stage
