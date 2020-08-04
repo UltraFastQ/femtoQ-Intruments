@@ -3056,8 +3056,10 @@ class LaserCooling:
             print("before DAQ")
             while time.time()-start_daq < int_period/1000. :
                 print("in DAQ")
-                on_off=arduino.readline()[:-2]
-                print(on_off)
+                c=arduino.readline()[:-2]
+                if c:
+                    on_off=str(c.decode('utf-8'))
+                    print(on_off)
                 # wl = self.Spectro.spectro.wavelengths()
                 # S = self.Spectro.get_intensities()
                 # wl_crop = wl[(wl>minwl)&(wl<maxwl)]
