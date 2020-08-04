@@ -2680,34 +2680,34 @@ class Electro_Optic_Sampling:
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
         
-        # Display spectrum graph
-        spec_t = self.t*1e-12
-        func = interp.interp1d(spec_t, self.S,kind='quadratic')
-        t_interp = np.arange(spec_t.min(),spec_t.max(),(spec_t.max()-spec_t.min())/len(spec_t))
-        E_interp = func(t_interp)
-        self.v,self.A = fQ.ezfft(t_interp,E_interp)
-        self.AA = np.abs(self.A)**2
-        self.AA = self.AA/np.max(self.AA)
-        self.v = self.v/1e12
-        Spectrum_graph = self.graph_dict['Spectrum']
-        Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.AA)])
-        Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
-        Spectrum_graph.Line.set_xdata([self.v])
-        Spectrum_graph.Line.set_ydata([self.AA])
-        
-        if self.phaseExists is False:
-                    self.Phase_graph_ax = Spectrum_graph.axes.twinx()
-                    self.LinePhase, = self.Phase_graph_ax.plot([],[],'m')
-                    self.phaseExists = True
-        phi = np.arctan2(self.A.imag,self.A.real)
-        phi = np.unwrap(phi)
-        a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
-        slope = a*self.v+b
-        phi = phi - slope
-        self.Phase_graph_ax.set_ylim([-3*np.pi,3*np.pi])
-        self.LinePhase.set_xdata(self.v)
-        self.LinePhase.set_ydata([phi])
-        Spectrum_graph.update_graph()
+            # Display spectrum graph
+            spec_t = self.t*1e-12
+            func = interp.interp1d(spec_t, self.S,kind='quadratic')
+            t_interp = np.arange(spec_t.min(),spec_t.max(),(spec_t.max()-spec_t.min())/len(spec_t))
+            E_interp = func(t_interp)
+            self.v,self.A = fQ.ezfft(t_interp,E_interp)
+            self.AA = np.abs(self.A)**2
+            self.AA = self.AA/np.max(self.AA)
+            self.v = self.v/1e12
+            Spectrum_graph = self.graph_dict['Spectrum']
+            Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.AA)])
+            Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
+            Spectrum_graph.Line.set_xdata([self.v])
+            Spectrum_graph.Line.set_ydata([self.AA])
+            
+            if self.phaseExists is False:
+                        self.Phase_graph_ax = Spectrum_graph.axes.twinx()
+                        self.LinePhase, = self.Phase_graph_ax.plot([],[],'m')
+                        self.phaseExists = True
+            phi = np.arctan2(self.A.imag,self.A.real)
+            phi = np.unwrap(phi)
+            a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
+            slope = a*self.v+b
+            phi = phi - slope
+            self.Phase_graph_ax.set_ylim([-3*np.pi,3*np.pi])
+            self.LinePhase.set_xdata(self.v)
+            self.LinePhase.set_ydata([phi])
+            Spectrum_graph.update_graph()
         
         # Going back to initial state
         self.running = False
