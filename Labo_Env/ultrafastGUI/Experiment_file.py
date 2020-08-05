@@ -2682,8 +2682,10 @@ class Electro_Optic_Sampling:
         
             # Display spectrum graph
             spec_t = self.t*1e-12
-            func = interp.interp1d(spec_t, self.S,kind='quadratic')
-            t_interp = np.linspace(spec_t.min(),spec_t.max(),len(spec_t))
+            t_sort, indices = np.unique(spec_t,return_index=True)
+            S_sort = self.S[indices]
+            func = interp.interp1d(t_sort, S_sort,kind='quadratic')
+            t_interp = np.linspace(t_sort.min(),t_sort.max(),len(t_sort))
             E_interp = func(t_interp)
             self.v,self.A = fQ.ezfft(t_interp,E_interp)
             self.AA = np.abs(self.A)**2
