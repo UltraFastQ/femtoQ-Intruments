@@ -3038,9 +3038,6 @@ class LaserCooling:
         spectro_graph.Line.set_ydata(S)
         minwl = minwl.get()
         maxwl = maxwl.get()
-        spectra_brut_on=np.empty(len(S))
-        spectra_brut_off=np.empty(len(S))
-        spectra_brut=np.empty([2,len(S)])
 
         spectra=np.empty([2,len(S)])
 
@@ -3051,6 +3048,10 @@ class LaserCooling:
             self.PI.go_2position(move[i])
             # Measure real position
             pos[i] = self.PI.get_position()
+            
+            spectra_brut_on=np.empty(len(S))
+            spectra_brut_off=np.empty(len(S))
+            spectra_brut=np.empty([2,len(S)])
             
             # Acquire spectrum and plot graph 
             start_daq=time.time()
