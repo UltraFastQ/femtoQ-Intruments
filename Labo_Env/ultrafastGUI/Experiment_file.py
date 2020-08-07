@@ -2756,6 +2756,7 @@ class LaserCooling:
         param_lbl = tk.Label(frame, text = 'Experiment parameters')
         min_lbl = tk.Label(frame, text = 'Min. pos. (mm):')
         max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
+        zero_lbl = tk.Label(frame, text = 'Pos. Zero Delay (mm):')
         step_lbl = tk.Label(frame, text = 'Step size (um):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
                 # 
@@ -2779,13 +2780,15 @@ class LaserCooling:
 
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
+        zero_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.pos_var.set(0)
         self.vel_var.set(0.1)
         self.vel_disp.set(5)
-        min_var.set(-10)
-        max_var.set(-9.5)
+        min_var.set(-49)
+        max_var.set(49)
+        zero_var.set(44.66)
         step_var.set(10)
         utime_var.set(1)
 
@@ -2795,6 +2798,7 @@ class LaserCooling:
         vel_e = tk.Entry(frame, width = 6, textvariable = self.vel_var)
         min_e = tk.Entry(frame, width = 6, textvariable = min_var)
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        zero_e = tk.Entry(frame, width = 6, textvariable = zero_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
         
@@ -2810,13 +2814,15 @@ class LaserCooling:
         min_e.grid(row=5, column=1, sticky='nse')
         max_lbl.grid(row=6, column=0, sticky='nsw')
         max_e.grid(row=6, column=1, sticky='nse')
-        step_lbl.grid(row=7, column=0, sticky='nsw')
-        step_e.grid(row=7, column=1, sticky='nse')
-        utime_lbl.grid(row=8, column=0, sticky='nsw')
-        utime_e.grid(row=8, column=1, sticky='nse')
+        zero_lbl.grid(row=7, column=0, sticky='nsw')
+        zero_e.grid(row=7, column=1, sticky='nse')
+        step_lbl.grid(row=8, column=0, sticky='nsw')
+        step_e.grid(row=8, column=1, sticky='nse')
+        utime_lbl.grid(row=9, column=0, sticky='nsw')
+        utime_e.grid(row=9, column=1, sticky='nse')
 
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
-        p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
+        p_bar.grid(row=12, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
             # PI stage
@@ -2850,20 +2856,20 @@ class LaserCooling:
         
         # Temporary Spectrometer things
         cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_and_disable_spectro(self))
-        cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        cons_b.grid(row=14, column=0, columnspan=2, sticky='nsew')
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
         inte_var.set(48)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
-        inte_lbl.grid(row=14, column=0, sticky='nsw')
-        inte_e.grid(row=14, column=1,sticky='nse')
+        inte_lbl.grid(row=15, column=0, sticky='nsw')
+        inte_e.grid(row=15, column=1,sticky='nse')
         int_period_lbl = tk.Label(frame, text = 'Integration period length (ms):')
         int_period_var = tk.IntVar()
         int_period_var.set(1000)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
-        int_period_lbl.grid(row=15, column=0, sticky='nsw')
-        int_period_e.grid(row=15, column=1,sticky='nse')
+        int_period_lbl.grid(row=16, column=0, sticky='nsw')
+        int_period_e.grid(row=16, column=1,sticky='nse')
 
         minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
@@ -2873,44 +2879,44 @@ class LaserCooling:
         maxwl_var.set(1100)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
-        minwl_lbl.grid(row=16, column=0, sticky='nsw')
-        maxwl_lbl.grid(row=17, column=0, sticky='nsw')
-        minwl_e.grid(row=16, column=1, sticky='nse')
-        maxwl_e.grid(row=17, column=1, sticky='nse')
+        minwl_lbl.grid(row=17, column=0, sticky='nsw')
+        maxwl_lbl.grid(row=18, column=0, sticky='nsw')
+        minwl_e.grid(row=17, column=1, sticky='nse')
+        maxwl_e.grid(row=18, column=1, sticky='nse')
         
         inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
         
         self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
                            command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=20,column=0,sticky='nsew')
+        self.dark_button.grid(row=21,column=0,sticky='nsew')
         
         self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
                                     command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=21,column=0,sticky='nsew')
+        self.sub_dark_button.grid(row=22,column=0,sticky='nsew')
         
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                         command=lambda: rescale(self))
-        self.rescale_button.grid(row=22,column=0,sticky='nsew')
+        self.rescale_button.grid(row=23,column=0,sticky='nsew')
         
         # Start & stop buttons :
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
+                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, zero=zero_var, step=step_var, progress=p_bar, update_time=utime_var,
                                             inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
-        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
+        self.stop_button.grid(row=13, column=0, columnspan=2, sticky='nsew')
 
             # For spectrometer :
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
                                         command=lambda: self.start_spectro(inte_time=inte_var))
-        self.spectro_start_button.grid(row=18, column=0, sticky='nsew')
+        self.spectro_start_button.grid(row=19, column=0, sticky='nsew')
         self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
                                              command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=19, column=0, sticky='nsew')
+        self.spectro_stop_button.grid(row=20, column=0, sticky='nsew')
         
 
       
@@ -2961,27 +2967,25 @@ class LaserCooling:
 #         if step == 0:
 #             step=1
 # =============================================================================
-        try:
-             wl = len(self.Spectro.spectro.wavelengths())
-        except:
-            return
+        # try:
+        #      wl = len(self.Spectro.spectro.wavelengths())
+        # except:
+        #     return
         
         parent2d = self.graph_dict["Pump_probe"].parent
         self.graph_dict["Pump_probe"].destroy_graph()
         #print(wl, step)
         self.graph_dict["Pump_probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
                                                        figsize=[2,2], data_size= np.transpose(self.trace).shape)
-        trace = (self.trace-np.min(self.trace))
-        trace = trace/np.max(trace)
-        self.graph_dict["FROG trace"].change_data(np.transpose(trace),False)
-        self.graph_dict["FROG trace"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl_crop[-1],self.wl_crop[0]))
+        #self.graph_dict["Pump_probe"].change_data(np.transpose(trace),False)
+        self.graph_dict["Pump_probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl_crop[-1],self.wl_crop[0]))
         aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
-        self.graph_dict["FROG trace"].axes.set_aspect(aspectRatio)
-        self.graph_dict["FROG trace"].axes.set_xlabel('Delay [fs]')
-        self.graph_dict["FROG trace"].axes.set_ylabel('Wavelengths [nm]')
-        cbar = self.graph_dict["FROG trace"].Fig.colorbar(self.graph_dict["FROG trace"].im)
+        self.graph_dict["Pump_probe"].axes.set_aspect(aspectRatio)
+        self.graph_dict["Pump_probe"].axes.set_xlabel('Delay [fs]')
+        self.graph_dict["Pump_probe"].axes.set_ylabel('Wavelengths [nm]')
+        cbar = self.graph_dict["Pump_probe"].Fig.colorbar(self.graph_dict["Pump_probe"].im)
         cbar.set_label('Normalized intensity')
-        self.graph_dict["FROG trace"].update_graph()
+        self.graph_dict["Pump_probe"].update_graph()
 
         
         
@@ -2989,7 +2993,7 @@ class LaserCooling:
         self.running = False
         self.spectro_start_button['state'] = 'normal'
 
-    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None,
+    def start_experiment(self, min_pos=None, max_pos=None, zero=None, step = None, progress=None, update_time=None,
                          inte_time=None, int_period=None, minwl=None, maxwl=None):
 
         self.stop_button['state'] = 'normal'
@@ -3007,6 +3011,7 @@ class LaserCooling:
             # Parameters initialisation
         max_pos = max_pos.get()
         min_pos = min_pos.get()
+        zero=zero.get()
         step = step.get()/1000
         update_time = update_time.get()
         int_period=int_period.get()
@@ -3029,23 +3034,19 @@ class LaserCooling:
         
 
             # Steps and position vector initialisation
-        nsteps = int(np.ceil((max_pos - min_pos)/step))
+        nsteps = int(np.ceil((zero - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
-        move = np.linspace(min_pos, max_pos, nsteps+1)
+        move = np.linspace(zero, min_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
 
         self.PI.set_velocity(vel=self.vel_disp)
         self.PI.go_2position(move[0]-0.001)
         self.PI.set_velocity(vel=self.vel_var)
-
-
-        # Variables for the graph update
-        Si = np.zeros(nsteps+1)
         
             # Variables for the graph update
         last_gu = time.time()
         scan_graph = self.graph_dict['Scanning']
-        scan_graph.axes.set_ylim([min_pos, max_pos])
+        scan_graph.axes.set_ylim([min_pos, zero])
         scan_graph.axes.set_xlim([0, nsteps])
         scan_graph.Line.set_xdata([])
         scan_graph.Line.set_ydata([])
@@ -3070,18 +3071,14 @@ class LaserCooling:
         minwl = minwl.get()
         maxwl = maxwl.get()
         wl_crop = wl[(wl>minwl)&(wl<maxwl)]
-        S_crop = S[(wl>minwl)&(wl<maxwl)]
 
 
-        wl = self.Spectro.spectro.wavelengths()
-        spectro_graph = self.graph_dict['Pump-Probe']
-        spectro_graph.axes.set_ylim([min_pos,max_pos])
-        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
-        spectro_graph.Line.set_xdata(wl)
-        spectro_graph.Line.set_ydata(S)
-        minwl = minwl.get()
-        maxwl = maxwl.get()
-        self.trace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
+        Pump_probe_graph = self.graph_dict['Pump-Probe']
+        Pump_probe_graph.axes.set_ylim([min_pos,zero])
+        Pump_probe_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        Pump_probe_graph.Line.set_xdata(wl)
+        Pump_probe_graph.Line.set_ydata(S)
+        self.trace = np.zeros((nsteps+1,wl_crop.shape[0]))
 
 
         
@@ -3102,7 +3099,6 @@ class LaserCooling:
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
                 on_off=int(arduino.readline().decode('utf-8'))
-                print(on_off)
                 spectra_brut[on_off].append(self.Spectro.get_intensities())
             
             if len(spectra_brut[1])>len(spectra_brut[0]):
@@ -3111,7 +3107,7 @@ class LaserCooling:
             print(len(spectra_brut[1]),len(spectra_brut[0]))
             
             trace_brut=np.average((np.array(spectra_brut[1])-np.array(spectra_brut[0]))/np.array(spectra_brut[0]),axis=0)
-            self.trace[i] = trace_brut[(wl>minwl)&(wl,minwl)]
+            self.trace[i] = trace_brut[(wl>minwl)&(wl<maxwl)]
             
             
             # Actualise progress bar
@@ -3124,8 +3120,8 @@ class LaserCooling:
                 scan_graph.Line.set_ydata(pos[:i])
                 scan_graph.update_graph()
                 #Spectro signal and integrated signal
-                spectro_graph.Line.set_xdata(wl)
-                spectro_graph.Line.set_ydata(spectra[0,-1])
+                spectro_graph.Line.set_xdata(wl_crop)
+                spectro_graph.Line.set_ydata(trace_brut)
                 spectro_graph.update_graph()
 
                 
@@ -3147,8 +3143,8 @@ class LaserCooling:
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
                 #Spectro signal and integrated signal
-            spectro_graph.Line.set_xdata(wl)
-            spectro_graph.Line.set_ydata(spectra[0,-1])
+            spectro_graph.Line.set_xdata(wl_crop)
+            spectro_graph.Line.set_ydata(trace_brut)
             spectro_graph.update_graph()
 
             
@@ -3158,7 +3154,7 @@ class LaserCooling:
 
 
         # Final calculations
-        self.timeDelay = 2*pos*1e-3/(299792458)
+        self.timeDelay = 2*(self.zero_delay-pos)*1e-3/(299792458)
 
 
 
@@ -3170,4 +3166,4 @@ class LaserCooling:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
-        
+        self.adjust_2dgraph()        
