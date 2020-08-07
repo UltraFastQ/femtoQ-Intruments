@@ -103,7 +103,7 @@ class SMC100(object):
 
     self._last_sendcmd_time = 0
 
-    print('Connecting to SMC100 on %s'%(port))
+    #print('Connecting to SMC100 on %s'%(port))
 
     self._port = serial.Serial(
         port = port,
