@@ -2953,7 +2953,36 @@ class LaserCooling:
         if self.PI.device:
             self.start_button['state'] = 'normal'
         
+
+
+    def adjust_2dgraph(self):#, step=None):
+# =============================================================================
+#         step = step.get()
+#         if step == 0:
+#             step=1
+# =============================================================================
+        try:
+             wl = len(self.Spectro.spectro.wavelengths())
+        except:
+            return
         
+        parent2d = self.graph_dict["Pump_probe"].parent
+        self.graph_dict["Pump_probe"].destroy_graph()
+        #print(wl, step)
+        self.graph_dict["Pump_probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
+                                                       figsize=[2,2], data_size= np.transpose(self.trace).shape)
+        trace = (self.trace-np.min(self.trace))
+        trace = trace/np.max(trace)
+        self.graph_dict["FROG trace"].change_data(np.transpose(trace),False)
+        self.graph_dict["FROG trace"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl_crop[-1],self.wl_crop[0]))
+        aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
+        self.graph_dict["FROG trace"].axes.set_aspect(aspectRatio)
+        self.graph_dict["FROG trace"].axes.set_xlabel('Delay [fs]')
+        self.graph_dict["FROG trace"].axes.set_ylabel('Wavelengths [nm]')
+        cbar = self.graph_dict["FROG trace"].Fig.colorbar(self.graph_dict["FROG trace"].im)
+        cbar.set_label('Normalized intensity')
+        self.graph_dict["FROG trace"].update_graph()
+
         
         
     def stop_experiment(self):
@@ -3040,8 +3069,20 @@ class LaserCooling:
         spectro_graph.Line.set_ydata(S)
         minwl = minwl.get()
         maxwl = maxwl.get()
+        wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+        S_crop = S[(wl>minwl)&(wl<maxwl)]
 
-        spectra=[[],[]]
+
+        wl = self.Spectro.spectro.wavelengths()
+        spectro_graph = self.graph_dict['Pump-Probe']
+        spectro_graph.axes.set_ylim([min_pos,max_pos])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        spectro_graph.Line.set_xdata(wl)
+        spectro_graph.Line.set_ydata(S)
+        minwl = minwl.get()
+        maxwl = maxwl.get()
+        self.trace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
+
 
         
             # Main scanning and measurements
@@ -3055,16 +3096,23 @@ class LaserCooling:
             spectra_brut=[[],[]]
             
             # Acquire spectrum and plot graph 
+            while int(arduino.readline().decode('utf-8'))==1:
+                continue
+
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
-                c=arduino.readline()
-                on_off=int(c.decode('utf-8'))
+                on_off=int(arduino.readline().decode('utf-8'))
+                print(on_off)
                 spectra_brut[on_off].append(self.Spectro.get_intensities())
             
-            spectra[0].append(np.sum(np.array(spectra_brut[0]),axis=1))
-            spectra[1].append(np.sum(np.array(spectra_brut[1]),axis=1))
-
-
+            if len(spectra_brut[1])>len(spectra_brut[0]):
+                spectra_brut[1].pop(-1)
+            
+            print(len(spectra_brut[1]),len(spectra_brut[0]))
+            
+            trace_brut=np.average((np.array(spectra_brut[1])-np.array(spectra_brut[0]))/np.array(spectra_brut[0]),axis=0)
+            self.trace[i] = trace_brut[(wl>minwl)&(wl,minwl)]
+            
             
             # Actualise progress bar
             if progress:
@@ -3106,6 +3154,14 @@ class LaserCooling:
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
+
+
+
+        # Final calculations
+        self.timeDelay = 2*pos*1e-3/(299792458)
+
+
+
 
         # Going back to initial state
         self.running = False

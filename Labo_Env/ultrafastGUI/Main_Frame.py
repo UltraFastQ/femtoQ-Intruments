@@ -1974,7 +1974,10 @@ class Experiment(ttk.LabelFrame):
                              'Shear calc. curve':['Stage position [um]','Shear frequency [THz]']})
         create_layout(name='Laser Cooling', function_=Experiment_file.LaserCooling,
                       option=['Physics_Linear_Stage','Spectrometer'],
-                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)']})
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
+                             'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],
+                             'Pump-Probe': ['Wavelengths [nm]', 'Delay [um]'], 
+})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
