@@ -336,12 +336,13 @@ class Spectro:
         min_f = np.min(frequencies)
         pad_freq = np.append(frequencies, np.linspace(max_f, max_freq,
                                                       len(frequencies)))
-        lin_freq = np.linspace(np.min(pad_freq), np.max(pad_freq),
-                               len(pad_freq))
+        lin_freq = np.linspace(-np.max(pad_freq), np.max(pad_freq),
+                               2*len(pad_freq)+1)
         intensities = np.pad(intensities, (0, len(frequencies)), mode='constant',
 		 	                 constant_values=(0, 0))
-        intensities = np.interp(lin_freq, pad_freq, intensities)
-        intensities[intensities < 0] = 0
+        intensities = np.interp(lin_freq, pad_freq, intensities,left= 0,right = 0)
+        intensities = fQ.ezsmooth(intensities,window = 'hanning')
+        intensities[intensities < np.max(intensities)/100] = 0
         # Calculate the ezifft of the signal.
         sig_time, sig = fQ.ezifft(lin_freq, np.sqrt(intensities))
         sig = np.fft.fftshift(sig)
@@ -437,7 +438,7 @@ class Spectro:
         Parameters:
             ave : Number of averaging periods.
         """
-        Iarray = self.extract_intensities(ave, save_current=True)
+        Iarray = self.get_intensities()
         Warray = self.spectro.wavelengths()
         array = np.array([Warray, Iarray])
         from datetime import datetime
