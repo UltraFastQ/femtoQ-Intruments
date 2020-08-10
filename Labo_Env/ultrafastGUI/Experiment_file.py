@@ -2784,12 +2784,12 @@ class LaserCooling:
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.pos_var.set(0)
-        self.vel_var.set(0.5)
+        self.vel_var.set(2)
         self.vel_disp.set(5)
         min_var.set(-49)
         max_var.set(49)
         zero_var.set(44.66)
-        step_var.set(1000)
+        step_var.set(10000)
         utime_var.set(1)
 
         # Define entry boxes
@@ -2864,9 +2864,9 @@ class LaserCooling:
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=15, column=0, sticky='nsw')
         inte_e.grid(row=15, column=1,sticky='nse')
-        int_period_lbl = tk.Label(frame, text = 'Integration period length (ms):')
+        int_period_lbl = tk.Label(frame, text = 'Integration period (ms):')
         int_period_var = tk.IntVar()
-        int_period_var.set(1000)
+        int_period_var.set(100)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
         int_period_lbl.grid(row=16, column=0, sticky='nsw')
         int_period_e.grid(row=16, column=1,sticky='nse')
@@ -2875,7 +2875,7 @@ class LaserCooling:
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
-        minwl_var.set(1000)
+        minwl_var.set(700)
         maxwl_var.set(1100)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
@@ -2976,12 +2976,12 @@ class LaserCooling:
         self.graph_dict["Pump_Probe"].destroy_graph()
         self.graph_dict["Pump_Probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
                                                        figsize=[2,2], data_size= np.transpose(self.trace).shape)
-        #self.graph_dict["PumpPprobe"].change_data(np.transpose(trace),False)
+        self.graph_dict["Pump_Probe"].change_data(np.transpose(self.trace),False)
         self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl_crop[-1],self.wl_crop[0]))
         aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
         self.graph_dict["Pump_Probe"].axes.set_aspect(aspectRatio)
-        self.graph_dict["Pump_Probe"].axes.set_xlabel('Delay [fs]')
-        self.graph_dict["Pump-Probe"].axes.set_ylabel('Wavelengths [nm]')
+        self.graph_dict["Pump_Probe"].axes.set_xlabel('Delay [ps]')
+        self.graph_dict["Pump_Probe"].axes.set_ylabel('Wavelengths [nm]')
         cbar = self.graph_dict["Pump_Probe"].Fig.colorbar(self.graph_dict["Pump_Probe"].im)
         cbar.set_label('Normalized intensity')
         self.graph_dict["Pump_Probe"].update_graph()
@@ -3069,15 +3069,15 @@ class LaserCooling:
         spectro_graph.Line.set_ydata(S)
         minwl = minwl.get()
         maxwl = maxwl.get()
-        wl_crop = wl[(wl>minwl)&(wl<maxwl)]
+        self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
 
 
-        Pump_probe_graph = self.graph_dict['Pump-Probe']
+        Pump_probe_graph = self.graph_dict['Pump_Probe']
         Pump_probe_graph.axes.set_ylim([min_pos,zero])
         Pump_probe_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         Pump_probe_graph.Line.set_xdata(wl)
         Pump_probe_graph.Line.set_ydata(S)
-        self.trace = np.zeros((nsteps+1,wl_crop.shape[0]))
+        self.trace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
 
 
         
@@ -3098,7 +3098,7 @@ class LaserCooling:
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
                 on_off=int(arduino.readline().decode('utf-8'))
-                spectra_brut[on_off].append(self.Spectro.get_intensities())
+                spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
 
             spectra_brut=np.array(spectra_brut)
             
@@ -3124,7 +3124,7 @@ class LaserCooling:
                 scan_graph.Line.set_ydata(pos[:i])
                 scan_graph.update_graph()
                 #Spectro signal and integrated signal
-                spectro_graph.Line.set_xdata(wl_crop)
+                spectro_graph.Line.set_xdata(self.wl_crop)
                 spectro_graph.Line.set_ydata(self.trace[i])
                 spectro_graph.update_graph()
 
@@ -3147,7 +3147,7 @@ class LaserCooling:
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
                 #Spectro signal and integrated signal
-            spectro_graph.Line.set_xdata(wl_crop)
+            spectro_graph.Line.set_xdata(self.wl_crop)
             spectro_graph.Line.set_ydata(self.trace[i])
             spectro_graph.update_graph()
 
@@ -3158,7 +3158,7 @@ class LaserCooling:
 
 
         # Final calculations
-        self.timeDelay = 2*(zero-pos)*1e-3/(299792458)
+        self.timeDelay = 2*(zero-pos)*1e9/(299792458)
 
 
 
