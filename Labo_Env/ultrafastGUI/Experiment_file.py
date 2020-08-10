@@ -2866,7 +2866,7 @@ class LaserCooling:
         inte_e.grid(row=15, column=1,sticky='nse')
         int_period_lbl = tk.Label(frame, text = 'Integration period (ms):')
         int_period_var = tk.IntVar()
-        int_period_var.set(100)
+        int_period_var.set(1000)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
         int_period_lbl.grid(row=16, column=0, sticky='nsw')
         int_period_e.grid(row=16, column=1,sticky='nse')
@@ -2875,8 +2875,8 @@ class LaserCooling:
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
-        minwl_var.set(700)
-        maxwl_var.set(1100)
+        minwl_var.set(615)
+        maxwl_var.set(960)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
         minwl_lbl.grid(row=17, column=0, sticky='nsw')
@@ -2931,7 +2931,7 @@ class LaserCooling:
         self.start_button['state'] = 'disabled'
         self.running = True
         
-        self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
+        #self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
         self.Spectro.adjust_integration_time(inte_time)
         wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
@@ -3055,7 +3055,7 @@ class LaserCooling:
 
 
         # Define Arduino
-        arduino=serial.Serial('COM9',115200,timeout=2000)
+        arduino=serial.Serial('COM9',115200,timeout=None)
 
 
             # Spectro
@@ -3091,14 +3091,16 @@ class LaserCooling:
 
             spectra_brut=[[],[]]
             
-            # Acquire spectrum and plot graph 
-            while int(arduino.readline().decode('utf-8'))==1:
+            # Acquire spectrum and plot graph
+            arduino.reset_input_buffer()
+            while int(arduino.readline(1).decode('utf-8'))==1:
                 continue
-
+            
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
-                on_off=int(arduino.readline().decode('utf-8'))
+                on_off=int(arduino.read(1).decode('utf-8'))
                 spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
+
 
             spectra_brut=np.array(spectra_brut)
             
@@ -3132,6 +3134,7 @@ class LaserCooling:
                 last_gu = time.time()
             if not self.running:
                 break
+                        
         if not self.running:
             return_vel = tk.IntVar()
             return_vel.set(5)
