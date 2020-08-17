@@ -9,6 +9,7 @@ import Graphic
 import datetime
 import femtoQ.tools as fq
 import scipy.interpolate as interp
+import scipy.signal as sgn
 import serial
 
 
@@ -2785,7 +2786,7 @@ class LaserCooling:
         utime_var = tk.IntVar()
         self.pos_var.set(0)
         self.vel_var.set(2)
-        self.vel_disp.set(5)
+        self.vel_disp.set(10)
         min_var.set(-49)
         max_var.set(49)
         zero_var.set(44.66)
@@ -2876,7 +2877,7 @@ class LaserCooling:
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
         minwl_var.set(615)
-        maxwl_var.set(960)
+        maxwl_var.set(955)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
         minwl_lbl.grid(row=17, column=0, sticky='nsw')
@@ -3097,20 +3098,29 @@ class LaserCooling:
                 continue
             
             start_daq=time.time()
+            k=1
             while time.time()-start_daq < int_period/1000. :
                 on_off=int(arduino.read(1).decode('utf-8'))
                 spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
-
+                k+=1
 
             spectra_brut=np.array(spectra_brut)
             
             spectra_brut[spectra_brut==0]=1
+
 
             if len(spectra_brut[1])>len(spectra_brut[0]):
                 spectra_brut[1].pop(-1)
             if len(spectra_brut[0])>len(spectra_brut[1]):
                 spectra_brut[0].pop(0)
             
+            noise=[[],[]]
+            spec_transpo=np.transpose(spectra_brut,axes=[0,2,1])
+            for k in range(2):
+                for j in range(len(wl)):
+                    noise[k].append(np.std(spec_transpo[k,j]))
+            noise=np.array(noise)
+            print(noise.shape)
             
             trace_brut=np.average((np.array(spectra_brut[1])-np.array(spectra_brut[0]))/np.array(spectra_brut[0]),axis=0)
             self.trace[i] = trace_brut[(wl>minwl)&(wl<maxwl)]

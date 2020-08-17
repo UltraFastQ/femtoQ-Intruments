@@ -126,7 +126,7 @@ class SMC100(object):
 
     self.sendcmd('RS',expect_response=False)
 
-    self._sleepfunc(3)
+    self._sleepfunc(1)
 
     self.wait_states(STATE_NOT_REFERENCED_FROM_RESET, ignore_disabled_states=True)
 

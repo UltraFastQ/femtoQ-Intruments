@@ -32,7 +32,7 @@ class MainFrame(tk.Tk):
         self.Frame.append(Ueye_Frame(self, mainf=self))
         self.Frame[0].grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
-        directory = Path.cwd()
+        directory = Path.cwd() 
         image = tk.PhotoImage(master=self, file=directory / 'FMQ3.gif')
         tk.Tk.wm_title(self, "femtoQPy")
         tk.Tk.wm_iconphoto(self, '-default', image)
