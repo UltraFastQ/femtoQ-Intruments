@@ -2861,13 +2861,13 @@ class LaserCooling:
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
-        inte_var.set(4)
+        inte_var.set(3)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=15, column=0, sticky='nsw')
         inte_e.grid(row=15, column=1,sticky='nse')
         int_period_lbl = tk.Label(frame, text = 'Integration period (ms):')
         int_period_var = tk.IntVar()
-        int_period_var.set(1000)
+        int_period_var.set(100)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
         int_period_lbl.grid(row=16, column=0, sticky='nsw')
         int_period_e.grid(row=16, column=1,sticky='nse')
@@ -3060,6 +3060,7 @@ class LaserCooling:
 
 
             # Spectro
+        self.Spectro.set_trigger(0)
         wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
@@ -3091,38 +3092,39 @@ class LaserCooling:
             
 
             spectra_brut=[[],[]]
+            noise=[[],[]]
             
             # Acquire spectrum and plot graph
             arduino.reset_input_buffer()
-            while int(arduino.readline(1).decode('utf-8'))==1:
+            while int(arduino.readline(1).decode('utf-8'))!=0:
                 continue
             
             start_daq=time.time()
-            k=1
             while time.time()-start_daq < int_period/1000. :
                 on_off=int(arduino.read(1).decode('utf-8'))
-                spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
-                k+=1
+                S=self.Spectro.get_intensities()
+                spectra_brut[on_off].append(np.array(S))
 
-            spectra_brut=np.array(spectra_brut)
+
+            spectra_brute=np.array(spectra_brut)
             
-            spectra_brut[spectra_brut==0]=1
+            spectra_brute[spectra_brute==0]=1
 
 
-            if len(spectra_brut[1])>len(spectra_brut[0]):
-                spectra_brut[1].pop(-1)
-            if len(spectra_brut[0])>len(spectra_brut[1]):
-                spectra_brut[0].pop(0)
+            if len(spectra_brute[1])>len(spectra_brute[0]):
+                spectra_brute[1].pop(-1)
+            if len(spectra_brute[0])>len(spectra_brute[1]):
+                spectra_brute[0].pop(0)
             
-            noise=[[],[]]
-            spec_transpo=np.transpose(spectra_brut,axes=[0,2,1])
+            
+            spec_transpo=np.transpose(spectra_brute,axes=[0,2,1])
             for k in range(2):
                 for j in range(len(wl)):
                     noise[k].append(np.std(spec_transpo[k,j]))
             noise=np.array(noise)
-            print(noise.shape)
-            
-            trace_brut=np.average((np.array(spectra_brut[1])-np.array(spectra_brut[0]))/np.array(spectra_brut[0]),axis=0)
+            print('noise=',np.average(noise[0]))
+                  
+            trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
             self.trace[i] = trace_brut[(wl>minwl)&(wl<maxwl)]
             
             
