@@ -2785,12 +2785,12 @@ class LaserCooling:
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.pos_var.set(0)
-        self.vel_var.set(2)
+        self.vel_var.set(5)
         self.vel_disp.set(10)
         min_var.set(-49)
         max_var.set(49)
         zero_var.set(44.66)
-        step_var.set(10000)
+        step_var.set(1000)
         utime_var.set(1)
 
         # Define entry boxes
@@ -3074,11 +3074,11 @@ class LaserCooling:
         self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
 
 
-        Pump_probe_graph = self.graph_dict['Pump_Probe']
-        Pump_probe_graph.axes.set_ylim([min_pos,zero])
-        Pump_probe_graph.axes.set_xlim([np.min(wl),np.max(wl)])
-        Pump_probe_graph.Line.set_xdata(wl)
-        Pump_probe_graph.Line.set_ydata(S)
+        # Pump_probe_graph = self.graph_dict['Pump_Probe']
+        # Pump_probe_graph.axes.set_ylim([min_pos,zero])
+        # Pump_probe_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        # Pump_probe_graph.Line.set_xdata(wl)
+        # Pump_probe_graph.Line.set_ydata(S)
         self.trace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
 
 
@@ -3102,35 +3102,30 @@ class LaserCooling:
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
                 on_off=int(arduino.read(1).decode('utf-8'))
-                S=self.Spectro.get_intensities()
-                spectra_brut[on_off].append(np.array(S))
+                spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
 
-
+            if len(spectra_brut[1])>len(spectra_brut[0]):
+                spectra_brut[1]=np.array(np.delete(spectra_brut[1],-1,0))
+            if len(spectra_brut[0])>len(spectra_brut[1]):
+                spectra_brut[0]=np.array(np.delete(spectra_brut[0],0,0))
+            
             spectra_brute=np.array(spectra_brut)
             
             spectra_brute[spectra_brute==0]=1
-
-
-            if len(spectra_brute[1])>len(spectra_brute[0]):
-                spectra_brute[1].pop(-1)
-            if len(spectra_brute[0])>len(spectra_brute[1]):
-                spectra_brute[0].pop(0)
-            
             
             spec_transpo=np.transpose(spectra_brute,axes=[0,2,1])
             for k in range(2):
                 for j in range(len(wl)):
                     noise[k].append(np.std(spec_transpo[k,j]))
             noise=np.array(noise)
-            print('noise=',np.average(noise[0]))
                   
             trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
-            self.trace[i] = trace_brut[(wl>minwl)&(wl<maxwl)]
+            self.trace[i] = trace_brut[(wl>minwl)&(wl<maxwl)]*1000
             
             
             # Actualise progress bar
             if progress:
-                progress['value'] = (i)/(nsteps)
+                progress['value'] = (i)/(nsteps) 
                 progress.update()
             # Actualise graph if required
             if (time.time() - last_gu) > update_time:
