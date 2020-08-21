@@ -2976,7 +2976,7 @@ class LaserCooling:
         parent2d = self.graph_dict["Pump_Probe"].parent
         self.graph_dict["Pump_Probe"].destroy_graph()
         self.graph_dict["Pump_Probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
-                                                       figsize=[2,2], data_size= np.transpose(self.trace).shape)
+                                                       figsize=[2,2], data_size= np.transpose(self.trace).shape,cmap='seismic')
         self.graph_dict["Pump_Probe"].change_data(np.transpose(self.trace),False)
         self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl_crop[-1],self.wl_crop[0]))
         aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
@@ -3029,7 +3029,7 @@ class LaserCooling:
             # This is a fail safe in case you don't know your device
         if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
-                                'of your physik instrument device')
+                                'of your SMC stage')
             return
         
 

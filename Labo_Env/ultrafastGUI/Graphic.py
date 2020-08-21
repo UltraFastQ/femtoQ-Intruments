@@ -570,7 +570,7 @@ class SubGraphFrame:
         """
         This function is a compilation of two line to destroy a graph ie if
         you want to replace it or just get rid of it. It does not destroy the
-        class itself so creating the canvas and the toolbar would make it
+        clas itself so creating the canvas and the toolbar would make it
         appear the same way it was before.
 
         """
