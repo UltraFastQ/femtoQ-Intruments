@@ -2535,9 +2535,6 @@ class Electro_Optic_Sampling:
             elif order == 4:
                 Settling_time = 10.05*tc
             time.sleep(Settling_time)
-            print('wait on')
-        else:
-            print('wait off')
         self.Zurich.info['daq'].subscribe(path)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
 
