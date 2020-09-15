@@ -132,7 +132,18 @@ class Spectro:
         self.wv_graphic.Line.set_ydata(np.zeros(len(wavelengths)))
         # update function of the GraphicFrame class
         self.wv_graphic.update_graph()
-
+    def overlay_spectrum(self,ref):
+        """
+        Plots an overlay reference spectrum
+        """
+        if not self.spectro:
+            return
+        ref = ref.get()
+        Overlay = fQ.ezcsvload(ref)
+        self.wv_graphic.LineRef, =  self.wv_graphic.axes.plot([], [])
+        self.wv_graphic.LineRef.set_xdata(Overlay[0])
+        self.wv_graphic.LineRef.set_ydata(Overlay[1])
+        
     def adjust_integration_time(self, variable):
         """
         This function is to adjust the integration time of the device each

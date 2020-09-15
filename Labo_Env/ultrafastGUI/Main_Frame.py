@@ -1705,7 +1705,16 @@ class SpectroFrame(tk.Frame):
         save = tk.Button(option_frame, text='Save current spectrum', width=8,
                         command=lambda:self.Spectro.save_data(ave=ave_var))
         save.grid(row=13, column=0, sticky='nsew', columnspan=2)
-
+        ref_lbl = tk.Label(option_frame,text='Reference file:')
+        ref_lbl.grid(row=14,column=0,sticky='nsew',columnspan=2)
+        ref_evar = tk.StringVar()
+        ref_evar.set('TiRef_27_08_2020_S090182_13-25-37-631.txt')
+        ref_e = tk.Entry(option_frame, textvariable=ref_evar, width=8)
+        ref_e.grid(row=15,column=0,sticky='nsew',columnspan=2)
+        ref = tk.Button(option_frame, text='Add Overlay Ref',
+                    command=lambda: self.Spectro.overlay_spectrum(ref=ref_evar))
+        ref.grid(row=16,column=0,sticky='nsew',columnspan=2)
+        
         for i in range(1,5):
             self.grid_columnconfigure(i, weight=1)
         self.grid_rowconfigure(0, weight=1)
