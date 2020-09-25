@@ -2707,6 +2707,7 @@ class Electro_Optic_Sampling:
             self.Phase_graph_ax.set_ylim([-3*np.pi,3*np.pi])
             self.LinePhase.set_xdata(self.v)
             self.LinePhase.set_ydata([phi])
+            self.LinePhase.set_linestyle(':')
             Spectrum_graph.update_graph()
         
         # Going back to initial state
