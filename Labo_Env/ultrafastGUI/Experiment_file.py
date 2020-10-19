@@ -2615,7 +2615,7 @@ class Electro_Optic_Sampling:
         scan_graph.update_graph()
         EOS_graph = self.graph_dict['Signal']
         EOS_graph.axes.set_ylim([-10,10])
-        EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e12, max_pos*2/1000/c*1e12])
+        EOS_graph.axes.set_xlim([0, (max_pos-min_pos)*2/1000/c*1e15])
         EOS_graph.Line.set_xdata([])
         EOS_graph.Line.set_ydata([])
         if self.plotRefSignal is True:
@@ -2634,7 +2634,7 @@ class Electro_Optic_Sampling:
             # Measure real position
             pos[i] = self.PI.get_position()
             # Measure signal
-            self.t[i] = pos[i]*2/1000/c*1e12
+            self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
             self.S[i] = np.mean(self.Zurich_acquire())*1000
             
             # Actualise progress bar
@@ -2679,7 +2679,7 @@ class Electro_Optic_Sampling:
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
         
             # Display spectrum graph
-            spec_t = self.t*1e-12
+            spec_t = self.t*1e-15
             t_sort, indices = np.unique(spec_t,return_index=True)
             S_sort = self.S[indices]
             func = interp.interp1d(t_sort, S_sort,kind='quadratic')
@@ -2704,7 +2704,7 @@ class Electro_Optic_Sampling:
             a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
             slope = a*self.v+b
             phi = phi - slope
-            self.Phase_graph_ax.set_ylim([-3*np.pi,3*np.pi])
+            self.Phase_graph_ax.set_ylim([-2*np.pi,2*np.pi])
             self.LinePhase.set_xdata(self.v)
             self.LinePhase.set_ydata([phi])
             self.LinePhase.set_linestyle(':')
