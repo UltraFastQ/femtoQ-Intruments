@@ -12,7 +12,7 @@ import femtoQ.tools as fq
 import scipy.interpolate as interp
 import scipy.signal as sgn
 import serial
-
+import os
 
 class CreateLayout:
     """
@@ -2536,9 +2536,6 @@ class Electro_Optic_Sampling:
             elif order == 4:
                 Settling_time = 10.05*tc
             time.sleep(Settling_time)
-            print('wait on')
-        else:
-            print('wait off')
         self.Zurich.info['daq'].subscribe(path)
         data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
 
@@ -2619,7 +2616,7 @@ class Electro_Optic_Sampling:
         scan_graph.update_graph()
         EOS_graph = self.graph_dict['Signal']
         EOS_graph.axes.set_ylim([-10,10])
-        EOS_graph.axes.set_xlim([min_pos*2/1000/c*1e12, max_pos*2/1000/c*1e12])
+        EOS_graph.axes.set_xlim([0, (max_pos-min_pos)*2/1000/c*1e15])
         EOS_graph.Line.set_xdata([])
         EOS_graph.Line.set_ydata([])
         if self.plotRefSignal is True:
@@ -2638,7 +2635,7 @@ class Electro_Optic_Sampling:
             # Measure real position
             pos[i] = self.PI.get_position()
             # Measure signal
-            self.t[i] = pos[i]*2/1000/c*1e12
+            self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
             self.S[i] = np.mean(self.Zurich_acquire())*1000
             
             # Actualise progress bar
@@ -2683,7 +2680,7 @@ class Electro_Optic_Sampling:
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
         
             # Display spectrum graph
-            spec_t = self.t*1e-12
+            spec_t = self.t*1e-15
             t_sort, indices = np.unique(spec_t,return_index=True)
             S_sort = self.S[indices]
             func = interp.interp1d(t_sort, S_sort,kind='quadratic')
@@ -2708,9 +2705,10 @@ class Electro_Optic_Sampling:
             a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
             slope = a*self.v+b
             phi = phi - slope
-            self.Phase_graph_ax.set_ylim([-3*np.pi,3*np.pi])
+            self.Phase_graph_ax.set_ylim([-2*np.pi,2*np.pi])
             self.LinePhase.set_xdata(self.v)
             self.LinePhase.set_ydata([phi])
+            self.LinePhase.set_linestyle(':')
             Spectrum_graph.update_graph()
         
         # Going back to initial state
@@ -2796,12 +2794,12 @@ class LaserCooling:
         # delay_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.pos_var.set(0)
-        self.vel_var.set(5)
-        self.filename_var.set('Test_0.txt')
+        self.vel_var.set(1)
+        self.filename_var.set("Test_0")
         self.vel_disp.set(10)
         min_var.set(-49)
         max_var.set(49)
-        zero_var.set(44.66)
+        zero_var.set(39.423)
         step_var.set(1000)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
@@ -3017,6 +3015,14 @@ class LaserCooling:
     def start_experiment(self, min_pos=None, max_pos=None, zero=None, step = None, progress=None, update_time=None,
                          inte_time=None, int_period=None, minwl=None, maxwl=None):
 
+        filename_final=self.filename_var.get()
+        try:
+            os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final))        
+        except OSError:
+            l=1
+        else:
+            l=0
+
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
@@ -3101,7 +3107,11 @@ class LaserCooling:
         signal_graph.Line.set_xdata(self.wl_crop)
         signal_graph.Line.set_ydata(self.trace[0])
 
-
+        f1=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_spectre_brute_off.txt",'a')
+        f2=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_spectre_brute_on.txt",'a')
+        
+        f1.truncate(0)
+        f2.truncate(0)
 
         
             # Main scanning and measurements
@@ -3134,6 +3144,9 @@ class LaserCooling:
             
             spectra_brute[spectra_brute==0]=1
             
+            np.savetxt(f1,[np.average(spectra_brute[0],axis=0)], fmt="%s", delimiter=", ")
+            np.savetxt(f2,[np.average(spectra_brute[1],axis=0)], fmt="%s", delimiter=", ")
+
             spec_transpo=np.transpose(spectra_brute,axes=[0,2,1])
             for k in range(2):
                 for j in range(len(wl)):
@@ -3159,7 +3172,14 @@ class LaserCooling:
                 
             if not self.running:
                 break
-                        
+               
+        f1.close()
+        f2.close()
+        
+        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
+        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wlcrop.txt",self.wl_crop, fmt="%s", delimiter=", ")
+        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.txt",pos , fmt="%s", delimiter=", ")
+            
         if not self.running:
             return_vel = tk.IntVar()
             return_vel.set(5)
@@ -3187,16 +3207,7 @@ class LaserCooling:
 
         # Final calculations
         self.timeDelay =self.pos_2_delay(zero,pos)
-
-        f = open("E:\Gabriel\Laser_Cooling_measurement" + str(self.filename_var), "w")
-        f.write("gab was here")
-
-        # f.write(str(self.wl_crop))
-        # f.write("\n")
-        # f.write(str(pos))
-        # f.write("\n")
-        # f.write(str(self.trace))
-        f.close()
+        
 
 
         # Going back to initial state

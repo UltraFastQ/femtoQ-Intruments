@@ -1704,7 +1704,16 @@ class SpectroFrame(tk.Frame):
         save = tk.Button(option_frame, text='Save current spectrum', width=8,
                         command=lambda:self.Spectro.save_data(ave=ave_var))
         save.grid(row=13, column=0, sticky='nsew', columnspan=2)
-
+        ref_lbl = tk.Label(option_frame,text='Reference file:')
+        ref_lbl.grid(row=14,column=0,sticky='nsew',columnspan=2)
+        ref_evar = tk.StringVar()
+        ref_evar.set('TiRef_27_08_2020_S090182_13-25-37-631.txt')
+        ref_e = tk.Entry(option_frame, textvariable=ref_evar, width=8)
+        ref_e.grid(row=15,column=0,sticky='nsew',columnspan=2)
+        ref = tk.Button(option_frame, text='Add Overlay Ref',
+                    command=lambda: self.Spectro.overlay_spectrum(ref=ref_evar))
+        ref.grid(row=16,column=0,sticky='nsew',columnspan=2)
+        
         for i in range(1,5):
             self.grid_columnconfigure(i, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -1964,7 +1973,7 @@ class Experiment(ttk.LabelFrame):
                              'Autocorrelation':['Delay [fs]','Normalized intensity']})
         create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
                       option=['Physics_Linear_Stage'],
-                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (ps)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         create_layout(name='2DSI', function_=Experiment_file.TwoDSI, option=['Physics_Linear_Stage','Spectrometer'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
                              '2DSI trace': ['Wavelengths [nm]', 'Delay [um]'], 
