@@ -4,7 +4,6 @@ from tkinter import ttk
 from tkinter import filedialog
 from tkinter import messagebox
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import numpy as np
 import Graphic
 import datetime
@@ -631,7 +630,7 @@ class ZeroDelay:
             answ = messagebox.askyesno(title='INFO', message='Experiment was'+
                                        'aborted./n Do you want to save your Data?')
             if answ:
-                file_data = np.array([abs_vals[:i,:], values[:i, :]])
+                file_data = np.array([absc_vals[:i,:], values[:i, :]])
                 np.save('measurements/' + filename, file_data)
         else:
             self.PI.device.MOV(self.PI.axes, min_pos)
@@ -2777,7 +2776,6 @@ class LaserCooling:
                 # Pi Stage
         con_b = tk.Button(frame, text='Connect SMC linear stage',
                                       command=lambda: connect_and_disable_stage(self,dev_name='SMC100'))
-                # 
 
                 
         # Define variables
@@ -2786,9 +2784,8 @@ class LaserCooling:
         self.vel_var = tk.DoubleVar()
         self.filename_var = tk.StringVar()
         self.vel_disp = tk.DoubleVar()
-
-        min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
+        min_var = tk.DoubleVar()
         zero_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         # delay_var = tk.DoubleVar()
@@ -2796,11 +2793,11 @@ class LaserCooling:
         self.pos_var.set(0)
         self.vel_var.set(1)
         self.filename_var.set("2021-MM-JJ_Test_1")
-        self.vel_disp.set(10)
-        min_var.set(38.8)
-        max_var.set(40)
-        zero_var.set(39.423)
-        step_var.set(50)
+        self.vel_disp.set(2)
+        min_var.set(38.75)
+        max_var.set(45)
+        zero_var.set(39.123)
+        step_var.set(3)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
         utime_var.set(1)
@@ -2880,7 +2877,7 @@ class LaserCooling:
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
-        inte_var.set(5)
+        inte_var.set(9)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=16, column=0, sticky='nsw')
         inte_e.grid(row=16, column=1,sticky='nse')
@@ -2895,7 +2892,7 @@ class LaserCooling:
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
-        minwl_var.set(890)
+        minwl_var.set(950)
         maxwl_var.set(1050)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
@@ -3098,13 +3095,12 @@ class LaserCooling:
         spectro_graph.Line.set_ydata(S)
         minwl = minwl.get()
         maxwl = maxwl.get()
-        self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
 
-        self.trace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
+        self.trace = np.zeros((nsteps+1,wl.shape[0]))
         signal_graph = self.graph_dict['Signal']
         signal_graph.axes.set_ylim([1,-1])
-        signal_graph.axes.set_xlim([np.min(self.wl_crop),np.max(self.wl_crop)])
-        signal_graph.Line.set_xdata(self.wl_crop)
+        signal_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        signal_graph.Line.set_xdata(wl)
         signal_graph.Line.set_ydata(self.trace[0])
 
         f1=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_spectre_brute_off.txt",'a')
@@ -3123,7 +3119,6 @@ class LaserCooling:
             
 
             spectra_brut=[[],[]]
-            noise=[[],[]]
             
             # Acquire spectrum and plot graph
             arduino.reset_input_buffer()
@@ -3144,23 +3139,19 @@ class LaserCooling:
             
             spectra_brute[spectra_brute==0]=1
             
-            np.savetxt(f1,[np.average(spectra_brute[0],axis=0)], fmt="%s", delimiter=", ")
-            np.savetxt(f2,[np.average(spectra_brute[1],axis=0)], fmt="%s", delimiter=", ")
+            np.savetxt(f1,np.average(spectra_brute[0],axis=0), fmt="%s", delimiter=", ")
+            np.savetxt(f2,np.average(spectra_brute[1],axis=0), fmt="%s", delimiter=", ")
 
             spec_transpo=np.transpose(spectra_brute,axes=[0,2,1])
-            for k in range(2):
-                for j in range(len(wl)):
-                    noise[k].append(np.std(spec_transpo[k,j]))
-            noise=np.array(noise)
                   
             trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
-            self.trace[i] = trace_brut[(wl>minwl)&(wl<maxwl)]
+            self.trace[i] = trace_brut
 
 
             scan_graph.Line.set_xdata(iteration[:i])
             scan_graph.Line.set_ydata(pos[:i])
             scan_graph.update_graph()
-            signal_graph.Line.set_xdata(self.wl_crop)
+            signal_graph.Line.set_xdata(wl)
             signal_graph.Line.set_ydata(self.trace[i])
             signal_graph.axes.set_ylim([np.min(self.trace[i])*1.1,np.max(self.trace[i])*1.1])
             signal_graph.update_graph()            
@@ -3177,9 +3168,9 @@ class LaserCooling:
         f2.close()
         
         np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
-        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wlcrop.txt",self.wl_crop, fmt="%s", delimiter=", ")
         np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.txt",pos , fmt="%s", delimiter=", ")
-            
+        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.txt",wl, fmt="%s", delimiter=", ")
+        
         if not self.running:
             return_vel = tk.IntVar()
             return_vel.set(5)
@@ -3195,7 +3186,7 @@ class LaserCooling:
             scan_graph.Line.set_ydata(pos)
             scan_graph.update_graph()
                 #Spectro signal and integrated signal
-            spectro_graph.Line.set_xdata(self.wl_crop)
+            spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(self.trace[i])
             spectro_graph.update_graph()
 
