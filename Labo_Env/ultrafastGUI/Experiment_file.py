@@ -2796,7 +2796,7 @@ class LaserCooling:
         self.vel_disp.set(2)
         min_var.set(38.75)
         max_var.set(45)
-        zero_var.set(39.123)
+        zero_var.set(-37.52)
         step_var.set(3)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
@@ -2877,7 +2877,7 @@ class LaserCooling:
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
-        inte_var.set(9)
+        inte_var.set(3)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=16, column=0, sticky='nsw')
         inte_e.grid(row=16, column=1,sticky='nse')
@@ -3080,7 +3080,7 @@ class LaserCooling:
 
 
         # Define Arduino
-        arduino=serial.Serial('COM9',115200,timeout=None)
+        # arduino=serial.Serial('COM9',115200,timeout=None)
 
 
             # Spectro
@@ -3103,58 +3103,55 @@ class LaserCooling:
         signal_graph.Line.set_xdata(wl)
         signal_graph.Line.set_ydata(self.trace[0])
 
-        f1=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_spectre_brute_off.txt",'a')
-        f2=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_spectre_brute_on.txt",'a')
-        
-        f1.truncate(0)
-        f2.truncate(0)
 
         
             # Main scanning and measurements
         for i in range(nsteps+1):
+            
+            try:
+                os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum")
+            except OSError:
+                l=1
+            else:
+                l=0
+
+            
             # Move stage to required position
             self.PI.go_2position(move[i])
             # Measure real position
             pos[i] = self.PI.get_position()
             
 
-            spectra_brut=[[],[]]
+            spectra_brut=[]
             
-            # Acquire spectrum and plot graph
-            arduino.reset_input_buffer()
-            while int(arduino.readline(1).decode('utf-8'))!=0:
-                continue
             
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
-                on_off=int(arduino.read(1).decode('utf-8'))
-                spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
+                spectra_brut.append(np.array(self.Spectro.get_intensities()))
 
-            if len(spectra_brut[1])>len(spectra_brut[0]):
-                spectra_brut[1]=np.array(np.delete(spectra_brut[1],-1,0))
-            if len(spectra_brut[0])>len(spectra_brut[1]):
-                spectra_brut[0]=np.array(np.delete(spectra_brut[0],0,0))
             
             spectra_brute=np.array(spectra_brut)
             
             spectra_brute[spectra_brute==0]=1
             
-            np.savetxt(f1,np.average(spectra_brute[0],axis=0), fmt="%s", delimiter=", ")
-            np.savetxt(f2,np.average(spectra_brute[1],axis=0), fmt="%s", delimiter=", ")
+            # f1=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i) + ".npy",'a')
+            
+            # f1.truncate(0)
+            
+            np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i) + ".npy",spectra_brute)
 
-            spec_transpo=np.transpose(spectra_brute,axes=[0,2,1])
                   
-            trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
-            self.trace[i] = trace_brut
+            # trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
+            # self.trace[i] = trace_brut
 
 
             scan_graph.Line.set_xdata(iteration[:i])
             scan_graph.Line.set_ydata(pos[:i])
             scan_graph.update_graph()
-            signal_graph.Line.set_xdata(wl)
-            signal_graph.Line.set_ydata(self.trace[i])
-            signal_graph.axes.set_ylim([np.min(self.trace[i])*1.1,np.max(self.trace[i])*1.1])
-            signal_graph.update_graph()            
+            # signal_graph.Line.set_xdata(wl)
+            # signal_graph.Line.set_ydata(self.trace[i])
+            # signal_graph.axes.set_ylim([np.min(self.trace[i])*1.1,np.max(self.trace[i])*1.1])
+            # signal_graph.update_graph()            
             
             # Actualise progress bar
             if progress:
@@ -3164,12 +3161,11 @@ class LaserCooling:
             if not self.running:
                 break
                
-        f1.close()
-        f2.close()
+        # f1.close()
         
-        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
-        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.txt",pos , fmt="%s", delimiter=", ")
-        np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.txt",wl, fmt="%s", delimiter=", ")
+        # np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
+        np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npzy",pos)
+        np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.npy",wl)
         
         if not self.running:
             return_vel = tk.IntVar()
@@ -3208,4 +3204,4 @@ class LaserCooling:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
-        self.adjust_2dgraph()        
+        # self.adjust_2dgraph()        
