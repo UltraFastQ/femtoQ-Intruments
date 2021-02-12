@@ -2877,7 +2877,7 @@ class LaserCooling:
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
-        inte_var.set(3)
+        inte_var.set(1)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
         inte_lbl.grid(row=16, column=0, sticky='nsw')
         inte_e.grid(row=16, column=1,sticky='nse')
@@ -3138,7 +3138,7 @@ class LaserCooling:
             
             # f1.truncate(0)
             
-            np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i) + ".npy",spectra_brute)
+            np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i) + ".npz",z_init=spectra_brute)
 
                   
             # trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
@@ -3164,8 +3164,8 @@ class LaserCooling:
         # f1.close()
         
         # np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
-        np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npzy",pos)
-        np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.npy",wl)
+        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npy",pos=pos)
+        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.npy",wl=wl)
         
         if not self.running:
             return_vel = tk.IntVar()
