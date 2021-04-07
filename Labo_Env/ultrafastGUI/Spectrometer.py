@@ -291,6 +291,19 @@ class Spectro:
         asked and save it in the dark_array attribute
         """
         self.dark_array = self.spectro.intensities()
+        
+        
+    def measure_average_darkspectrum(self,numDark = 1):
+        """
+        Function that extract a simple intensity with the integration time
+        asked and save it in the dark_array attribute
+        """
+        tmp = self.spectro.intensities()
+        
+        for ii in range(numDark-1):
+            tmp += self.spectro.intensities()
+        self.dark_array = tmp / numDark
+        
 
     def enable_eff(self, variable):
         """

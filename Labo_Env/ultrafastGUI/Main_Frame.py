@@ -1987,6 +1987,8 @@ class Experiment(ttk.LabelFrame):
                              'Signal': ['wavelength (nm)', 'Intensity (arb.u.)'],
                              'Pump_Probe': ['Wavelengths [nm]', 'Delay [um]'], 
 })
+        create_layout(name='Batch Spectra', function_=Experiment_file.batchSpectra, option=['Spectrometer'],
+                      graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
