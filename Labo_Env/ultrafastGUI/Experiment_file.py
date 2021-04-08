@@ -2796,7 +2796,7 @@ class LaserCooling:
         self.vel_disp.set(2)
         min_var.set(38.75)
         max_var.set(45)
-        zero_var.set(-37.32)
+        zero_var.set(-30.025)
         step_var.set(3)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
