@@ -12,6 +12,7 @@ import Monochromator
 import Spectrometer
 import Physics_Instrument
 import UeyeCam
+import Alazar
 import threading
 
 # Main Frame creation
@@ -29,6 +30,7 @@ class MainFrame(tk.Tk):
         # change some things in the other document in their connection method
         self.Frame.append(Experiment(self, mainf=self))
         self.Frame.append(Ueye_Frame(self, mainf=self))
+        self.Frame.append(AlazarFrame(self, mainf=self))
         self.Frame[0].grid(row=0, column=0, sticky='nsew')
         # Mini Image and Mainframe title
         directory = Path.cwd() 
@@ -48,6 +50,7 @@ class MainFrame(tk.Tk):
         winmenu.add_command(label='Spectro.', underline=0, command=lambda: self.frame_switch(self.Frame[3]))
         winmenu.add_command(label='Experiment', underline=0, command=lambda: self.frame_switch(self.Frame[4]))
         winmenu.add_command(label='Ueye', underline=0, command=lambda: self.frame_switch(self.Frame[5]))
+        winmenu.add_command(label='Alazar', underline=0, command=lambda: self.frame_switch(self.Frame[6]))
         graphmenu = tk.Menu(menubar, tearoff=False)
         menubar.add_cascade(label='Graph', underline=0, menu=graphmenu)
         graphmenu.add_command(label='Black theme', underline=0,
@@ -82,6 +85,8 @@ class MainFrame(tk.Tk):
             pass
         if self.Frame[5].ueyec.camera:
             self.Frame[5].ueyec.disconnect_device()
+        if self.Frame[6].alazar:
+            self.Frame[6].alazar.cleanup()
 
         self.destroy()
 
@@ -1916,6 +1921,115 @@ class Ueye_Frame(tk.Frame):
                 self.after(t, self.measure, button, variable, dual_p, average,
                            fwhm)
 
+# Frame dispositions for the Alazar interactions
+class AlazarFrame(tk.Frame):
+    def __init__(self, parent, mainf=None):
+        super().__init__(parent)
+        self.parent = parent
+
+        self.config(bg='brown', width=100, height=100)
+
+        graph_frame = tk.Frame(self)
+        graph_frame.grid(row=0, column=1, sticky='nsew', rowspan=3)
+        graph_frame.grid_rowconfigure(0, weight=4)
+        graph_frame.grid_columnconfigure(1, weight=4)
+        self.graph = Graphic.GraphicFrame(graph_frame, axis_name=['Time [ns]', 'Signal [mV]'], figsize=[9, 6])
+
+        self.alazar = Alazar.Alazar(mainf=mainf, graph=self.graph)
+
+        # --[ Region affecting acquisition ]--
+        config_frame = ttk.Labelframe(self, text='Config')
+        config_frame.grid(row=0, column=0, sticky='nsew')
+        config_frame.grid_rowconfigure(0, weight=1)
+        config_frame.grid_columnconfigure(0, weight=1)
+        row = 1
+
+        # Start/stop button
+        start_button_text = tk.StringVar(value='Start')
+        get_start_state = lambda: True if start_button_text.get() == 'Start' else False
+        start_button = None
+        def start_button_command():
+            if start_button_text.get() == 'Start':
+                start_button_text.set('Stop')
+                start_button.configure(bg='red')
+                self.alazar.start_acquisition()
+            else:
+                start_button_text.set('Start')
+                start_button.configure(bg='green')
+                self.alazar.stop_acquisition()
+        start_button = tk.Button(config_frame, textvariable=start_button_text, command=start_button_command, bg='green')
+        start_button.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Chan A enable/disable
+        chan_a_enabled_button = tk.Checkbutton(config_frame, text='Chan A Enabled', variable=self.alazar.acq_opts.chan_a_enabled, command=lambda: self.alazar.reset_acquisition())
+        chan_a_enabled_button.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Chan B enable/disable
+        chan_b_enabled_button = tk.Checkbutton(config_frame, text='Chan B Enabled', variable=self.alazar.acq_opts.chan_b_enabled, command=lambda: self.alazar.reset_acquisition())
+        chan_b_enabled_button.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Sample rate label
+        sample_rate_label = tk.Label(config_frame, text='Sample Rate', justify=tk.LEFT)
+        sample_rate_label.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Sample rate menu
+        sample_rate_menu = tk.OptionMenu(config_frame, self.alazar.acq_opts.sample_rate_var, *self.alazar.acq_opts.sample_rate_opts.keys(), command=lambda _: self.alazar.reset_acquisition())
+        sample_rate_menu.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # --[ Region not affecting acquisition ]--
+        # Channel A offset slider
+        chan_a_offset_slider = tk.Scale(config_frame, orient=tk.HORIZONTAL, label='Chan A Offset', resolution=0.001, variable=self.alazar.acq_opts.chan_a_offset, from_=-0.400, to=0.400, digits=3, command=lambda _: self.alazar.update_graph())
+        chan_a_offset_slider.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Channel B offset slider
+        chan_b_offset_slider = tk.Scale(config_frame, orient=tk.HORIZONTAL, label='Chan B Offset', resolution=0.001, variable=self.alazar.acq_opts.chan_b_offset, from_=-0.400, to=0.400, digits=3, command=lambda _: self.alazar.update_graph())
+        chan_b_offset_slider.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Time offset slider
+        time_offset_slider = tk.Scale(config_frame, orient=tk.HORIZONTAL, label='Time Offset', resolution=1, variable=self.alazar.acq_opts.time_offset, from_=-999, to=999, digits=0, command=lambda _: self.alazar.update_graph())
+        time_offset_slider.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Time offset units
+        time_offset_menu = tk.OptionMenu(config_frame, self.alazar.acq_opts.time_offset_units_var, *self.alazar.acq_opts.time_offset_units_opts.keys(), command=lambda _: self.alazar.update_graph())
+        time_offset_menu.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Trigger on/off
+        trigger_enabled_button = tk.Checkbutton(config_frame, text='Trigger Enabled', variable=self.alazar.acq_opts.trigger_enabled, command=lambda: self.alazar.update_graph())
+        trigger_enabled_button.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Trigger level
+        trig_level_slider = tk.Scale(config_frame, orient=tk.HORIZONTAL, label='Trigger Level', resolution=0.001, variable=self.alazar.acq_opts.trig_level, from_=-0.400, to=0.400, digits=3, command=lambda _: self.alazar.update_graph())
+        trig_level_slider.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Time zoom
+        time_zoom_level_slider = tk.Scale(config_frame, orient=tk.HORIZONTAL, label='Time Zoom Level', resolution=1, variable=self.alazar.acq_opts.time_zoom_level, from_=1, to=10, digits=0, command=lambda _: self.alazar.update_graph())
+        time_zoom_level_slider.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Channel A zoom
+        chan_a_zoom_level_slider = tk.Scale(config_frame, orient=tk.HORIZONTAL, label='Chan A Zoom Level', resolution=1, variable=self.alazar.acq_opts.chan_a_zoom_level, from_=1, to=10, digits=0, command=lambda _: self.alazar.update_graph())
+        chan_a_zoom_level_slider.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        # Channel B zoom
+        chan_b_zoom_level_slider = tk.Scale(config_frame, orient=tk.HORIZONTAL, label='Chan B Zoom Level', resolution=1, variable=self.alazar.acq_opts.chan_b_zoom_level, from_=1, to=10, digits=0, command=lambda _: self.alazar.update_graph())
+        chan_b_zoom_level_slider.grid(row=row, column=0, sticky='nsew')
+        row += 1
+
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
 # Window for all of the experiement
 class Experiment(ttk.LabelFrame):
