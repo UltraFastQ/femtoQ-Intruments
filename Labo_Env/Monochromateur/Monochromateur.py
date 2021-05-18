@@ -5,9 +5,8 @@ Par Émile Jetzer
 Basé sur un programme par Nicolas Perron
 """
 
-import struct
-import time
-import serial
+import serial, time
+from serial.tools.list_ports import comports
 from tkinter import messagebox
 from pathlib import Path
 import pandas as pd
@@ -36,9 +35,10 @@ Le programme cherche la feuille cal, et utilise les colonnes cadran & longueur.
 
         """
         self.df = pd.read_excel(chemin, sheet_name='cal', usecols=[
-                                'cadran', 'longueur'])
-        self._longueur_donde = interp1d(self.df.cadran, self.df.longueur)
-        self._affichage_cadran = interp1d(self.df.longueur, self.df.cadran)
+                                'cadran', 'longueur', 'moteur'])
+        
+        interpolateur = lambda x, y: interp1d(x, y, fill_value='extrapolate', bounds_error=False)
+        self._pas_moteur = interpolateur(self.df.longueur, self.df.moteur)
 
     def longueur_donde(self, cadran: float) -> float:
         """
@@ -73,6 +73,10 @@ Le programme cherche la feuille cal, et utilise les colonnes cadran & longueur.
 
         """
         return self._affichage_cadran(longueur)
+    
+    def pas_à_faire(self, départ: float, fin: float):
+        pas = int(self._pas_moteur(fin) - self._pas_moteur(départ))
+        return abs(pas), np.sign(pas)
 
 
 class Arduino:
@@ -116,7 +120,7 @@ class Arduino:
             self.connexion.baudrate = self.baudrate
             self.connexion.open()
 
-    def écrire(self, octets: bytes):
+    def écrire(self, octets: str):
         """
         Écrire sur la carte Arduino.
 
@@ -130,9 +134,10 @@ class Arduino:
         None.
 
         """
-        self.connexion.write(octets)
+        self.connexion.write(bytes(octets, encoding='utf-8'))
+        self.connexion.flush()
 
-    def lire(self, caractères: int) -> bytes:
+    def lire(self, caractères: int = None) -> str:
         """
         Lire une série de caractères de la carte Arduino.
 
@@ -147,7 +152,10 @@ class Arduino:
             Caractères lus.
 
         """
-        return self.connexion.read(caractères)
+        if caractères is None:
+            caractères = self.connexion.in_waiting
+        
+        return str(self.connexion.read(caractères), encoding='utf-8')
 
     def déconnecter(self):
         """
@@ -198,7 +206,6 @@ class Monochromateur:
     def __init__(self,
                  arduino: Arduino,
                  référence: Référence,
-                 position_de_départ: float,
                  mainf=None):
         """
         Interface de contrôle d'un monochromateur.
@@ -222,12 +229,11 @@ class Monochromateur:
         self.arduino: Arduino = arduino
         self.mainf = mainf
         self.référence: Référence = référence
-        self.position: float = position_de_départ
+        self.longueur_donde: float = 0
 
-        self.côté: str = ''
+        self.direction: int = 0
         self.fini: bool = True
-        self.facteur_de_pas: float = 2  # Obtenu expérimentalement
-        self.décalage_hystérésie: float = 3  # Obtenu expérimentalement
+        self.hystérésie: float = 28  # Obtenu expérimentalement
 
     def connecter(self, exp_dependencies: bool = False) -> Arduino:
         """
@@ -251,36 +257,12 @@ class Monochromateur:
                 experiments[experiment].update_options('Monochrom')
 
         return self.arduino
+    
+    def déconnecter(self):
+        self.aller_a_longueur_donde(0)
+        self.arduino.déconnecter()
 
-    def régler_la_direction(self, direction: int) -> str:
-        """
-        Régler la direction du moteur du monochromateur.
-
-        Parameters
-        ----------
-        direction : int
-            Nombre négatif pour descendre, positif pour monter.
-
-        Returns
-        -------
-        str
-            Direction choisie, 'f' ou 'r'.
-
-        """
-        if self.arduino.connexion.is_open:
-            côté: str = {1: 'f', 0: '', -1: 'r'}[np.sign(direction)]
-
-            if self.côté is not côté:
-                self.correction_hystérésie(côté)
-                time.sleep(1)
-
-            self.arduino.connexion.write(bytes(côté, encoding='utf-8'))
-
-            self.côté = côté
-
-        return côté
-
-    def bouger(self, nombre_de_pas: int):
+    def bouger(self, nombre_de_pas: int, direction: int):
         """
         Faire tourner le moteur de nombre_de_pas.
 
@@ -294,22 +276,19 @@ class Monochromateur:
         None.
 
         """
-        if self.arduino.connexion.is_open:
-            module_de_pas = nombre_de_pas % 255
-            grands_pas = nombre_de_pas // 255
+        if direction and (self.direction/direction == -1):
+            nombre_de_pas += self.hystérésie
+        self.direction = direction
+        
+        self.arduino.écrire(f'{nombre_de_pas}\t{direction}')
+        while not self.arduino.connexion.in_waiting:
+            pass
+        limites = self.arduino.lire()
+        t, diff = [int(i) for i in limites.split('\t')]
+        
+        return diff
 
-            # Envoyer les instructions au Arduino
-            for i in range(grands_pas):
-                self.arduino.connexion.write(struct.pack('>B', 255))
-                # Permettre l'exécution de fonctions externes entre
-                # les déplacements
-                yield 255
-
-            self.arduino.connexion.write(struct.pack('>B', module_de_pas))
-            yield module_de_pas
-
-    def aller_a_longueur_donde(self,
-                               longueur_donde: float) -> 'Monochromateur':
+    def aller_a_longueur_donde(self, longueur_donde: float) -> int:
         """
         Amener le monochromateur à la longueur d'onde longueur_donde.
 
@@ -324,54 +303,27 @@ class Monochromateur:
             Object de contrôle.
 
         """
-        position_finale: float = self.référence.affichage_cadran(
-            longueur_donde)
-        différence: float = position_finale - self.position
+        pas, direction = self.référence.pas_à_faire(self.longueur_donde, longueur_donde)
+        self.longueur_donde = longueur_donde
 
-        self.régler_la_direction(np.sign(différence))
-
-        self.fini = False
-
-        nombre_de_pas: int = round(abs(différence) * self.facteur_de_pas)
-
-        # Envoyer les instructions au Arduino
-        # Mettre à jour le compte de la position
-        for pas in self.bouger(nombre_de_pas):
-            self.position += np.sign(différence) * 255 / self.facteur_de_pas
-
-        self.fini = True
-
-        return self
-
-    def correction_hystérésie(self, côté: str) -> 'Monochromateur':
-        """
-        Corriger pour l'hystérésie du moteur lors d'un changement de direction.
-
-        Parameters
-        ----------
-        côté : str
-            Nouveau côté.
-
-        Returns
-        -------
-        Monochromateur
-            Objet de contrôle.
-
-        """
-        if self.arduino.is_open:
-            self.arduino.connexion.write(bytes(côté, encoding='utf-8'))
-            self.bouger(self.décalage_hystérésie)
-
-        return self
+        return self.bouger(pas, direction)
 
 
 if __name__ == '__main__':
     ref = Référence('ref.xlsx')
 
-    ports = serial.tools.list_ports.comports()
+    ports = comports()
     for i, p in enumerate(ports):
         print(f'[{i}] {p.device} {p.description}')
-    port = ports[int(input('Port>'))]
+    port = ports[int(input('Port>'))].device
 
     with Arduino(port) as arduino:
-        mc = Monochromateur(arduino, ref, 1500)
+        mc = Monochromateur(arduino, ref)
+        mc.connecter()
+        
+        a = input('Longueur d\'onde: ')
+        while a:
+            mc.aller_a_longueur_donde(int(a))
+            a = input('Longueur d\'onde: ')
+        
+        mc.déconnecter()
