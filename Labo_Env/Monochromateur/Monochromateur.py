@@ -5,7 +5,8 @@ Par Émile Jetzer
 Basé sur un programme par Nicolas Perron
 """
 
-import serial, time
+import serial
+import time
 from serial.tools.list_ports import comports
 from tkinter import messagebox
 from pathlib import Path
@@ -34,49 +35,24 @@ Le programme cherche la feuille cal, et utilise les colonnes cadran & longueur.
         None.
 
         """
-        self.df = pd.read_excel(chemin, sheet_name='cal', usecols=[
-                                'cadran', 'longueur', 'moteur'])
-        
-        interpolateur = lambda x, y: interp1d(x, y, fill_value='extrapolate', bounds_error=False)
-        self._pas_moteur = interpolateur(self.df.longueur, self.df.moteur)
+        self.chemin = chemin
+        self.df = pd.read_excel(
+            chemin, sheet_name="cal", usecols=["cadran", "longueur", "moteur"]
+        )
 
-    def longueur_donde(self, cadran: float) -> float:
-        """
-        Calcule la longueur d'onde correspondant à l'affichage cadran.
+    def __interpolateur(self, x, y):
+        return interp1d(x, y, fill_value="extrapolate", bounds_error=False)
 
-        Parameters
-        ----------
-        cadran : float
-            Affichage du cadran.
+    def conversion(self, de: str, à: str):
+        return self.__interpolateur(self.df[de], self.df[à])
 
-        Returns
-        -------
-        float
-            Longueur d'onde correspondante.
-
-        """
-        return self._longueur_donde(cadran)
-
-    def affichage_cadran(self, longueur: float) -> float:
-        """
-        Calcule l'affichage du cadran pour la longueur d'onde longueur.
-
-        Parameters
-        ----------
-        longueur : float
-            Longueur d'onde.
-
-        Returns
-        -------
-        float
-            Affichage du cadran.
-
-        """
-        return self._affichage_cadran(longueur)
-    
     def pas_à_faire(self, départ: float, fin: float):
-        pas = int(self._pas_moteur(fin) - self._pas_moteur(départ))
+        fct = self.conversion("Longueur d'onde", "Pas moteurs")
+        pas = int(fct(fin) - fct(départ))
         return abs(pas), np.sign(pas)
+
+    def sauvegarder(self):
+        self.df.to_excel(self.chemin, 'cal')
 
 
 class Arduino:
@@ -113,8 +89,9 @@ class Arduino:
         """
         if self.connexion.is_open:
             messagebox.showinfo(
-                'Arduino déjà connecté',
-                f'Il y a déjà une connexion au port {self.port}.')
+                "Arduino déjà connecté",
+                f"Il y a déjà une connexion au port {self.port}.",
+            )
         else:
             self.connexion.port = self.port
             self.connexion.baudrate = self.baudrate
@@ -134,7 +111,7 @@ class Arduino:
         None.
 
         """
-        self.connexion.write(bytes(octets, encoding='utf-8'))
+        self.connexion.write(bytes(octets, encoding="utf-8"))
         self.connexion.flush()
 
     def lire(self, caractères: int = None) -> str:
@@ -154,8 +131,8 @@ class Arduino:
         """
         if caractères is None:
             caractères = self.connexion.in_waiting
-        
-        return str(self.connexion.read(caractères), encoding='utf-8')
+
+        return str(self.connexion.read(caractères), encoding="utf-8")
 
     def déconnecter(self):
         """
@@ -169,7 +146,7 @@ class Arduino:
         if self.connexion.is_open:
             self.connexion.close()
 
-    def __enter__(self) -> 'Arduino':
+    def __enter__(self) -> "Arduino":
         """
         Gestionnaire de contexte, retourne l'objet Arduino.
 
@@ -199,6 +176,9 @@ class Arduino:
         self.déconnecter()
         return False
 
+    def __bool__(self):
+        return self.connexion.is_open
+
 
 class Monochromateur:
     """Interface de contrôle d'un monochromateur."""
@@ -206,6 +186,7 @@ class Monochromateur:
     def __init__(self,
                  arduino: Arduino,
                  référence: Référence,
+                 longueur_de_calibration: float = 800.0,
                  mainf=None):
         """
         Interface de contrôle d'un monochromateur.
@@ -226,40 +207,34 @@ class Monochromateur:
         None.
 
         """
+        if isinstance(arduino, str):
+            arduino = Arduino(arduino)
+
         self.arduino: Arduino = arduino
-        self.mainf = mainf
+
+        if isinstance(référence, str) or isinstance(référence, Path):
+            référence = Référence(référence)
+
         self.référence: Référence = référence
-        self.longueur_donde: float = 0
 
+        self.mainf = mainf
+
+        self.longueur_donde: float = longueur_de_calibration
+        self.longueur_de_calibration: float = longueur_de_calibration
         self.direction: int = 0
-        self.fini: bool = True
-        self.hystérésie: float = 28  # Obtenu expérimentalement
+        self.hystérésie: int = 32  # Obtenu expérimentalement
 
-    def connecter(self, exp_dependencies: bool = False) -> Arduino:
-        """
-        Établir la connexion avec le monochromateur.
+    # Méthodes de compatibilité avec l'interface existante
 
-        Parameters
-        ----------
-        exp_dependencies : bool, optional
-            DESCRIPTION. The default is False.
-
-        Returns
-        -------
-        Arduino
-            Objet Arduino avec lequel la connexion a été établie.
-
-        """
+    def connect(self, exp_dependencies: bool = False):
         self.arduino.connecter()
         if exp_dependencies:
             experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
-                experiments[experiment].update_options('Monochrom')
+                experiments[experiment].update_options("Monochrom")
 
-        return self.arduino
-    
     def déconnecter(self):
-        self.aller_a_longueur_donde(0)
+        self.roll_dial(self.longueur_de_calibration)
         self.arduino.déconnecter()
 
     def bouger(self, nombre_de_pas: int, direction: int):
@@ -276,19 +251,24 @@ class Monochromateur:
         None.
 
         """
-        if direction and (self.direction/direction == -1):
+        if direction and (self.direction / direction == -1):
             nombre_de_pas += self.hystérésie
         self.direction = direction
-        
-        self.arduino.écrire(f'{nombre_de_pas}\t{direction}')
+
+        self.arduino.écrire(f"{nombre_de_pas}\t{direction}")
         while not self.arduino.connexion.in_waiting:
             pass
         limites = self.arduino.lire()
-        t, diff = [int(i) for i in limites.split('\t')]
-        
+        t, diff = [int(i) for i in limites.split("\t")]
+
+        if diff:
+            messagebox.showinfo(
+                'Too far!',
+                'The dial is going too far one way! The optical switches were awakened!'
+            )
         return diff
 
-    def aller_a_longueur_donde(self, longueur_donde: float) -> int:
+    def roll_dial(self, longueur_donde: float) -> int:
         """
         Amener le monochromateur à la longueur d'onde longueur_donde.
 
@@ -303,27 +283,77 @@ class Monochromateur:
             Object de contrôle.
 
         """
-        pas, direction = self.référence.pas_à_faire(self.longueur_donde, longueur_donde)
+        pas, direction = self.référence.pas_à_faire(
+            self.longueur_donde, longueur_donde)
         self.longueur_donde = longueur_donde
 
         return self.bouger(pas, direction)
 
+    def calibrate(self,
+                  spectro,
+                  variable):
+        if not spectro:
+            messagebox.showinfo(
+                title="Error", message="There is no spectrometer connected."
+            )
+            return
+        if not self.arduino:
+            messagebox.showinfo(
+                title="Error", message="The monochromator is not connected."
+            )
 
-if __name__ == '__main__':
-    ref = Référence('ref.xlsx')
+        response = messagebox.askyesno(
+            title="Visibility", message="Is the spectrum visible by the spectro?"
+        )
+
+        # Ignorer une réponse positive
+        if response == "no":
+            message = f'Is the dial under {self.longueur_de_calibration/2}?'
+            side = messagebox.askyesno(
+                title="Side", message=message)
+
+            if side == "yes":
+                self.roll_dial(200)
+            elif side == "no":
+                self.roll_dial(-200)
+
+        def màj_pos(spectro):
+            intensités = spectro.intensities()
+            longueurs_donde = spectro.wavelengths()
+            intensité_max = max(intensités[2:])
+            positions = [i for i, j in enumerate(
+                intensités) if j == intensité_max]
+            return longueurs_donde[positions[0]]
+
+        self.longueur_donde = màj_pos(spectro)
+        décalage = self.longueur_de_calibration - self.longueur_donde
+        while abs(décalage) > 0.5:
+            self.référence.df.longueur = self.référence.df.longueur - décalage
+            self.roll_dial(self.longueur_de_calibration)
+            self.longueur_donde = màj_pos(spectro)
+            décalage = self.longueur_de_calibration - self.longueur_donde
+
+        variable.set(self.longueur_donde)
+        self.référence.sauvegarder()
+        messagebox.showinfo(
+            title="Success", message="The monochromator is calibrated")
+
+
+if __name__ == "__main__":
+    ref = Référence("ref.xlsx")
 
     ports = comports()
     for i, p in enumerate(ports):
-        print(f'[{i}] {p.device} {p.description}')
-    port = ports[int(input('Port>'))].device
+        print(f"[{i}] {p.device} {p.description}")
+    port = ports[int(input("Port>"))].device
 
     with Arduino(port) as arduino:
         mc = Monochromateur(arduino, ref)
         mc.connecter()
-        
-        a = input('Longueur d\'onde: ')
+
+        a = input("Longueur d'onde: ")
         while a:
             mc.aller_a_longueur_donde(int(a))
-            a = input('Longueur d\'onde: ')
-        
+            a = input("Longueur d'onde: ")
+
         mc.déconnecter()
