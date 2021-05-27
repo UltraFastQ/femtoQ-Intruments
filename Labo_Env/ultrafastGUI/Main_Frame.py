@@ -1980,7 +1980,7 @@ class Experiment(ttk.LabelFrame):
                              'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]'],
                              'Shear reference':['Wavelengths [nm]', 'Stage posiiton [um]'],
                              'Shear calc. curve':['Stage position [um]','Shear frequency [THz]']})
-        create_layout(name='Laser Cooling', function_=Experiment_file.LaserCooling,
+        create_layout(name='Pump-Probe Spectrscopy', function_=Experiment_file.PumpProbe,
                       option=['Physics_Linear_Stage','Spectrometer'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
                              'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],

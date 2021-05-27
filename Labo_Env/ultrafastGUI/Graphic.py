@@ -701,14 +701,14 @@ class TwoDFrame:
         same as GraphicFrame for now.
     """
 
-    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1], data_size=(1000,1000)):
+    def __init__(self, parent, axis_name=['', ''], figsize=[1, 1], data_size=(1000,1000), cmap='viridis',aspect=1,vmin=0,vmax=1):
         # axis_name is a string tuple of the x and y axis in that order
         # figsize is a list of two component the first one is the x and the other one is the y axis
         self.parent = parent
         self.Fig = Figure(dpi=100, figsize=figsize)
         self.axes = self.Fig.add_axes([0.1, 0.1, 0.87, 0.87])
         self.data = np.zeros(data_size)
-        self.im = self.axes.imshow(self.data, vmin=0, vmax=1)
+        self.im = self.axes.imshow(self.data, vmin=vmin, vmax=vmax, cmap=cmap, aspect=aspect)
         #self.axes.tick_params(axis='both', which='major', labelsize=8)
         #self.axes.grid()
         #self.axes.set_xlabel(r'' + axis_name[0])
