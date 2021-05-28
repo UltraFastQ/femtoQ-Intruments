@@ -1,4 +1,5 @@
-﻿"""
+"""
+
 Monochromator - Contrôler un monochromateur.
 
 Par Émile Jetzer

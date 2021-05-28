@@ -10,6 +10,7 @@ import datetime
 import femtoQ.tools as fq
 import scipy.interpolate as interp
 import scipy.signal as sgn
+import scipy.constants as sc
 import serial
 import os
 
@@ -2737,7 +2738,7 @@ class Electro_Optic_Sampling:
 
 
 
-class LaserCooling:
+class PumpProbe:
 
     # This class is implicitly called in the main frame
     def __init__(self, mainf = None):
@@ -2748,10 +2749,10 @@ class LaserCooling:
         self.Spectro = mainf.Frame[3].Spectro
         
     def pos_2_delay(self,zero,pos):
-            return  2*(zero-pos)*1e9/(299792458)
+            return  (pos-zero)*2e12/(sc.c)
         
-    def delay_2_pos(self,delay):
-            return (299792458)*delay/(2e6)
+    def delay_2_pos(self,zero,delay):
+            return zero+(delay*sc.c/(2e12))
         
     def create_frame(self, frame):
         # Define labels
@@ -2760,10 +2761,10 @@ class LaserCooling:
         vel_lbl = tk.Label(frame, text = 'Set velocity to:')
         filename_lbl = tk.Label(frame, text = 'File name:')
         param_lbl = tk.Label(frame, text = 'Experiment parameters')
-        min_lbl = tk.Label(frame, text = 'Min. pos. (mm):')
-        max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
+        min_lbl = tk.Label(frame, text = 'Min. timing. (fs):')
+        max_lbl = tk.Label(frame, text = 'Max. timing (fs):')
         zero_lbl = tk.Label(frame, text = 'Pos. Zero Delay (mm):')
-        step_lbl = tk.Label(frame, text = 'Step size (um):')
+        step_lbl = tk.Label(frame, text = 'Step size (fs):')
         # delay_lbl = tk.Label(frame, text = 'Delay per step (ps):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
                 # 
@@ -2784,20 +2785,20 @@ class LaserCooling:
         self.vel_var = tk.DoubleVar()
         self.filename_var = tk.StringVar()
         self.vel_disp = tk.DoubleVar()
-        max_var = tk.DoubleVar()
-        min_var = tk.DoubleVar()
+        max_t_var = tk.DoubleVar()
+        min_t_var = tk.DoubleVar()
         zero_var = tk.DoubleVar()
-        step_var = tk.DoubleVar()
+        step_t_var = tk.DoubleVar()
         # delay_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.pos_var.set(0)
         self.vel_var.set(1)
         self.filename_var.set("2021-MM-JJ_Test_1")
         self.vel_disp.set(2)
-        min_var.set(38.75)
-        max_var.set(45)
-        zero_var.set(-30.025)
-        step_var.set(3)
+        min_t_var.set(-1)
+        max_t_var.set(10)
+        zero_var.set(-33.717)
+        step_t_var.set(300)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
         utime_var.set(1)
@@ -2807,10 +2808,10 @@ class LaserCooling:
         pos_e = tk.Entry(frame, width = 6, textvariable = self.pos_var)
         vel_e = tk.Entry(frame, width = 6, textvariable = self.vel_var)
         filename_e = tk.Entry(frame, width = 18, textvariable = self.filename_var)
-        min_e = tk.Entry(frame, width = 6, textvariable = min_var)
-        max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        min_t_e = tk.Entry(frame, width = 6, textvariable = min_t_var)
+        max_t_e = tk.Entry(frame, width = 6, textvariable = max_t_var)
         zero_e = tk.Entry(frame, width = 6, textvariable = zero_var)
-        step_e = tk.Entry(frame, width = 6, textvariable = step_var)
+        step_t_e = tk.Entry(frame, width = 6, textvariable = step_t_var)
         # delay_e = tk.Entry(frame, width = 6, textvariable = delay_var)
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
         
@@ -2826,13 +2827,13 @@ class LaserCooling:
 
         param_lbl.grid(row=5, column=0, columnspan=2, sticky='nsew')
         min_lbl.grid(row=6, column=0, sticky='nsw')
-        min_e.grid(row=6, column=1, sticky='nse')
+        min_t_e.grid(row=6, column=1, sticky='nse')
         max_lbl.grid(row=7, column=0, sticky='nsw')
-        max_e.grid(row=7, column=1, sticky='nse')
+        max_t_e.grid(row=7, column=1, sticky='nse')
         zero_lbl.grid(row=8, column=0, sticky='nsw')
         zero_e.grid(row=8, column=1, sticky='nse')
         step_lbl.grid(row=9, column=0, sticky='nsw')
-        step_e.grid(row=9, column=1, sticky='nse')
+        step_t_e.grid(row=9, column=1, sticky='nse')
         # delay_lbl.grid(row=9, column=0, sticky='nsw')
         # delay_e.grid(row=9, column=1, sticky='nse')
         utime_lbl.grid(row=10, column=0, sticky='nsw')
@@ -2918,7 +2919,7 @@ class LaserCooling:
         # Start & stop buttons :
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, zero=zero_var, step=step_var, progress=p_bar, update_time=utime_var,
+                                      command=lambda: self.start_experiment(max_pos=self.delay_2_pos(zero_var.get(),max_t_var.get()), min_pos=self.delay_2_pos(zero_var.get(),min_t_var.get()), zero=zero_var, step=step_t_var.get()*sc.c/(2e12), progress=p_bar, update_time=utime_var,
                                             inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
         self.start_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
@@ -2978,7 +2979,7 @@ class LaserCooling:
         
 
 
-    def adjust_2dgraph(self):#, step=None):
+    def adjust_2dgraph(self,delta_ts):#, step=None):
 # =============================================================================
 #         step = step.get()
 #         if step == 0:
@@ -2992,10 +2993,10 @@ class LaserCooling:
         parent2d = self.graph_dict["Pump_Probe"].parent
         self.graph_dict["Pump_Probe"].destroy_graph()
         self.graph_dict["Pump_Probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
-                                                       figsize=[2,2], data_size= np.transpose(self.trace).shape)
-        self.graph_dict["Pump_Probe"].change_data(np.transpose(self.trace),False)
-        self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl_crop[-1],self.wl_crop[0]))
-        aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
+                                                       figsize=[2,2], data_size= np.transpose(self.trace).shape,cmap='seismic',aspect='auto',vmin=-0.1,vmax=0.1)
+        self.graph_dict["Pump_Probe"].change_data(np.transpose(delta_ts),False)
+        self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl[-1],self.wl[0]))
+        aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl[-1]-self.wl[0]))
         self.graph_dict["Pump_Probe"].axes.set_aspect(aspectRatio)
         self.graph_dict["Pump_Probe"].axes.set_xlabel('Delay [ps]')
         self.graph_dict["Pump_Probe"].axes.set_ylabel('Wavelengths [nm]')
@@ -3033,10 +3034,10 @@ class LaserCooling:
             self.PI = self.mainf.Frame[2].Linstage
 
             # Parameters initialisation
-        max_pos = max_pos.get()
-        min_pos = min_pos.get()
+        max_pos = max_pos
+        min_pos = min_pos
         zero=zero.get()
-        step = step.get()/1000
+        step = step
         update_time = update_time.get()
         int_period=int_period.get()
 
@@ -3103,7 +3104,9 @@ class LaserCooling:
         signal_graph.Line.set_xdata(wl)
         signal_graph.Line.set_ydata(self.trace[0])
 
-
+        delta_ts = np.zeros([nsteps+1,len(wl)])
+        arduino = serial.Serial('COM9', 115200, timeout=None)
+        time.sleep(3)
         
             # Main scanning and measurements
         for i in range(nsteps+1):
@@ -3122,23 +3125,31 @@ class LaserCooling:
             pos[i] = self.PI.get_position()
             
 
-            spectra_brut=[]
+            #spectra_brut=[]
+            spectra_brut = [[], []]
             
             
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
-                spectra_brut.append(np.array(self.Spectro.get_intensities()))
+                on_off = int(not int(arduino.read()))
+                # spectra_brut.append(np.array(self.Spectro.get_intensities()))
+                spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
 
-            
-            spectra_brute=np.array(spectra_brut)
-            
-            spectra_brute[spectra_brute==0]=1
+            if len(spectra_brut[0]) > len(spectra_brut[1]):
+                spectra_brut[0].pop()
+            elif len(spectra_brut[1]) > len(spectra_brut[0]):
+                spectra_brut[1].pop()
+                
+            spectra_brut=np.array(spectra_brut)
+            spectra_brut[spectra_brut==0]=1
             
             # f1=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i) + ".npy",'a')
             
             # f1.truncate(0)
-            
-            np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i) + ".npy",spectra_brute)
+        
+            delta_ts[i]=((np.array(spectra_brut[1]) - np.array(spectra_brut[0])) / np.array(spectra_brut[0])).mean(axis=0)
+            delta_ts=np.clip(delta_ts, a_min=-10, a_max=10)
+            np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i), spectra_brut)
 
                   
             # trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
@@ -3148,10 +3159,10 @@ class LaserCooling:
             scan_graph.Line.set_xdata(iteration[:i])
             scan_graph.Line.set_ydata(pos[:i])
             scan_graph.update_graph()
-            # signal_graph.Line.set_xdata(wl)
-            # signal_graph.Line.set_ydata(self.trace[i])
-            # signal_graph.axes.set_ylim([np.min(self.trace[i])*1.1,np.max(self.trace[i])*1.1])
-            # signal_graph.update_graph()            
+            signal_graph.Line.set_xdata(wl)
+            signal_graph.Line.set_ydata(delta_ts[-1])
+            signal_graph.axes.set_ylim([np.min(delta_ts[i])*1.1,np.max(delta_ts[i])*1.1])
+            signal_graph.update_graph()            
             
             # Actualise progress bar
             if progress:
@@ -3162,6 +3173,8 @@ class LaserCooling:
                 break
                
         # f1.close()
+            
+        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\delta_ts", delta_ts)
         
         # np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
         np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npy",pos)
@@ -3186,6 +3199,9 @@ class LaserCooling:
             spectro_graph.Line.set_ydata(self.trace[i])
             spectro_graph.update_graph()
 
+            self.timeDelay =self.pos_2_delay(zero,pos)
+            self.wl=wl
+            self.adjust_2dgraph(delta_ts)        
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
@@ -3204,7 +3220,7 @@ class LaserCooling:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
-        # self.adjust_2dgraph()        
+        self.adjust_2dgraph(delta_ts)        
 
 
 
