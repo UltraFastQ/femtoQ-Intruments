@@ -6,18 +6,20 @@ Created on Wed May 19 21:03:47 2021
 @author: emilejetzer
 """
 
-import serial
 from pathlib import Path
-import pandas as pd
 from scipy.interpolate import interp1d
+
+import serial
+import pandas as pd
 import numpy as np
+import tkinter as tk
 
 
 class Référence:
     """Interface d'interpolation à partir d'un tableau de données de \
 référence."""
 
-    def __init__(self, chemin: Path):
+    def __init__(self, chemin: Path = 'ref.xlsx'):
         self.chemin = chemin
         self.df = pd.read_excel(
             chemin, sheet_name="cal", usecols=["cadran", "longueur", "moteur"]
@@ -41,14 +43,37 @@ référence."""
 class Arduino:
     """Interface avec une carte Arduino."""
 
-    def __init__(self, port: str, baudrate: int = 9600):
-        self.port = port
+    def __init__(self, port: str = None, baudrate: int = 9600, mainf=None):
         self.baudrate = baudrate
         self.connexion = serial.Serial()
+        self.mainf = mainf
+
+        if port is None:
+            self.demander_port()
+        else:
+            self.port = port
+
+    def demander_port(self):
+        from serial.tools.list_ports import comports
+
+        fenêtre = tk.Toplevel(self.mainf)
+        fenêtre.geometry('250x250')
+
+        ports = [p.device for p in comports()]
+
+        tk.Label(fenêtre, text='Quel port série pour le monochromateur?').pack()
+        var_port = tk.StringVar(fenêtre, ports[0])
+        tk.OptionMenu(fenêtre, var_port, *ports).pack()
+
+        def trace(*args):
+            self.port = var_port.get()
+
+        var_port.trace('w', trace)
+
 
     def connecter(self):
         if self.connexion.is_open:
-            messagebox.showinfo(
+            tk.messagebox.showinfo(
                 "Arduino déjà connecté",
                 f"Il y a déjà une connexion au port {self.port}.",
             )
