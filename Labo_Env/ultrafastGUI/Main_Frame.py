@@ -8,7 +8,10 @@ from multiprocessing import Process
 import Zurich_Instrument
 import Graphic
 import Experiment_file
-import Monochromator
+
+# import Vieux_Monochromator as Monochromator # en cas de bris du nouveau code
+import Vieux_Monochromator as Monochromator
+
 import Spectrometer
 import Physics_Instrument
 import UeyeCam
@@ -1957,6 +1960,7 @@ class Experiment(ttk.LabelFrame):
         # experiment file
         # graph : is a dictionary containing the name of the desired graph and the name of the axis as a tuple
         # window
+<<<<<<< Updated upstream
         create_layout(name='White_Light', function_=Experiment_file.WhiteLight,
                       option=['Monochrom', 'Zurich', 'Spectrometer', 'Physics_Linear_Stage'],
                       graph={'Wave': ['Wavelength', 'Max Delay'], 'Delay': ['Delay', 'Intensity']})
@@ -1990,6 +1994,89 @@ class Experiment(ttk.LabelFrame):
         create_layout(name='Batch Spectra', function_=Experiment_file.batchSpectra, option=['Spectrometer'],
                       graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
+=======
+        create_layout(
+            name="White_Light",
+            function_=Experiment_file.WhiteLight,
+            option=["Monochrom"
+                    , "Zurich",
+                    "Spectrometer", "Physics_Linear_Stage"],
+            graph={
+                "Wave": ["Wavelength", "Max Delay"],
+                "Delay": ["Delay", "Intensity"],
+            },
+        )
+        create_layout(
+            name="Zero Delay",
+            function_=Experiment_file.ZeroDelay,
+            option=["Physics_Linear_Stage"],
+            graph={
+                "Power": ["Stage position [um]", "Normalized Voltage"],
+                "Else": ["a", "b"],
+            },
+        )
+        create_layout(
+            name="Electro Optic Sampling Zero Delay",
+            function_=Experiment_file.Electro_Optic_Sampling_ZeroDelay,
+            option=["Physics_Linear_Stage", "Spectrometer"],
+            graph={
+                "Scanning": ["Step number", "Measured stage position [mm]"],
+                "Spectro": ["wavelength (nm)", "Intensity (arb.u.)"],
+                "Signal": ["delay (mm)", "signal (arb.u.)"],
+            },
+        )
+        create_layout(
+            name="FROG",
+            function_=Experiment_file.FROG,
+            option=["Physics_Linear_Stage", "Spectrometer"],
+            graph={
+                "Scanning": ["Step number", "Measured stage position [mm]"],
+                "FROG trace": ["Wavelengths [nm]", "Delay [fs]"],
+                "Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"],
+                "Autocorrelation": ["Delay [fs]", "Normalized intensity"],
+            },
+        )
+        create_layout(
+            name="Electro Optic Sampling",
+            function_=Experiment_file.Electro_Optic_Sampling,
+            option=["Physics_Linear_Stage"],
+            graph={
+                "Scanning": ["Step number", "Measured stage position [mm]"],
+                "Signal": ["Time (fs)", "Signal (mV)"],
+                "Spectrum": ["Frequency (THz)", "Normalized intensity"],
+            },
+        )
+        create_layout(
+            name="2DSI",
+            function_=Experiment_file.TwoDSI,
+            option=["Physics_Linear_Stage", "Spectrometer"],
+            graph={
+                "Scanning": ["Step number", "Measured stage position [mm]"],
+                "2DSI trace": ["Wavelengths [nm]", "Delay [um]"],
+                "Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"],
+                "Shear reference": ["Wavelengths [nm]", "Stage posiiton [um]"],
+                "Shear calc. curve": ["Stage position [um]", "Shear frequency [THz]"],
+            },
+        )
+        create_layout(
+            name="Laser Cooling",
+            function_=Experiment_file.LaserCooling,
+            option=["Physics_Linear_Stage", "Spectrometer"],
+            graph={
+                "Scanning": ["Step number", "Measured stage position [mm]"],
+                "Spectro": ["wavelength (nm)", "Intensity (arb.u.)"],
+                "Signal": ["wavelength (nm)", "Intensity (arb.u.)"],
+                "Pump_Probe": ["Wavelengths [nm]", "Delay [um]"],
+            },
+        )
+        create_layout(
+            name="Batch Spectra",
+            function_=Experiment_file.batchSpectra,
+            option=["Spectrometer"],
+            graph={"Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"]},
+        )
+        # create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
+>>>>>>> Stashed changes
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
         experiment_name.current(2)
