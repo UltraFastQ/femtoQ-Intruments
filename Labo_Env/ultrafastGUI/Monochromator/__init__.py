@@ -1,5 +1,6 @@
-﻿"""
-Monochromateur.py - Contrôler un monochromateur.
+"""
+
+Monochromator - Contrôler un monochromateur.
 
 Par Émile Jetzer
 Basé sur un programme par Nicolas Perron
@@ -17,16 +18,19 @@ class MonoChrom:
     """Interface de contrôle d'un monochromateur."""
 
     def __init__(self,
-                 arduino: Arduino,
-                 référence: Référence,
+                 arduino: Arduino = None,
+                 référence: Référence = None,
                  longueur_de_calibration: float = 800.0,
                  mainf=None):
-        if isinstance(arduino, str):
+        if arduino is None or isinstance(arduino, str):
             arduino = Arduino(arduino)
 
         self.arduino: Arduino = arduino
 
-        if isinstance(référence, str) or isinstance(référence, Path):
+        if référence is None:
+            référence = 'ref.xlsx'
+
+        if isinstance(référence, (str, Path)):
             référence = Référence(référence)
 
         self.référence: Référence = référence
@@ -60,7 +64,7 @@ class MonoChrom:
         while not self.arduino.connexion.in_waiting:
             pass
         limites = self.arduino.lire()
-        t, diff = [int(i) for i in limites.split("\t")]
+        diff = [int(i) for i in limites.split("\t")][1]
 
         if diff:
             messagebox.showinfo(
@@ -141,9 +145,7 @@ if __name__ == "__main__":
     port = ports[int(input("Port>"))].device
 
     with MonoChrom(port, 'ref.xlsx') as mc:
-    
-        while True:
-            a = input("Longueur d'onde: ")
-            if not a:
-                break
+        a = input("Longueur d'onde: ")
+        while a:
             mc.roll_dial(int(a))
+            a = input("Longueur d'onde: ")

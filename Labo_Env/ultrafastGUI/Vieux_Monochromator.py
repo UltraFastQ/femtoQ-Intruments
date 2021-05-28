@@ -12,7 +12,7 @@ class MonoChrom:
         self.tot_step = 0
         self.side = ''
         self.done = True
-        self.current_position = 800  #Current position in nanometer
+        self.current_position = 800  # Current position in nanometer
         self.mainf = mainf
 
     def serial_ports(self):
@@ -52,7 +52,8 @@ class MonoChrom:
             return
         self.arduino = serial.Serial(self.Port[0], 9600)
         if self.arduino:
-            messagebox.showinfo(title='Error', message='The monochromator is connected')
+            messagebox.showinfo(
+                title='Error', message='The monochromator is connected')
         if exp_dependencie:
             experiments = self.mainf.Frame[4].experiment_dict
             for experiment in experiments:
@@ -67,7 +68,8 @@ class MonoChrom:
         elif self.calibrating:
             pass
         else:
-            messagebox.showinfo(title='Error', message='Monochromator has not been calibrated')
+            messagebox.showinfo(
+                title='Error', message='Monochromator has not been calibrated')
         if Nbr_nm > 0:
             side = 'f'
         elif Nbr_nm < 0:
@@ -84,7 +86,7 @@ class MonoChrom:
         Factor = 2  # Experimental values
         nbr_step = abs(Nbr_nm)*Factor
         nbr_step = round(nbr_step)
-        modulo = nbr_step%255
+        modulo = nbr_step % 255
         step_left = nbr_step
         step_2take = 255
         if Nbr_nm > 0:
@@ -149,16 +151,20 @@ class MonoChrom:
 
     def calibrate(self, spectro, variable):
         if not spectro:
-            messagebox.showinfo(title='Error', message='There is no spectrometer connected.')
+            messagebox.showinfo(
+                title='Error', message='There is no spectrometer connected.')
             return
         if not self.arduino:
-            messagebox.showinfo(title='Error', message='The monochromator is not connected.')
+            messagebox.showinfo(
+                title='Error', message='The monochromator is not connected.')
 
-        response = messagebox.askyesno(title='Visibility', message='Is the spectrum visible by the spectro?')
+        response = messagebox.askyesno(
+            title='Visibility', message='Is the spectrum visible by the spectro?')
         if response == 'yes':
             pass
         elif response == 'no':
-            side = messagebox.askyesno(title='Side', message='Is the dial under 400?')
+            side = messagebox.askyesno(
+                title='Side', message='Is the dial under 400?')
             if side == 'yes':
                 self.roll_dial(200)
             elif side == 'no':
@@ -168,7 +174,8 @@ class MonoChrom:
         intensities = spectro.intensities()
         wavelengths = spectro.wavelengths()
         max_intensity = max(intensities[2:])
-        positions = [i for i, j in enumerate(intensities) if j == max_intensity]
+        positions = [i for i, j in enumerate(
+            intensities) if j == max_intensity]
         self.current_position = wavelengths[positions[0]]
         while not (self.current_position < 800+0.5 and self.current_position > 800-0.5):
             while not self.done:
@@ -180,7 +187,8 @@ class MonoChrom:
             intensities = spectro.intensities()
             wavelengths = spectro.wavelengths()
             max_intensity = max(intensities[2:])
-            positions = [i for i, j in enumerate(intensities) if j == max_intensity]
+            positions = [i for i, j in enumerate(
+                intensities) if j == max_intensity]
 
             self.current_position = wavelengths[positions[0]]
 
@@ -188,4 +196,5 @@ class MonoChrom:
         variable.set(self.current_position)
         self.current_position = int(self.current_position)
         self.calibrated = True
-        messagebox.showinfo(title='Succes', message='The monochromator is calibrated')
+        messagebox.showinfo(
+            title='Succes', message='The monochromator is calibrated')
