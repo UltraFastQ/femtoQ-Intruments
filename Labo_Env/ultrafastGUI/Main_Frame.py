@@ -10,7 +10,7 @@ import Graphic
 import Experiment_file
 
 # import Vieux_Monochromator as Monochromator # en cas de bris du nouveau code
-import Vieux_Monochromator as Monochromator
+import Monochromator as Monochromator
 
 import Spectrometer
 import Physics_Instrument
@@ -1960,7 +1960,6 @@ class Experiment(ttk.LabelFrame):
         # experiment file
         # graph : is a dictionary containing the name of the desired graph and the name of the axis as a tuple
         # window
-<<<<<<< Updated upstream
         create_layout(name='White_Light', function_=Experiment_file.WhiteLight,
                       option=['Monochrom', 'Zurich', 'Spectrometer', 'Physics_Linear_Stage'],
                       graph={'Wave': ['Wavelength', 'Max Delay'], 'Delay': ['Delay', 'Intensity']})
@@ -1994,7 +1993,7 @@ class Experiment(ttk.LabelFrame):
         create_layout(name='Batch Spectra', function_=Experiment_file.batchSpectra, option=['Spectrometer'],
                       graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
         #create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
-=======
+
         create_layout(
             name="White_Light",
             function_=Experiment_file.WhiteLight,
@@ -2076,7 +2075,6 @@ class Experiment(ttk.LabelFrame):
             graph={"Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"]},
         )
         # create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
->>>>>>> Stashed changes
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
         experiment_name.current(2)
