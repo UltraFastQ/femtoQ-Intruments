@@ -2797,7 +2797,7 @@ class PumpProbe:
         self.vel_disp.set(2)
         min_t_var.set(-1)
         max_t_var.set(10)
-        zero_var.set(-33.717)
+        zero_var.set(-31.82)
         step_t_var.set(300)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
@@ -3105,7 +3105,7 @@ class PumpProbe:
         signal_graph.Line.set_ydata(self.trace[0])
 
         delta_ts = np.zeros([nsteps+1,len(wl)])
-        arduino = serial.Serial('COM9', 115200, timeout=None)
+        # arduino = serial.Serial('COM9', 115200, timeout=None)             #Commande pour Arduino
         time.sleep(3)
         
             # Main scanning and measurements
@@ -3126,19 +3126,19 @@ class PumpProbe:
             
 
             #spectra_brut=[]
-            spectra_brut = [[], []]
-            
+            spectra_brut = []
+            # spectra_brut = [[], []]
             
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
-                on_off = int(not int(arduino.read()))
-                # spectra_brut.append(np.array(self.Spectro.get_intensities()))
-                spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
+                # on_off = int(not int(arduino.read()))                         #Commande pour Arduino
+                spectra_brut.append(np.array(self.Spectro.get_intensities()))
+                # spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))             #Commande pour Arduino
 
-            if len(spectra_brut[0]) > len(spectra_brut[1]):
-                spectra_brut[0].pop()
-            elif len(spectra_brut[1]) > len(spectra_brut[0]):
-                spectra_brut[1].pop()
+            # if len(spectra_brut[0]) > len(spectra_brut[1]):
+            #     spectra_brut[0].pop()                                     #Commande pour Arduino
+            # elif len(spectra_brut[1]) > len(spectra_brut[0]):
+            #     spectra_brut[1].pop()
                 
             spectra_brut=np.array(spectra_brut)
             spectra_brut[spectra_brut==0]=1
@@ -3147,22 +3147,26 @@ class PumpProbe:
             
             # f1.truncate(0)
         
-            delta_ts[i]=((np.array(spectra_brut[1]) - np.array(spectra_brut[0])) / np.array(spectra_brut[0])).mean(axis=0)
-            delta_ts=np.clip(delta_ts, a_min=-10, a_max=10)
+            # delta_ts[i]=((np.array(spectra_brut[1]) - np.array(spectra_brut[0])) / np.array(spectra_brut[0])).mean(axis=0)
+            # delta_ts=np.clip(delta_ts, a_min=-10, a_max=10)                                                                       #Commande pour Arduino
+            # np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i), spectra_brut)
+
+
             np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i), spectra_brut)
+
 
                   
             # trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
             # self.trace[i] = trace_brut
 
 
-            scan_graph.Line.set_xdata(iteration[:i])
-            scan_graph.Line.set_ydata(pos[:i])
-            scan_graph.update_graph()
-            signal_graph.Line.set_xdata(wl)
-            signal_graph.Line.set_ydata(delta_ts[-1])
-            signal_graph.axes.set_ylim([np.min(delta_ts[i])*1.1,np.max(delta_ts[i])*1.1])
-            signal_graph.update_graph()            
+            # scan_graph.Line.set_xdata(iteration[:i])
+            # scan_graph.Line.set_ydata(pos[:i])
+            # scan_graph.update_graph()
+            # signal_graph.Line.set_xdata(wl)
+            # signal_graph.Line.set_ydata(delta_ts[-1])
+            # signal_graph.axes.set_ylim([np.min(delta_ts[i])*1.1,np.max(delta_ts[i])*1.1])
+            # signal_graph.update_graph()            
             
             # Actualise progress bar
             if progress:
@@ -3174,7 +3178,7 @@ class PumpProbe:
                
         # f1.close()
             
-        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\delta_ts", delta_ts)
+        # np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\delta_ts", delta_ts)           #Commande pour Arduino
         
         # np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
         np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npy",pos)

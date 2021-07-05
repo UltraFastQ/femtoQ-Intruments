@@ -437,7 +437,7 @@ class SMC100(object):
 
 # Tests #####################################################################
 def test_configure():
-  smc100 = SMC100(1, 'COM5', silent=False)
+  smc100 = SMC100(1, 'COM4', silent=False)
   #print('position=',smc100.get_position_mm())
   smc100.reset_and_configure()
   # make sure there are no errors
@@ -445,7 +445,7 @@ def test_configure():
   del smc100
 
 def test_general():
-  smc100 = SMC100(1, 'COM5', silent=False)
+  smc100 = SMC100(1, 'COM4', silent=False)
 
   print('position=',smc100.get_position_mm())
   print('home')
@@ -473,7 +473,7 @@ def test_general():
 
 
 
-# smc=SMC100(1,'COM5',silent=False)
+# smc=SMC100(1,'COM4',silent=False)
 # smc.reset_and_configure()
 # smc.home()
 # smc.close()
