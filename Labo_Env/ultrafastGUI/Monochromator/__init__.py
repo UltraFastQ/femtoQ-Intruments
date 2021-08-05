@@ -10,7 +10,7 @@ from tkinter import messagebox
 # Manipulation de données
 from pathlib import Path
 
-from .utils import Référence, Arduino
+from utils import Référence, Arduino
 
 
 class MonoChrom:

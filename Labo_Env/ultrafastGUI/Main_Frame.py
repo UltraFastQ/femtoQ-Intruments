@@ -1,3 +1,6 @@
+
+
+
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -9,8 +12,8 @@ import Zurich_Instrument
 import Graphic
 import Experiment_file
 
-# import Vieux_Monochromator as Monochromator # en cas de bris du nouveau code
-import Monochromator as Monochromator
+import Vieux_Monochromator as Monochromator # en cas de bris du nouveau code
+# import Monochromator as Monochromator
 
 import Spectrometer
 import Physics_Instrument
@@ -2059,7 +2062,7 @@ class Experiment(ttk.LabelFrame):
         )
         create_layout(
             name="Laser Cooling",
-            function_=Experiment_file.LaserCooling,
+            function_=Experiment_file.PumpProbe,
             option=["Physics_Linear_Stage", "Spectrometer"],
             graph={
                 "Scanning": ["Step number", "Measured stage position [mm]"],
