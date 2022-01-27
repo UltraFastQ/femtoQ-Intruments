@@ -274,7 +274,6 @@ class WhiteLight:
         nb_wvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_wvlenghtpt_var)
         nb_wvlenghtpt.grid(row=0, column=1, sticky='nsew')
         
-        
         nb_maxwavelenghtpt = tk.Label(frame, text='Max Wavelength')
         nb_maxwavelenghtpt.grid(row=1, column=0, sticky='nw')
         nb_maxwvlenghtpt_var = tk.IntVar()
@@ -326,6 +325,7 @@ class WhiteLight:
         dir_e.grid(row=3, column=1, sticky='nsew')
         dir_b = tk.Button(frame, text='Choose Dir.', command=lambda: filedialog.askdirectory())
         dir_b.grid(row=4, column=0, columnspan=2, sticky='nsew')
+        
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment())
         self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
@@ -422,6 +422,15 @@ class WhiteLight:
         # We have to swipe again in this area to get the position of the maximum
 
         self.DelayZero = None
+
+
+
+
+
+
+
+
+
 
 # Here is the template for the experiement
 class ZeroDelay:
