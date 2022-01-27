@@ -273,41 +273,50 @@ class WhiteLight:
         nb_wvlenghtpt_var = tk.IntVar()
         nb_wvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_wvlenghtpt_var)
         nb_wvlenghtpt.grid(row=0, column=1, sticky='nsew')
+        
         nb_maxwavelenghtpt = tk.Label(frame, text='Max Wavelength')
         nb_maxwavelenghtpt.grid(row=1, column=0, sticky='nw')
         nb_maxwvlenghtpt_var = tk.IntVar()
         nb_maxwvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_maxwvlenghtpt_var)
         nb_maxwvlenghtpt.grid(row=1, column=1, sticky='nsew')
+        
         nb_minwavelenghtpt = tk.Label(frame, text='Min Wavelength')
         nb_minwavelenghtpt.grid(row=2, column=0, sticky='nw')
         nb_minwvlenghtpt_var = tk.IntVar()
         nb_minwvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_minwvlenghtpt_var)
+        
         min_pos = tk.Label(frame, text = 'min_pos')
         min_pos.grid(row=11, column=0, sticky='nw')
         mini_pos_var = tk.IntVar()
         mini_pos = tk.Entry(frame, width=8, textvariable=mini_pos_var)
         mini_pos.grid(row=11, column=1, sticky='nsew')
+        
         max_pos = tk.Label(frame, text='max_pos')
         max_pos.grid(row=12, column=0, sticky='nw')
         maxi_pos_var = tk.IntVar()
         maxi_pos = tk.Entry(frame, width=8, textvariable=maxi_pos_var)
         maxi_pos.grid(row=12, column=1, sticky='nsew')
+        
         iteration = tk.Label(frame, text='nbIterations')
         iteration.grid(row=13, column=0, sticky='nw')
         iteration_var = tk.IntVar()
         iterat = tk.Entry(frame, width=8, textvariable=iteration_var)
         iterat.grid(row=13, column=1, sticky='nsew')
+        
         length = tk.Label(frame, text = 'duration of measure per point')
         length.grid(row=14, column=0, sticky='nw')
         length_var = tk.IntVar()
         length_e = tk.Entry(frame, width=8, textvariable=length_var)
         length_e.grid(row=14, column=1, sticky='nsew')
+        
         steps = tk.Label(frame, text = 'number of stage steps')
         steps.grid(row=15, column=0, sticky='nw')
         step_var = tk.IntVar()
         step = tk.Entry(frame, width=8, textvariable=step_var)
         step.grid(row=15, column=1, sticky='nsew')
+        
         nb_minwvlenghtpt.grid(row=2, column=1, sticky='nsew')
+        
         dir_lbl = tk.Label(frame, text='Directory')
         dir_lbl.grid(row=3, column=0, sticky='nw')
         dir_evar = tk.StringVar()
