@@ -274,6 +274,7 @@ class WhiteLight:
         nb_wvlenghtpt = tk.Entry(frame, width=8, textvariable=nb_wvlenghtpt_var)
         nb_wvlenghtpt.grid(row=0, column=1, sticky='nsew')
         
+        
         nb_maxwavelenghtpt = tk.Label(frame, text='Max Wavelength')
         nb_maxwavelenghtpt.grid(row=1, column=0, sticky='nw')
         nb_maxwvlenghtpt_var = tk.IntVar()
