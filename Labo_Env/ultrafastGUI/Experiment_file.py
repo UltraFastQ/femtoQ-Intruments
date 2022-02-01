@@ -547,7 +547,7 @@ class FiberCaract:
         self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
+        np.savez(timeStamp+'_FiberCaract_measurement',time = self.t,signal = self.S)
         
     def LogSpectrum(self):
         if self.LogSpec is False:
