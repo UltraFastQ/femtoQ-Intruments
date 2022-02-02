@@ -2003,7 +2003,7 @@ class Experiment(ttk.LabelFrame):
         # create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
-        experiment_name.current(2)
+        experiment_name.current(0)
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):
