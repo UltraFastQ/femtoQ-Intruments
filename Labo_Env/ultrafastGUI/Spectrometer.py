@@ -472,7 +472,7 @@ class Spectro:
             np.save('measurements/'+'Spectre_' +dt, array)
         except:
             messagebox.showinfo(title='ERROR', message='Create a folder'+
-                                ' named measurement inside this folder')
+                                ' named measurements inside this folder')
 
     def auto_update_fft(self, variable):
         """
