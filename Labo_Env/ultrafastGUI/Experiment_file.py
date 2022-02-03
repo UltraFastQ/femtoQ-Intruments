@@ -470,7 +470,7 @@ class FiberCaract:
         # Define buttons and their action
                 # Pi Stage
         con_b = tk.Button(frame, text='Connect PI linear stage',
-                                      command=lambda: self.PI.connect_identification(dev_name='C-863.11',
+                                      command=lambda: self.PI.connect_identification(dev_name='C-891',
                                                                                    exp_dependencie=True))
 
         # Define variables
