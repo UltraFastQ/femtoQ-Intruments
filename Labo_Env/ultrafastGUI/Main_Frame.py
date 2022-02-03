@@ -131,7 +131,8 @@ class ZurichFrame(tk.Frame):
             connectframe.grid(row=0, column=0, sticky='nsew')
             connectlbl = tk.Label(connectframe, text='Connect Device')
             connect_var = tk.StringVar()
-            connect_var.set('dev2318')
+            # connect_var.set('dev2318')
+            connect_var.set('dev3401')
             connect_e = tk.Entry(connectframe, textvariable=connect_var, width=8)
             connectbutton = tk.Button(connectframe, text='Connect',
                                       command=lambda: self.Zurich.connect_device(connect_var.get(),
@@ -1327,7 +1328,7 @@ class Mono_Physics(tk.Frame):
                     def __init__(self, parent_frame=None):
                         self.frame = tk.Frame(parent_frame)
                         serial_lbl = tk.Label(self.frame, text='Serial number:')
-                        serial_var = tk.StringVar()
+                        serial_var = tk.StringVar()   
                         serial_e = tk.Entry(self.frame, textvariable=serial_var, width=10)
                         serial_lbl.grid(row=0, column=0, sticky='nw')
                         serial_e.grid(row=1, column=0, sticky='nsew')
@@ -1967,12 +1968,15 @@ class Experiment(ttk.LabelFrame):
                       option=['Monochrom', 'Zurich', 'Spectrometer', 'Physics_Linear_Stage'],
                       graph={'Wave': ['Wavelength', 'Max Delay'], 'Delay': ['Delay', 'Intensity']})
         create_layout(name='Fiber Caracterization', function_=Experiment_file.FiberCaract,
-                      option=['Physics_Linear_Stage','Zurich'],
+                      option=['Physics_Linear_Stage'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         create_layout(name='Zero Delay', function_=Experiment_file.ZeroDelay,
                       option=['Physics_Linear_Stage'],
                       graph={'Power': ['Stage position [um]', 'Normalized Voltage'], 'Else': ['a', 'b']})
         create_layout(name='Electro Optic Sampling Zero Delay', function_=Experiment_file.Electro_Optic_Sampling_ZeroDelay,
+                      option=['Physics_Linear_Stage','Spectrometer'],
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],'Signal':['delay (mm)','signal (arb.u.)']})
+        create_layout(name='CHI3 Sampling Zero Delay', function_=Experiment_file.CHI3_Sampling_ZeroDelay,
                       option=['Physics_Linear_Stage','Spectrometer'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'], 'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],'Signal':['delay (mm)','signal (arb.u.)']})
         create_layout(name='FROG', function_=Experiment_file.FROG, option=['Physics_Linear_Stage','Spectrometer'],
@@ -1981,6 +1985,9 @@ class Experiment(ttk.LabelFrame):
                              'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]'],
                              'Autocorrelation':['Delay [fs]','Normalized intensity']})
         create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
+                      option=['Physics_Linear_Stage'],
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
+        create_layout(name='CHI3 Sampling', function_=Experiment_file.CHI3_Sampling,
                       option=['Physics_Linear_Stage'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         create_layout(name='2DSI', function_=Experiment_file.TwoDSI, option=['Physics_Linear_Stage','Spectrometer'],
@@ -1994,18 +2001,14 @@ class Experiment(ttk.LabelFrame):
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
                              'Spectro': ['wavelength (nm)', 'Intensity (arb.u.)'],
                              'Signal': ['wavelength (nm)', 'Intensity (arb.u.)'],
-                             'Pump_Probe': ['Wavelengths [nm]', 'Delay [um]'], })
+                             'Pump_Probe': ['Wavelengths [nm]', 'Delay [um]']})
         create_layout(name='Batch Spectra', function_=Experiment_file.batchSpectra, option=['Spectrometer'],
                       graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
-        create_layout(name='iHR320', function_=Experiment_file.iHR320, option=['Spectrometer'],
-                      graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
+        create_layout(name="iHR320", function_=Experiment_file.iHR320,
+                      option=["Monochrom"],
+                      graph={"Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"]})
 
-
-        
-        # create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
-        #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
-        ##########
-        experiment_name.current(0)
+        experiment_name.current(2)
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):
