@@ -1997,6 +1997,8 @@ class Experiment(ttk.LabelFrame):
                              'Pump_Probe': ['Wavelengths [nm]', 'Delay [um]'], })
         create_layout(name='Batch Spectra', function_=Experiment_file.batchSpectra, option=['Spectrometer'],
                       graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
+        create_layout(name='iHR320', function_=Experiment_file.iHR320, option=['Spectrometer'],
+                      graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
 
 
         
