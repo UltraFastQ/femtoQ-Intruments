@@ -3901,5 +3901,118 @@ class batchSpectra:
         
         
 
+class iHR320:
+
+    # This class is implicitly called in the main frame
+    def __init__(self, mainf = None):
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+        self.mono = None
+        
+    def create_frame(self, frame):
+
+
+        # this function contains at minimum :
+        #self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+        #                              command=lambda: self.start_experiment())
+        #self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        #self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+        #                             command=lambda: self.stop_experiment())
+        #self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+        
+        pos_lbl = tk.Label(frame, text = 'Set position to (nm):')
+        posd_lbl = tk.Label(frame, text = 'Position according to the device (nm):')
+        gra_lbl = tk.Label(frame, text = 'Set grating to (g/mm):')
+        esw_lbl = tk.Label(frame, text = 'Set entrance slit width to (mm):')
+        eswd_lbl = tk.Label(frame, text = 'Entrance slit according to the device (mm):')
+        ssw_lbl = tk.Label(frame, text = 'Set exit slit width to (mm):')
+        sswd_lbl = tk.Label(frame, text = 'Exit slit according to the device (mm):')
+        exm_lbl = tk.Label(frame, text = 'Set exit mirror to (front or side):')
+        
+        
+        self.pos_var = tk.DoubleVar()
+        self.posd_var = tk.DoubleVar()
+        self.gra_var = tk.DoubleVar()
+        self.esw_var = tk.DoubleVar()
+        self.ssw_var = tk.DoubleVar()
+        self.eswd_var = tk.DoubleVar()
+        self.sswd_var = tk.DoubleVar()
+        self.exm_var = tk.StringVar()
+      
+        
+        self.pos_var.set(0)
+        self.posd_var.set(0)
+        self.gra_var.set(0)
+        self.esw_var.set(0)
+        self.ssw_var.set(0)
+        self.eswd_var.set(0)
+        self.sswd_var.set(0)
+        self.exm_var.set("front")
+        
+        pos_e = tk.Entry(frame, width = 6, textvariable = self.pos_var)
+        gra_e = tk.Entry(frame, width = 6, textvariable = self.gra_var)
+        esw_e = tk.Entry(frame, width = 6, textvariable = self.esw_var)
+        ssw_e = tk.Entry(frame, width = 6, textvariable = self.ssw_var)
+        exm_e = tk.Entry(frame, width = 6, textvariable = self.exm_var)
+        
+        pos_lbl.grid(row=5, column=0, sticky='nsw')
+        pos_e.grid(row=5, column=1, sticky='nse')
+        posd_lbl.grid(row=6, column=0, sticky='nsw')
+        gra_lbl.grid(row=7, column=0, sticky='nsw')
+        gra_e.grid(row=7, column=1, sticky='nse')
+        esw_lbl.grid(row=8, column=0, sticky='nsw')
+        esw_e.grid(row=8, column=1, sticky='nse')
+        eswd_lbl.grid(row=9, column=0, sticky='nsw')
+        ssw_lbl.grid(row=10, column=0, sticky='nsw')
+        ssw_e.grid(row=10, column=1, sticky='nse')
+        sswd_lbl.grid(row=11, column=0, sticky='nsw')
+        exm_lbl.grid(row=12, column=0, sticky='nsw')
+        exm_e.grid(row=12, column=1, sticky='nse')
+        
+        
+        
+        
+        """
+        def stop_experiment(self):
+            self.running = False
+            self.spectro_start_button['state'] = 'normal'
+    
+        def start_experiment(self):
+    
+            self.stop_button['state'] = 'normal'
+            self.start_button['state'] = 'disabled'
+            self.running = True
+        """
+            
+        def connect_mono(self):
+            self.cons_b['state'] = 'disabled'
+            
+            name='ihr32'
+            config={'port':2,
+                    'out_of_limits':'closest',
+                    'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
+                                'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
+                                'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
+                                },
+                    'limits':[0,15800]
+
+                    }
+
+            config_path = ''
+            self.mono = HoribaIHR320(name,config,config_path)
+            messagebox.showinfo(title="Monochromator", message="Horiba iHR320 is connected")
+            #messagebox.showinfo(title="Monochromator", message=f"{self.mono._state}")
+            
+        
+        self.cons_b = tk.Button(frame, text='Connect monochromator', command=lambda: connect_mono(self))
+        self.cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
+
+        pos_e.bind('<Return>', lambda e: self.mono.set_position(self.pos_var.get()))
+        gra_e.bind('<Return>', lambda e: self.mono.set_turret(self.gra_var.get()))
+        esw_e.bind('<Return>', lambda e: self.mono.set_front_entrance_slit(self.esw_var.get()))
+        ssw_e.bind('<Return>', lambda e: self.mono.set_front_exit_slit(self.ssw_var.get()))
 
 
