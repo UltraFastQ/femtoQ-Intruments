@@ -1967,7 +1967,7 @@ class Experiment(ttk.LabelFrame):
                       option=['Monochrom', 'Zurich', 'Spectrometer', 'Physics_Linear_Stage'],
                       graph={'Wave': ['Wavelength', 'Max Delay'], 'Delay': ['Delay', 'Intensity']})
         create_layout(name='Fiber Caracterization', function_=Experiment_file.FiberCaract,
-                      option=['Physics_Linear_Stage'],
+                      option=['Physics_Linear_Stage','Zurich'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         create_layout(name='Zero Delay', function_=Experiment_file.ZeroDelay,
                       option=['Physics_Linear_Stage'],

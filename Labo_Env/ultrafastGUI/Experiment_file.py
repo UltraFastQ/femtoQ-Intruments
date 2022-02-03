@@ -708,7 +708,7 @@ class FiberCaract:
 
             # Wavelength steps initialization
         steps_lamda=int((lamda_max-lamda_min)/lamda_delta)+1
-
+        lamda_array=np.linscale(lamda_min,lamda_max,steps_lamda)
 
             # Variables for the graph update
         
@@ -735,33 +735,38 @@ class FiberCaract:
             self.graph_dict['Spectrum'].LineRef.set_linestyle('--')
         EOS_graph.update_graph()
         self.graph_dict['Spectrum'].update_graph()
-            # Main scanning and measurements
-        for i in range(nsteps+1):
-            # Move stage to required position
-            self.PI.go_2position(move[i])
-            # Measure real position
-            pos[i] = self.PI.get_position()
-            # Measure signal
-            self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
-            self.S[i] = np.mean(self.Zurich_acquire())*1000
+            #Steps in wavelength
+        for lamda in lamda_array:
+            messagebox.showinfo(title='Verify Wavelength', message='Are you sure the laser is a the proper wavelength of: \n'+ str(lamda) + 'nm')
             
-            # Actualise progress bar
-            if progress:
-                progress['value'] = (i)/(nsteps)
-                progress.update()
-            # Actualise graph if required
-            if (time.time() - last_gu) > update_time:
-                scan_graph.Line.set_xdata(iteration[:i])
-                scan_graph.Line.set_ydata(pos[:i])
-                scan_graph.update_graph()
-                EOS_graph.Line.set_xdata(self.t[:i])
-                EOS_graph.Line.set_ydata(self.S[:i])
-                EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
-                EOS_graph.update_graph()
+            
+                # Main scanning and measurements
+            for i in range(nsteps+1):
+                # Move stage to required position
+                self.PI.go_2position(move[i])
+                # Measure real position
+                pos[i] = self.PI.get_position()
+                # Measure signal
+                self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
+                self.S[i] = np.mean(self.Zurich_acquire())*1000
                 
-                last_gu = time.time()
+                # Actualise progress bar
+                if progress:
+                    progress['value'] = (i)/(nsteps)
+                    progress.update()
+                # Actualise graph if required
+                if (time.time() - last_gu) > update_time:
+                    scan_graph.Line.set_xdata(iteration[:i])
+                    scan_graph.Line.set_ydata(pos[:i])
+                    scan_graph.update_graph()
+                    EOS_graph.Line.set_xdata(self.t[:i])
+                    EOS_graph.Line.set_ydata(self.S[:i])
+                    EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+                    EOS_graph.update_graph()
+                    
+                    last_gu = time.time()
             if not self.running:
-                break
+                    break
         if not self.running:
             return_vel = tk.IntVar()
             return_vel.set(5)
