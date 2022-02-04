@@ -574,7 +574,7 @@ class FiberCaract:
         self.wait.grid(row=14, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(timeStamp+'_FiberCaract_measurement',time = self.t,signal = self.S)
+        np.savez(directory_var + timeStamp+'_FiberCaract_measurement',data = self.data_array ,lamda = self.lamda_array)
         
     def LogSpectrum(self):
         if self.LogSpec is False:
@@ -715,8 +715,9 @@ class FiberCaract:
 
 
             # Wavelength steps initialization
-        steps_lamda = (np.floor((lamda_max-lamda_min)/lamda_delta)+1)
-        lamda_array=np.linspace(lamda_min,lamda_max,steps_lamda)
+        steps_lamda = int(np.floor((lamda_max-lamda_min)/lamda_delta)+1)
+        self.lamda_array=np.linspace(lamda_min,lamda_max,steps_lamda)
+        self.data_array = np.zeros(steps_lamda)
 
             # Variables for the graph update
         
@@ -744,8 +745,8 @@ class FiberCaract:
         EOS_graph.update_graph()
         self.graph_dict['Spectrum'].update_graph()
             #Steps in wavelength
-        for i in range(len(lamda_array)):
-            answer = messagebox.askokcancel(title='Verify Wavelength', message='Are you sure the laser is at' + str(lamda_array[i]) + 'nm?', icon=messagebox.WARNING)
+        for i in range(len(self.lamda_array)):
+            answer = messagebox.askokcancel(title='Verify Wavelength', message='Are you sure the laser is at ' + str(int(self.lamda_array[i])) + ' nm?', icon=messagebox.WARNING)
             if not answer:
                 self.running = False
                 return
@@ -780,7 +781,7 @@ class FiberCaract:
                     
                     last_gu = time.time()
             data = np.array([self.t,self.S])
-            data_array[i]=data
+            self.data_array[i]=data
             
             if not self.running:
                     break
