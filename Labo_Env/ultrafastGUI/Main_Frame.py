@@ -2008,7 +2008,7 @@ class Experiment(ttk.LabelFrame):
                       option=["Monochrom"],
                       graph={"Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"]})
 
-        experiment_name.current(2)
+        experiment_name.current(0)
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):

@@ -469,6 +469,8 @@ class FiberCaract:
         lamda_max_lbl = tk.Label(frame, text = 'Max. Wavelength (nm):')
         lamda_delta_lbl = tk.Label(frame, text = 'Wavelength inccrement (nm):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
+        directory_lbl = tk.Label(frame, text='Data saving directory')
+        
         
         # Define buttons and their action
                 # Pi Stage
@@ -488,16 +490,18 @@ class FiberCaract:
         lamda_delta_var = tk.DoubleVar()        
         utime_var = tk.IntVar()
         self.wait_var = tk.IntVar()
-        pos_var.set(77.5)
-        self.vel_var.set(1)
-        min_var.set(75)
-        max_var.set(80)
+        directory_var=tk.StringVar()
+        
+        pos_var.set(0)
+        self.vel_var.set(0.5)
+        min_var.set(0)
+        max_var.set(39)
         lamda_min_var.set(1200)
         lamda_max_var.set(2200)
         lamda_delta_var.set(200)
         step_var.set(1000)
         utime_var.set(1)
-        
+        directory_var.set('E:/Gabriel/Fiber_Charact')
         
         # Define entry boxes
                 # PI stage
@@ -510,6 +514,7 @@ class FiberCaract:
         lamda_max_e = tk.Entry(frame, width = 6, textvariable = lamda_max_var)
         lamda_delta_e = tk.Entry(frame, width = 6, textvariable = lamda_delta_var)
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
+        directory_e = tk.Entry(frame, width=30, textvariable = directory_var)
 
         # Define position of all objects on the grid
                 # PI stage
@@ -531,11 +536,15 @@ class FiberCaract:
         lamda_max_e.grid(row=11, column=1, sticky='nse')
         lamda_delta_lbl.grid(row=12, column=0, sticky='nsw')
         lamda_delta_e.grid(row=12, column=1, sticky='nse')
-        utime_lbl.grid(row=14, column=0, sticky='nsw')
-        utime_e.grid(row=14, column=1, sticky='nse')
+        utime_lbl.grid(row=13, column=0, sticky='nsw')
+        utime_e.grid(row=13, column=1, sticky='nse')
+        directory_lbl.grid(row=15, column=0, sticky='nsw')
+        directory_e.grid(row=15, column=1, sticky='nse')
+
+
 
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
-        p_bar.grid(row=15, column=0, sticky='nsew', columnspan=2)
+        p_bar.grid(row=17, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
             # PI stage
@@ -546,23 +555,23 @@ class FiberCaract:
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, lamda_max=lamda_max_var, lamda_min=lamda_min_var, lamda_delta=lamda_delta_var, progress=p_bar, update_time=utime_var))
-        self.start_button.grid(row=14, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=16, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=16, column=0, columnspan=2, sticky='nsew')   
+        self.stop_button.grid(row=18, column=0, columnspan=2, sticky='nsew')   
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save())
         self.RefSignal_button = tk.Button(frame, text='Signal reference', state='disabled', command=lambda: self.SignalRef())
-        self.RefSignal_button.grid(row=17, column=0, sticky='nsw')
+        self.RefSignal_button.grid(row=19, column=0, sticky='nsw')
         self.RefOff_button = tk.Button(frame, text='Ref ON/OFF', state='disabled',command=lambda: self.RemoveRef())
-        self.RefOff_button.grid(row=17, column=1, sticky='nse')
+        self.RefOff_button.grid(row=19, column=1, sticky='nse')
         self.Log_button = tk.Button(frame, text='Log Spectrum ON/OFF', state='disabled',command=lambda: self.LogSpectrum())
-        self.Log_button.grid(row=18, columnspan=2, sticky='nsew')
-        self.save_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
+        self.Log_button.grid(row=20, columnspan=2, sticky='nsew')
+        self.save_button.grid(row=21, column=0, columnspan=2, sticky='nsew')
         self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
-        self.wait.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        self.wait.grid(row=14, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(timeStamp+'_FiberCaract_measurement',time = self.t,signal = self.S)
@@ -675,9 +684,9 @@ class FiberCaract:
         max_pos = max_pos.get()
         min_pos = min_pos.get()
         step = step.get()/1000
-        lamda_min=lamda_min.get
-        lamda_max=lamda_max.get()
-        lamda_delta=lamda_delta.get()
+        lamda_min=int(lamda_min.get())
+        lamda_max=int(lamda_max.get())
+        lamda_delta=int(lamda_delta.get())
         
         update_time = update_time.get()
 
@@ -691,7 +700,8 @@ class FiberCaract:
             # Getting the max and min possible value of the device
         maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
         minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
-
+        
+        
             # This is a fail safe in case you don't know your device
         if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
@@ -702,13 +712,11 @@ class FiberCaract:
         nsteps = int(np.ceil((max_pos - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
-        pos = np.zeros(nsteps+1)
-        self.S = np.zeros(nsteps+1)
-        self.t= np.zeros(nsteps+1)
+
 
             # Wavelength steps initialization
-        steps_lamda=int((lamda_max-lamda_min)/lamda_delta)+1
-        lamda_array=np.linscale(lamda_min,lamda_max,steps_lamda)
+        steps_lamda = (np.floor((lamda_max-lamda_min)/lamda_delta)+1)
+        lamda_array=np.linspace(lamda_min,lamda_max,steps_lamda)
 
             # Variables for the graph update
         
@@ -736,9 +744,15 @@ class FiberCaract:
         EOS_graph.update_graph()
         self.graph_dict['Spectrum'].update_graph()
             #Steps in wavelength
-        for lamda in lamda_array:
-            messagebox.showinfo(title='Verify Wavelength', message='Are you sure the laser is a the proper wavelength of: \n'+ str(lamda) + 'nm')
+        for i in range(len(lamda_array)):
+            answer = messagebox.askokcancel(title='Verify Wavelength', message='Are you sure the laser is at' + str(lamda_array[i]) + 'nm?', icon=messagebox.WARNING)
+            if not answer:
+                self.running = False
+                return
             
+            pos = np.zeros(nsteps+1)
+            self.S = np.zeros(nsteps+1)
+            self.t= np.zeros(nsteps+1)
             
                 # Main scanning and measurements
             for i in range(nsteps+1):
@@ -765,6 +779,9 @@ class FiberCaract:
                     EOS_graph.update_graph()
                     
                     last_gu = time.time()
+            data = np.array([self.t,self.S])
+            data_array[i]=data
+            
             if not self.running:
                     break
         if not self.running:
