@@ -490,7 +490,7 @@ class FiberCaract:
         lamda_delta_var = tk.DoubleVar()        
         utime_var = tk.IntVar()
         self.wait_var = tk.IntVar()
-        directory_var=tk.StringVar()
+        self.directory_var=tk.StringVar()
         
         pos_var.set(0)
         self.vel_var.set(0.5)
@@ -501,7 +501,7 @@ class FiberCaract:
         lamda_delta_var.set(200)
         step_var.set(1000)
         utime_var.set(1)
-        directory_var.set('E:/Gabriel/Fiber_Charact')
+        self.directory_var.set('E:/Gabriel/Fiber_Charact/')
         
         # Define entry boxes
                 # PI stage
@@ -514,7 +514,7 @@ class FiberCaract:
         lamda_max_e = tk.Entry(frame, width = 6, textvariable = lamda_max_var)
         lamda_delta_e = tk.Entry(frame, width = 6, textvariable = lamda_delta_var)
         utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
-        directory_e = tk.Entry(frame, width=30, textvariable = directory_var)
+        directory_e = tk.Entry(frame, width=30, textvariable = self.directory_var)
 
         # Define position of all objects on the grid
                 # PI stage
@@ -574,7 +574,7 @@ class FiberCaract:
         self.wait.grid(row=14, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(directory_var.get() + timeStamp+'_FiberCaract_measurement',data = self.data_array ,lamda = self.lamda_array)
+        np.savez(self.directory_var.get() + timeStamp+'_FiberCharact_measurement',data = self.data_array ,lamda = self.lamda_array)
         
     def LogSpectrum(self):
         if self.LogSpec is False:
@@ -633,6 +633,7 @@ class FiberCaract:
         path2 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/timeconstant'
         path3 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/order'
         tc= self.Zurich.info['daq'].getDouble(path2)
+        # print
         order= self.Zurich.info['daq'].getDouble(path3)
         if self.wait_var.get() == 1:
             # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
@@ -651,8 +652,8 @@ class FiberCaract:
 
         try:
             data = data_set[path]['x']
-#            print(data)
-#            print(len(data))
+            # print(data)
+            # print(len(data))
         except:
             pass
         self.Zurich.info['daq'].unsubscribe(path)
@@ -890,6 +891,10 @@ class FiberCaract:
         
         update_time = update_time.get()
 
+        return_vel = tk.IntVar()
+        return_vel.set(1)
+
+
             # Verification
         if not self.PI.device:
             return
@@ -917,7 +922,7 @@ class FiberCaract:
             # Wavelength steps initialization
         steps_lamda = int(np.floor((lamda_max-lamda_min)/lamda_delta)+1)
         self.lamda_array=np.linspace(lamda_min,lamda_max,steps_lamda)
-        self.data_array = np.zeros(steps_lamda)
+        self.data_array = np.zeros([steps_lamda,2,nsteps+1])
 
             # Variables for the graph update
         
@@ -945,11 +950,15 @@ class FiberCaract:
         EOS_graph.update_graph()
         self.graph_dict['Spectrum'].update_graph()
             #Steps in wavelength
-        for i in range(len(self.lamda_array)):
-            answer = messagebox.askokcancel(title='Verify Wavelength', message='Are you sure the laser is at ' + str(int(self.lamda_array[i])) + ' nm?', icon=messagebox.WARNING)
+        for j in range(len(self.lamda_array)):
+            answer = messagebox.askokcancel(title='Verify Wavelength', message='Are you sure the laser is at ' + str(int(self.lamda_array[j])) + ' nm?', icon=messagebox.WARNING)
             if not answer:
                 self.running = False
                 return
+            
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(move[0])
+            self.PI.set_velocity(self.vel_var)
             
             pos = np.zeros(nsteps+1)
             self.S = np.zeros(nsteps+1)
@@ -980,23 +989,29 @@ class FiberCaract:
                     EOS_graph.update_graph()
                     
                     last_gu = time.time()
-            data = np.array([self.t,self.S])
-            self.data_array[i]=data
+                    
+                if not self.running:
+                    break
+            
+            
+            # data = np.array([self.t,self.S])
+            print(self.t,self.S)
+            self.data_array[j,0]=self.t
+            self.data_array[j,1]=self.S
+
             
             if not self.running:
                     break
         if not self.running:
-            return_vel = tk.IntVar()
-            return_vel.set(5)
+
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(77.5)
+            self.PI.go_2position(min_pos)
             self.PI.set_velocity(self.vel_var)
             messagebox.showinfo(title='Error', message='Experiment was aborted')
         else:
-            return_vel = tk.IntVar()
-            return_vel.set(5)
+
             self.PI.set_velocity(return_vel)
-            self.PI.go_2position(77.5)
+            self.PI.go_2position(min_pos)
             self.PI.set_velocity(self.vel_var)
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
