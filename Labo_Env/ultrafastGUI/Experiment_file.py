@@ -3764,6 +3764,12 @@ class CHI3_Sampling:
         step_lbl = tk.Label(frame, text = 'Step size (um):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
         
+        self.directory_var=tk.StringVar()
+        
+        
+        self.directory_var.set('E:/Marco/Raw_data/EOS/')
+        
+        
         # Define buttons and their action
                 # Pi Stage
         con_b = tk.Button(frame, text='Connect PI linear stage',
@@ -3846,7 +3852,7 @@ class CHI3_Sampling:
         self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
+        np.savez(self.directory_var.get() + timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
         
     def LogSpectrum(self):
         if self.LogSpec is False:
