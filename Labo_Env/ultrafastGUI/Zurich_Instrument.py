@@ -29,8 +29,7 @@ class Zurich:
 
         # This function finds and connect the zurich device with serial number : devicename
         api_level = 6
-        # dev_type = 'UHFLI'
-        dev_type = 'MFLI'
+        dev_type = 'UHFLI'
         # Create an instance of the ziDiscovery class.
         d = ziPython.ziDiscovery()
         # Determine the device identifier from it's ID.
