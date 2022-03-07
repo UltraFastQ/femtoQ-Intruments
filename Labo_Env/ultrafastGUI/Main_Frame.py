@@ -2077,12 +2077,6 @@ class Experiment(ttk.LabelFrame):
             option=["Spectrometer"],
             graph={"Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"]},
         )
-        create_layout(
-            name="iHR320",
-            function_=Experiment_file.iHR320,
-            option=["Monochrom"],
-            graph={"Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"]},
-        )
         # create_layout(name='Template', function_=Experiment_file.TemplateForExperiment,
         #              option=['Zurich', 'Spectrometer', 'Monochrom'], graph={'1': ['a', 'b'], '2': ['c', 'd']})
         ##########
