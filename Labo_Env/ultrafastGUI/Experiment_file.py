@@ -4999,3 +4999,189 @@ class iHR320:
         ssw_e.bind('<Return>', lambda e: self.mono.set_front_exit_slit(self.ssw_var.get()))
 
 
+class Boxcar:
+
+    # This class is implicitly called in the main frame
+    def __init__(self, mainf = None):
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+        self.Zurich = mainf.Frame[1].Zurich
+        
+    def create_frame(self, frame):
+        # Define labels
+                # Delay line
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+#        min_lbl = tk.Label(frame, text = 'Min. duration [s]:')
+        max_lbl = tk.Label(frame, text = 'Duration duration [s]:')
+        step_lbl = tk.Label(frame, text = 'Number of steps')
+        
+        # Define buttons and their action
+               
+        # Define variables
+                # PI stage
+        max_var = tk.DoubleVar()
+        step_var = tk.DoubleVar()
+        self.wait_var = tk.IntVar()
+#        min_var.set(1)
+        max_var.set(1)
+        step_var.set(5)
+        
+        self.directory_var=tk.StringVar()
+        
+        
+        self.directory_var.set('E:/Marco/Raw_data/Boxcar/')
+        
+        
+        # Define entry boxes
+                # PI stage
+#        min_e = tk.Entry(frame, width = 6, textvariable = min_var)
+        max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        step_e = tk.Entry(frame, width = 6, textvariable = step_var)
+
+        # Define position of all objects on the grid
+                # PI stage
+        param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
+#        min_lbl.grid(row=7, column=0, sticky='nsw')
+#        min_e.grid(row=7, column=1, sticky='nse')
+        max_lbl.grid(row=8, column=0, sticky='nsw')
+        max_e.grid(row=8, column=1, sticky='nse')
+        step_lbl.grid(row=9, column=0, sticky='nsw')
+        step_e.grid(row=9, column=1, sticky='nse')
+
+        p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
+        p_bar.grid(row=13, column=0, sticky='nsew', columnspan=2)
+        p_bar['maximum'] = 1
+        # Select a key and its effect when pressed in an entry box
+            
+        # Start & stop buttons :
+
+        self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
+                                      command=lambda: self.start_experiment(max_pos=max_var, step=step_var, progress=p_bar))
+        self.start_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=14, column=0, columnspan=2, sticky='nsew')   
+        self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
+                                        command=lambda: self.save())
+        self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
+        
+    def save(self):
+        
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        np.savez(self.directory_var.get() + timeStamp+'_Boxcar_measurement',time = self.t,signal = self.S)
+        
+
+    
+    def Zurich_acquire(self):
+        path = '/' + '{}'.format(self.Zurich.info['device'])+'/boxcars/0/sample'
+        self.Zurich.info['daq'].subscribe(path)
+        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+
+        
+        try:
+            data = data_set[path]['value']
+#            print(data)
+#            print(len(data))
+        except:
+            pass
+        self.Zurich.info['daq'].unsubscribe(path)
+        return  data
+    
+    def stop_experiment(self):
+        self.running = False
+
+    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None):
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+
+        self.running = True
+
+            # Parameters initialisation
+        max_pos = max_pos.get()
+#        min_pos = min_pos.get()        
+        step = int(step.get())
+        
+        if (max_pos is None):
+            return
+
+            # Getting the max and min possible value of the device
+        maxp = 20*60
+        minp = 1
+
+            # This is a fail safe in case you don't know your device
+        if not(max_pos >= minp and max_pos <= maxp):
+            messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower duration limit of '+
+                                'this experiment')
+            return
+
+            # Steps and position vector initialisation
+#        nsteps = int(np.ceil((max_pos - min_pos)/step))
+        nsteps = step
+#        iteration = np.linspace(0, nsteps, nsteps+1)
+        b=[]
+        time_tracker=[]
+        self.S = np.zeros(nsteps+1)
+        self.t= np.zeros(nsteps+1)
+
+        # Variables for the graph update
+        
+            # Variables for the graph update
+        last_gu = time.time_ns()
+        duration = 0
+        current_i= 1
+            # Main scanning and measurements
+#        for i in range(nsteps):
+#            # Measure signal
+#            self.t[i] = time.time_ns()
+#            self.S[i] = np.mean(self.Zurich_acquire())*1000
+#            
+#            # Actualise progress bar
+#            if progress:
+#                progress['value'] = (i)/(nsteps)
+#                progress.update()
+#           
+#            if not self.running:
+#                break
+            
+        while duration<max_pos:
+            if duration>((current_i*max_pos/nsteps)-150e-3):
+                time_tracker.append((time.time_ns()-last_gu)*1e-9)
+                b.append(np.mean(self.Zurich_acquire()))
+                
+                if progress:
+                    progress['value'] = current_i/nsteps
+                    progress.update()
+                current_i+=1
+                
+            if current_i>nsteps:
+                break
+            
+            if not self.running:
+                break
+            duration=(time.time_ns()-last_gu)*1e-9
+            
+        self.S = np.asarray(b)
+        self.t = np.asarray(time_tracker)
+        
+        if not self.running:
+            return_vel = tk.IntVar()
+            return_vel.set(5)
+            messagebox.showinfo(title='Error', message='Experiment was aborted')
+        else:
+            return_vel = tk.IntVar()
+            return_vel.set(5)
+            messagebox.showinfo(title='INFO', message='Measurements is done.')
+        
+
+        
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'

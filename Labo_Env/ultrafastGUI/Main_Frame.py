@@ -2007,7 +2007,9 @@ class Experiment(ttk.LabelFrame):
         create_layout(name="iHR320", function_=Experiment_file.iHR320,
                       option=["Monochrom"],
                       graph={"Spectrometer": ["Wavelengths [nm]", "Intensity [arb.u.]"]})
-
+        create_layout(name='Boxcar', function_=Experiment_file.Boxcar, option=[],
+                      graph={'Scanning': ['Step number', 'Elapsed time [s]']})
+        
         experiment_name.current(0)
 
         frame_switch(self.experiment_dict, experiment_name.get())

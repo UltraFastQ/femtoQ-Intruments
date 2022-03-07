@@ -64,7 +64,7 @@ class ueye_beam_profiler(QtGui.QWidget):
         self.exposureSliderNumberSteps = 100
         self.checkBurntRows = False
         self.checkBurntColumns = False
-        self.countsThresholdBurntPixels = 50
+        self.countsThresholdBurntPixels = 150
         self.updateZoomCenter = False
         
         print('Model: ' + self.camName)
