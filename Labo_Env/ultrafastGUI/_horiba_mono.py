@@ -112,7 +112,16 @@ class HoribaMono(HasTurret, IsHomeable, HasLimits, HasPosition, IsDaemon):
         print('home done')
 
     def set_turret(self, identifier):
+        
+        if identifier == 600:
+            identifier = "grating 1; 600 lines per mm"
+        if identifier == 150:
+            identifier = "grating 2; 150 lines per mm"
+        if identifier == 120:
+            identifier = "grating 3; 120 lines per mm"
+            
         self._busy = True
+        
         self.logger.debug(self._state["turret"], identifier)
         if identifier != self._state["turret"]:
             

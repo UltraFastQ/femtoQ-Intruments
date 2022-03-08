@@ -150,21 +150,19 @@ class HoribaIHR320(HoribaMono):
             await asyncio.sleep(0.01)
             await self._busy_sig.wait()
 
-"""
-name='ihr32'
-config={'port':2,
-        'out_of_limits':'closest',
-        'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
-                    'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
-                    'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
-                    },
-        'limits':[0,15800]
+#name='ihr32'
+#config={'port':2,
+#        'out_of_limits':'closest',
+#        'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
+#                    'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
+#                    'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
+#                    },
+#        'limits':[0,15800]
 
-        }
+#        }
 
-config_path = ''
-d = HoribaIHR320(name,config,config_path)
-"""
+#config_path = ''
+#d = HoribaIHR320(name,config,config_path)
 
 #d.set_position(100)
 #d.set_turret(d.get_turret_options()[0])
