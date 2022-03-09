@@ -5000,119 +5000,6 @@ class iHR320:
         ssw_e.bind('<Return>', lambda e: self.mono.set_front_exit_slit(self.ssw_var.get()))
 
 
-# class iHR320:
-
-#     # This class is implicitly called in the main frame
-#     def __init__(self, mainf = None):
-#         # here are the initiation of the item that will be called throughout the program as self
-#         self.empty_var = []
-#         self.graph_dict = {}
-#         self.mono = None
-        
-#     def create_frame(self, frame):
-
-
-#         # this function contains at minimum :
-#         #self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-#         #                              command=lambda: self.start_experiment())
-#         #self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
-#         # The other lines are required option you would like to change before an experiment with the correct binding
-#         # and/or other function you can see the WhiteLight for more exemple.
-#         #self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
-#         #                             command=lambda: self.stop_experiment())
-#         #self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
-        
-#         pos_lbl = tk.Label(frame, text = 'Set position to (nm):')
-#         posd_lbl = tk.Label(frame, text = 'Position according to the device (nm):')
-#         gra_lbl = tk.Label(frame, text = 'Set grating to (g/mm):')
-#         esw_lbl = tk.Label(frame, text = 'Set entrance slit width to (mm):')
-#         eswd_lbl = tk.Label(frame, text = 'Entrance slit according to the device (mm):')
-#         ssw_lbl = tk.Label(frame, text = 'Set exit slit width to (mm):')
-#         sswd_lbl = tk.Label(frame, text = 'Exit slit according to the device (mm):')
-#         exm_lbl = tk.Label(frame, text = 'Set exit mirror to (front or side):')
-        
-        
-#         self.pos_var = tk.DoubleVar()
-#         self.posd_var = tk.DoubleVar()
-#         self.gra_var = tk.DoubleVar()
-#         self.esw_var = tk.DoubleVar()
-#         self.ssw_var = tk.DoubleVar()
-#         self.eswd_var = tk.DoubleVar()
-#         self.sswd_var = tk.DoubleVar()
-#         self.exm_var = tk.StringVar()
-      
-        
-#         self.pos_var.set(0)
-#         self.posd_var.set(0)
-#         self.gra_var.set(0)
-#         self.esw_var.set(0)
-#         self.ssw_var.set(0)
-#         self.eswd_var.set(0)
-#         self.sswd_var.set(0)
-#         self.exm_var.set("front")
-        
-#         pos_e = tk.Entry(frame, width = 6, textvariable = self.pos_var)
-#         gra_e = tk.Entry(frame, width = 6, textvariable = self.gra_var)
-#         esw_e = tk.Entry(frame, width = 6, textvariable = self.esw_var)
-#         ssw_e = tk.Entry(frame, width = 6, textvariable = self.ssw_var)
-#         exm_e = tk.Entry(frame, width = 6, textvariable = self.exm_var)
-        
-#         pos_lbl.grid(row=5, column=0, sticky='nsw')
-#         pos_e.grid(row=5, column=1, sticky='nse')
-#         posd_lbl.grid(row=6, column=0, sticky='nsw')
-#         gra_lbl.grid(row=7, column=0, sticky='nsw')
-#         gra_e.grid(row=7, column=1, sticky='nse')
-#         esw_lbl.grid(row=8, column=0, sticky='nsw')
-#         esw_e.grid(row=8, column=1, sticky='nse')
-#         eswd_lbl.grid(row=9, column=0, sticky='nsw')
-#         ssw_lbl.grid(row=10, column=0, sticky='nsw')
-#         ssw_e.grid(row=10, column=1, sticky='nse')
-#         sswd_lbl.grid(row=11, column=0, sticky='nsw')
-#         exm_lbl.grid(row=12, column=0, sticky='nsw')
-#         exm_e.grid(row=12, column=1, sticky='nse')
-        
-        
-        
-        
-#         """
-#         def stop_experiment(self):
-#             self.running = False
-#             self.spectro_start_button['state'] = 'normal'
-    
-#         def start_experiment(self):
-    
-#             self.stop_button['state'] = 'normal'
-#             self.start_button['state'] = 'disabled'
-#             self.running = True
-#         """
-            
-#         def connect_mono(self):
-#             self.cons_b['state'] = 'disabled'
-            
-#             name='ihr32'
-#             config={'port':2,
-#                     'out_of_limits':'closest',
-#                     'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
-#                                 'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
-#                                 'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
-#                                 },
-#                     'limits':[0,15800]
-
-#                     }
-
-#             config_path = ''
-#             self.mono = HoribaIHR320(name,config,config_path)
-#             messagebox.showinfo(title="Monochromator", message="Horiba iHR320 is connected")
-#             #messagebox.showinfo(title="Monochromator", message=f"{self.mono._state}")
-            
-        
-#         self.cons_b = tk.Button(frame, text='Connect monochromator', command=lambda: connect_mono(self))
-#         self.cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
-
-#         pos_e.bind('<Return>', lambda e: self.mono.set_position(self.pos_var.get()))
-#         gra_e.bind('<Return>', lambda e: self.mono.set_turret(self.gra_var.get()))
-#         esw_e.bind('<Return>', lambda e: self.mono.set_front_entrance_slit(self.esw_var.get()))
-#         ssw_e.bind('<Return>', lambda e: self.mono.set_front_exit_slit(self.ssw_var.get()))
 
 
 
@@ -5302,3 +5189,344 @@ class Boxcar:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
+
+
+
+
+
+
+
+
+class Horiba_spectrum:
+
+    # This class is implicitly called in the main frame
+    def __init__(self, mainf = None):
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+        self.Zurich = mainf.Frame[1].Zurich
+        self.plotRefSignal = False
+        self.refSignal =[]
+        self.refTime =[]
+        self.refExists = False
+        self.LogSpec = False
+        self.phaseExists = False
+        self.mono= None
+    
+    def create_frame(self, frame):
+        # Define labels
+                # Delay line
+        pos_lbl = tk.Label(frame, text = 'Go to wavelength (nm):')
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+        min_lbl = tk.Label(frame, text = 'Min. wavelength. (nm):')
+        max_lbl = tk.Label(frame, text = 'Max. wavelength. (nm):')
+        step_lbl = tk.Label(frame, text = 'Step size (nm):')
+        utime_lbl = tk.Label(frame, text='Update graph after [s]:')
+        
+        def connect_mono(self):
+            self.con_b['state'] = 'disabled'
+            
+            name='ihr32'
+            config={'port':2,
+                    'out_of_limits':'closest',
+                    'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
+                                'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
+                                'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
+                                },
+                    'limits':[0,15800]
+
+                    }
+
+            config_path = ''
+            self.mono = HoribaIHR320(name,config,config_path)
+            messagebox.showinfo(title="Monochromator", message="Horiba iHR320 is connected")
+            #messagebox.showinfo(title="Monochromator", message=f"{self.mono._state}")
+        
+        # Define buttons and their action
+                # Pi Stage
+        con_b = tk.Button(frame, text='Initialize Horiba Monochromator',
+                                      command=lambda: self.connect_mono())
+
+        # Define variables
+                # PI stage
+        pos_var = tk.DoubleVar()
+        min_var = tk.DoubleVar()
+        max_var = tk.DoubleVar()
+        step_var = tk.DoubleVar()
+        utime_var = tk.IntVar()
+        self.wait_var = tk.IntVar()
+        pos_var.set(1000)
+        min_var.set(1000)
+        max_var.set(2000)
+        step_var.set(100)
+        utime_var.set(1)
+        
+        
+        # Define entry boxes
+                # PI stage
+        pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
+        min_e = tk.Entry(frame, width = 6, textvariable = min_var)
+        max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        step_e = tk.Entry(frame, width = 6, textvariable = step_var)
+        utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
+
+        # Define position of all objects on the grid
+                # PI stage
+        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        pos_lbl.grid(row=4, column=0, sticky='nsw')
+        pos_e.grid(row=4, column=1, sticky='nse')
+        param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
+        min_lbl.grid(row=7, column=0, sticky='nsw')
+        min_e.grid(row=7, column=1, sticky='nse')
+        max_lbl.grid(row=8, column=0, sticky='nsw')
+        max_e.grid(row=8, column=1, sticky='nse')
+        step_lbl.grid(row=9, column=0, sticky='nsw')
+        step_e.grid(row=9, column=1, sticky='nse')
+        utime_lbl.grid(row=11, column=0, sticky='nsw')
+        utime_e.grid(row=11, column=1, sticky='nse')
+
+        p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
+        p_bar.grid(row=13, column=0, sticky='nsew', columnspan=2)
+        p_bar['maximum'] = 1
+        # Select a key and its effect when pressed in an entry box
+            # PI stage
+        pos_e.bind('<Return>', lambda e: self.mono.set_position(self.pos_var.get()))
+            
+        # Start & stop buttons :
+
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var))
+        self.start_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=14, column=0, columnspan=2, sticky='nsew')   
+        self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
+                                        command=lambda: self.save())
+        self.RefSignal_button = tk.Button(frame, text='Signal reference', state='disabled', command=lambda: self.SignalRef())
+        self.RefSignal_button.grid(row=15, column=0, sticky='nsw')
+        self.RefOff_button = tk.Button(frame, text='Ref ON/OFF', state='disabled',command=lambda: self.RemoveRef())
+        self.RefOff_button.grid(row=15, column=1, sticky='nse')
+        self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
+        self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
+        self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
+    def save(self):
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        np.savez(timeStamp+'_EOS_measurement',time = self.L,signal = self.S)
+            
+    def SignalRef(self):
+        if self.refExists is False:
+            self.graph_dict['Signal'].LineRef, =  self.graph_dict['Signal'].axes.plot([], [])
+            self.graph_dict['Spectrum'].LineRef, = self.graph_dict['Spectrum'].axes.plot([],[])
+            self.refExists = True
+        self.refSignal = self.S
+        self.refTime = self.L
+        self.refFreq = self.v
+        self.refSpec = self.AA
+        if self.plotRefSignal is False:
+            self.plotRefSignal = True
+        return
+    def RemoveRef(self):
+        if self.refExists is True:
+            if self.plotRefSignal is True:    
+                self.plotRefSignal = False
+                self.graph_dict['Signal'].LineRef.set_xdata([])
+                self.graph_dict['Signal'].LineRef.set_ydata([])
+                self.graph_dict['Spectrum'].LineRef.set_xdata([])
+                self.graph_dict['Spectrum'].LineRef.set_ydata([])
+            elif self.plotRefSignal is False:
+                self.plotRefSignal = True
+                self.graph_dict['Signal'].LineRef.set_xdata(self.refTime)
+                self.graph_dict['Signal'].LineRef.set_ydata(self.refSignal)
+                self.graph_dict['Spectrum'].LineRef.set_xdata([self.refFreq])
+                if self.LogSpec is True:
+                    self.graph_dict['Spectrum'].LineRef.set_ydata(np.log(self.refSpec))
+                else:
+                    self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
+            self.graph_dict['Signal'].update_graph()
+            self.graph_dict['Spectrum'].update_graph()
+        return
+    
+    def Zurich_acquire(self):
+        import time
+        path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
+        path2 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/timeconstant'
+        path3 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/order'
+        tc= self.Zurich.info['daq'].getDouble(path2)
+        order= self.Zurich.info['daq'].getDouble(path3)
+        if self.wait_var.get() == 1:
+            # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
+            if order == 1:
+                Settling_time = 4.61*tc
+            elif order == 2:
+                Settling_time = 6.64*tc
+            elif order == 3:
+                Settling_time = 8.41*tc
+            elif order == 4:
+                Settling_time = 10.05*tc
+            time.sleep(Settling_time)
+        self.Zurich.info['daq'].subscribe(path)
+        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+
+
+        try:
+            data = data_set[path]['x']
+#            print(data)
+#            print(len(data))
+        except:
+            pass
+        self.Zurich.info['daq'].unsubscribe(path)
+        return  data
+    
+    def stop_experiment(self):
+        self.running = False
+
+    def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None):
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+        self.RefSignal_button['state'] = 'disabled'
+        self.RefOff_button['state'] = 'disabled'
+        self.Log_button['state'] = 'disabled'
+        self.running = True
+
+        # Imports
+        from pipython import pitools
+        import time
+        import scipy
+        import femtoQ.tools as fQ
+        c = scipy.constants.c
+        # Main experiment
+
+            # Parameters initialisation
+        max_pos = max_pos.get()
+        min_pos = min_pos.get()
+        step = step.get()
+        update_time = update_time.get()
+
+            # Verification
+
+        if (max_pos is None) or (min_pos is None):
+            return
+
+
+
+            # Steps and position vector initialisation
+        nsteps = int(np.ceil((max_pos - min_pos)/step))
+        iteration = np.linspace(0, nsteps, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
+        pos = np.zeros(nsteps+1)
+        self.S = np.zeros(nsteps+1)
+        self.L = np.zeros(nsteps+1)
+
+        # Variables for the graph update
+        
+            # Variables for the graph update
+        last_gu = time.time()
+        scan_graph = self.graph_dict['Scanning']
+        scan_graph.axes.set_ylim([min_pos, max_pos])
+        scan_graph.axes.set_xlim([0, nsteps])
+        scan_graph.Line.set_xdata([])
+        scan_graph.Line.set_ydata([])
+        scan_graph.Line.set_marker('o')
+        scan_graph.Line.set_markersize(2)
+        scan_graph.update_graph()
+        EOS_graph = self.graph_dict['Signal']
+        EOS_graph.axes.set_ylim([-10,10])
+        EOS_graph.axes.set_xlim([0, (max_pos-min_pos)*2/1000/c*1e15])
+        EOS_graph.Line.set_xdata([])
+        EOS_graph.Line.set_ydata([])
+        if self.plotRefSignal is True:
+            EOS_graph.LineRef.set_xdata(self.refTime)
+            EOS_graph.LineRef.set_ydata(self.refSignal)
+            EOS_graph.LineRef.set_linestyle('--')
+            self.graph_dict['Spectrum'].LineRef.set_xdata([self.refFreq])
+            self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
+            self.graph_dict['Spectrum'].LineRef.set_linestyle('--')
+        EOS_graph.update_graph()
+        self.graph_dict['Spectrum'].update_graph()
+            # Main scanning and measurements
+        for i in range(nsteps+1):
+            # Move stage to required position
+            self.mono.set_position(move[i])
+            # Measure real position
+            pos[i] = move[i]
+            # Measure signal
+            self.L[i] = pos[i]
+            self.S[i] = np.mean(self.Zurich_acquire())*1000
+            
+            # Actualise progress bar
+            if progress:
+                progress['value'] = (i)/(nsteps)
+                progress.update()
+            # Actualise graph if required
+            if (time.time() - last_gu) > update_time:
+                scan_graph.Line.set_xdata(iteration[:i])
+                scan_graph.Line.set_ydata(pos[:i])
+                scan_graph.update_graph()
+                EOS_graph.Line.set_xdata(self.L[:i])
+                EOS_graph.Line.set_ydata(self.S[:i])
+                EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+                EOS_graph.update_graph()
+                
+                last_gu = time.time()
+            if not self.running:
+                break
+        if not self.running:
+            self.mono.set_position(self.pos_var.get())
+        else:
+            self.mono.set_position(self.pos_var.get())
+            scan_graph.Line.set_xdata(iteration)
+            scan_graph.Line.set_ydata(pos)
+            scan_graph.update_graph()
+            EOS_graph.Line.set_xdata(self.L)
+            EOS_graph.Line.set_ydata(self.S)
+            EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+            EOS_graph.update_graph()
+            
+            dp = np.std(pos-move)
+            messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
+        
+            # Display spectrum graph
+            spec_t = self.L
+            t_sort, indices = np.unique(spec_t,return_index=True)
+            S_sort = self.S[indices]
+            func = interp.interp1d(t_sort, S_sort,kind='quadratic')
+            t_interp = np.linspace(t_sort.min(),t_sort.max(),len(t_sort))
+            E_interp = func(t_interp)
+            self.v,self.A = fQ.ezfft(t_interp,E_interp)
+            self.AA = np.abs(self.A)**2
+            self.AA = self.AA/np.max(self.AA)
+            self.v = self.v/1e12
+            Spectrum_graph = self.graph_dict['Spectrum']
+            Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.AA)])
+            Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
+            Spectrum_graph.Line.set_xdata([self.v])
+            Spectrum_graph.Line.set_ydata([self.AA])
+            
+            if self.phaseExists is False:
+                        self.Phase_graph_ax = Spectrum_graph.axes.twinx()
+                        self.LinePhase, = self.Phase_graph_ax.plot([],[],'m')
+                        self.phaseExists = True
+            phi = np.arctan2(self.A.imag,self.A.real)
+            phi = np.unwrap(phi)
+            a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
+            slope = a*self.v+b
+            phi = phi - slope
+            self.Phase_graph_ax.set_ylim([-2*np.pi,2*np.pi])
+            self.LinePhase.set_xdata(self.v)
+            self.LinePhase.set_ydata([phi])
+            self.LinePhase.set_linestyle(':')
+            Spectrum_graph.update_graph()
+        
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+        self.RefSignal_button['state'] = 'normal'
+        self.RefOff_button['state'] = 'normal'
+        self.Log_button['state'] = 'normal'
