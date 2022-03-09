@@ -227,3 +227,28 @@ d.set_front_exit_slit(5)
 d.set_side_exit_slit(5)
 print(d._state) 
 """
+"""
+name='ihr32'
+config={'port':2,
+        'out_of_limits':'closest',
+        'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
+                    'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
+                    'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
+                    },
+        'limits':[0,15800]
+
+        }
+
+config_path = ''
+d = HoribaIHR320(name,config,config_path)
+
+d.set_position(100)
+d.set_turret(d.get_turret_options()[0])
+d.set_front_entrance_slit(1)
+d.set_front_exit_slit(1)
+d.set_position(699)
+#631.3 grating 1, sw: 0.02 et 0.01 fkn précis
+#622.4 grating 2, sw: 0.04 et 0.1
+#627.5 grating 3, sw: 0.04 et 0.1
+#slit width
+"""
