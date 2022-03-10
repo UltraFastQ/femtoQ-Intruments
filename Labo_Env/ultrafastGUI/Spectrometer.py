@@ -364,12 +364,11 @@ class Spectro:
                                2*len(pad_freq)+1)
         intensities = np.pad(intensities, (0, len(frequencies)), mode='constant',
 		 	                 constant_values=(0, 0))
-        intensities = np.interp(lin_freq, pad_freq, intensities,left= 0,right = 0)
+        intensities = np.interp(lin_freq, pad_freq, intensities/pad_freq**2,left= 0,right = 0)
         intensities = fQ.ezsmooth(intensities,window = 'hanning')
         intensities[intensities < np.max(intensities)/100] = 0
         # Calculate the ezifft of the signal.
-        sig_time, sig = fQ.ezifft(lin_freq, np.sqrt(intensities))
-        sig = np.fft.fftshift(sig)
+        sig_time, sig = fQ.ezifft(lin_freq, np.sqrt(intensities), amplitudeSpectrumRecentering = True)
         sig = np.absolute(sig)**2
         sig = sig/np.max(sig)
         fwhm = fQ.ezfindwidth(sig_time, sig)

@@ -2928,74 +2928,31 @@ class TwoDSI:
         # need to check if another strategy would work better
         Df = frequencies[-1] - frequencies[0]
         df = np.max( np.diff(frequencies) ) / 16
-        N = round(Df / df)
+        N = int(round(Df / df))
         linFreqs = np.linspace(frequencies[-1]-(N-1)*df, frequencies[-1], N )
-        upconvPowerSpectrum = np.interp(linFreqs, frequencies, upconvPowerSpectrum)
+        upconvPowerSpectrum = np.interp(linFreqs, frequencies,  upconvPowerSpectrum*C/frequencies**2)
         
         
         newMovingMirrorData = np.zeros((movingMirrorData.shape[0], linFreqs.shape[0]))
         
         for ii in range( movingMirrorData.shape[0] ):
-            newMovingMirrorData[ii,:] = np.interp(linFreqs, frequencies, movingMirrorData[ii,:])
+            newMovingMirrorData[ii,:] = np.interp(linFreqs, frequencies, movingMirrorData[ii,:]*C/frequencies**2)
         
         movingMirrorData = newMovingMirrorData
         frequencies = linFreqs
         
-        
-        
-        #crossCorr = np.zeros( (movingMirrorData.shape[0], movingMirrorData.shape[1]))
-        crossCorr = np.zeros( (movingMirrorData.shape[0], movingMirrorData.shape[1]*2-1))
-    
-        lags = np.zeros_like(crossCorr)
         shearMap = np.zeros( movingMirrorData.shape[0] )
+        v0 = np.trapz(upconvPowerSpectrum*linFreqs,linFreqs) / np.trapz(upconvPowerSpectrum,linFreqs)
         
         for ii in range( movingMirrorData.shape[0] ):
-            #lags[ii,:], crossCorr[ii,:] =fq.ezcorr(frequencies, movingMirrorData[ii,:], upconvPowerSpectrum) 
-            #shearMap[ii] = lags[ii,:][ crossCorr[ii,:] == np.max(crossCorr[ii,:]) ]
-            crossCorr[ii,:] =  np.correlate(movingMirrorData[ii,:], upconvPowerSpectrum,'full')
-            maxId = np.argmax(crossCorr[ii,:])
-            peakFreq = -(N - (maxId+1))*df
-            lags = -(N - np.linspace(1,2*N-1,2*N-1) ) *df
-            
-            
-            x,y = fq.ezdiff(lags, crossCorr[ii,:])
-            
-            f = interp.interp1d(x, y, kind = 'cubic')
-            
-            err = 1
-            threshold = 1e-5
-            maxIter = 1000
-            nIter = 0
-            x0 = peakFreq - 5*df
-            x1 = peakFreq + 5*df
-            
-            while err > threshold:
-                nIter += 1
-                if nIter > maxIter:
-                    break
-                
-                if x1<lags[0]:
-                    x1 = lags[0]
-                if x1>lags[-1]:
-                    x1 = lags[-1]
-                    
-                f0 = f(x0)
-                f1 = f(x1)
-                dfdx = (f1-f0) / (x1 - x0)
-                b = f0 - dfdx*x0
-                
-                x0 = x1
-                x1 = -b/dfdx
-                err = abs((x1-x0)/x0)
-                
-                
-                 
-            
-            shearMap[ii] = x1# -(N - (maxId+1))*df
+            shearMap[ii] = np.trapz(movingMirrorData[ii,:]*linFreqs,linFreqs) / np.trapz(movingMirrorData[ii,:],linFreqs) - v0
+
         
         shearMap /= 1e12
         self.shearFit = np.polyfit(movingMirror_Z,shearMap, 1)
         self.shearMap = shearMap
+        
+        return
     
     
     
