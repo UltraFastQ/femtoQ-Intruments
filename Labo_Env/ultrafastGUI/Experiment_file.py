@@ -16,6 +16,7 @@ import os
 import time
 import zhinst.utils
 from _horiba_ihr import HoribaIHR320
+import femtoQ.pulse_retrieval as fqpr
 
 
 class CreateLayout:
@@ -2197,6 +2198,86 @@ class FROG:
         autocorr_lbl.grid(row=23, column=0, sticky='nsw')
         self.autocorr_e.grid(row=23, column=1, sticky='nse')
         
+        
+        
+        self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
+                                        command=lambda: self.fast_retrieve())
+        self.retrieve_button.grid(row=24,column=0,sticky='nsew')
+        
+        fwhm_lbl = tk.Label(frame, text = 'FWHM duration [fs]')
+        self.fwhm_var = tk.DoubleVar()
+        self.fwhm_var.set(0)
+        self.fwhm_e = tk.Entry(frame, width = 6, textvariable = self.fwhm_var, state = 'disabled')
+        fwhm_lbl.grid(row=25, column=0, sticky='nsw')
+        self.fwhm_e.grid(row=25, column=1, sticky='nse')
+        
+        
+    def fast_retrieve(self):
+        wavelengths = self.wl_crop
+        delay = self.timeDelay
+        trace = self.trace
+        
+        pulseRetrieved, pulseFrequencies = fqpr.shgFROG(filename='', smoothTrace = True, relativeNoiseTreshold = 0.01,inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)[0:3:2]
+        t, E = pr.freq2time(pulseFrequencies, pulseRetrieved)
+        
+        pulseTime = np.abs(E)**2
+        pulseFreq = np.abs(pulseRetrieved)**2
+        pulsePhase = np.unwrap(np.angle(pulseRetrieved))
+        
+        
+        iiOverHM = np.argwhere(pulseTime>=0.5)
+        
+        t00 = t[iiOverHM[0]-1]
+        t01  = t[iiOverHM[0]]
+        s00 = pulseTime[iiOverHM[0]-1]
+        s01  = pulseTime[iiOverHM[0]]
+        
+        t10 = t[iiOverHM[-1]-1]
+        t11  = t[iiOverHM[-1]]
+        s10 = pulseTime[iiOverHM[-1]-1]
+        s11  = pulseTime[iiOverHM[-1]]
+        
+        a0 = (s01-s00)/(t01-t00)
+        b0 = s00-a*t00
+        t0 = (0.5-b0) / a0
+        
+        a1 = (s11-s10)/(t11-t10)
+        b1 = s10-a*t10
+        t1 = (0.5-b1) / a1
+        
+        self.fwhm_var.set(round(abs(t1-t0),1))
+        
+        
+        pulse_time_graph = self.graph_dict['Retrieved pulse (time)']
+        pulse_time_graph.axes.set_xlim([t[0]*1e15,t[-1]*1e15])
+        pulse_time_graph.axes.set_ylim([0,1])
+        
+        pulse_time_graph.Line.set_xdata(t*1e15)
+        pulse_time_graph.Line.set_ydata(pulseTime/np.max(pulseTime))
+        pulse_time_graph.update_graph()
+        
+        v0 = np.trapz(pulseFreq*pulseFrequencies,pulseFrequencies) / np.trapz(pulseFreq,pulseFrequencies)
+        deltaV = np.sqrt( np.trapz(pulseFreq*(pulseFrequencies-v0)**2,pulseFrequencies) / np.trapz(pulseFreq,pulseFrequencies) )
+        
+        pulse_freq_graph = self.graph_dict['Retrieved pulse (frequency)']
+        pulse_spectralPhase_graph = pulse_freq_graph.axes.twinx()
+        pulse_freq_graph.axes.set_xlim([(v0-3*deltaV)/1e12,(v0+3*deltaV)/1e12])
+        pulse_freq_graph.axes.set_ylim([0,1])
+        
+        pulse_freq_graph.Line.set_xdata(pulseFrequencies/1e12)
+        pulse_freq_graph.Line.set_ydata(pulseFreq/np.max(pulseFreq))
+        pulse_freq_graph.update_graph()
+        
+        
+        IIplot = pulseFreq > pulseFreq.max()/100
+        
+        pulsePhase -= np.average(pulsePhase[IIplot],weights = np.abs(pulseFreq[IIplot])**2)
+       
+        pulse_spectralPhase_graph.set_ylabel('Spectral phase [rad]')
+        
+        
+        pulse_spectralPhase_graph.plot(pulseFrequencies[IIplot]/1e12,pulsePhase[IIplot],'--k')
+
 
     def adjust_2dgraph(self):#, step=None):
 # =============================================================================
@@ -2232,6 +2313,7 @@ class FROG:
         self.spectro_stop_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'disabled'
         self.start_button['state'] = 'disabled'
+        self.retrieve_button['state'] = 'disabled'
         self.running = True
         
         self.Spectro.adjust_integration_time(inte_time)
@@ -2267,9 +2349,11 @@ class FROG:
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(timeStamp+'_FROG_trace_pythonformat',wavelengths = self.wl_crop,time = self.timeDelay,trace = self.trace)
         
-        np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_M.dat', self.trace, fmt='%.18e', delimiter='\t', newline='\n')       
-        np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_L.dat', self.wl_crop, fmt='%.18e', delimiter='\t', newline='\n')  
-        np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_T.dat', self.timeDelay, fmt='%.18e', delimiter='\t', newline='\n')
+# =============================================================================
+#         np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_M.dat', self.trace, fmt='%.18e', delimiter='\t', newline='\n')       
+#         np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_L.dat', self.wl_crop, fmt='%.18e', delimiter='\t', newline='\n')  
+#         np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_T.dat', self.timeDelay, fmt='%.18e', delimiter='\t', newline='\n')
+# =============================================================================
         
     def stop_experiment(self):
         self.running = False
@@ -2283,6 +2367,7 @@ class FROG:
         self.start_button['state'] = 'disabled'
         #self.update_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
+        self.retrieve_button['state'] = 'disabled'
         self.running = True
         
         # Imports
@@ -2425,20 +2510,43 @@ class FROG:
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
+        self.retrieve_button['state'] = 'normal'
         #self.update_button['state'] = 'normal'
         self.adjust_2dgraph()
         
         autocorr = Si - np.min(Si)
         autocorr = autocorr/np.max(autocorr)
         
-        T = self.timeDelay[-1] - self.timeDelay[0]
-        dt = 0.025
-        t = np.linspace(self.timeDelay[0],self.timeDelay[-1],int(T/dt))
+# =============================================================================
+#         T = self.timeDelay[-1] - self.timeDelay[0]
+#         dt = 0.025
+#         t = np.linspace(self.timeDelay[0],self.timeDelay[-1],int(T/dt))
+#         
+#         sig = np.interp(t,self.timeDelay,autocorr)
+#         
+# =============================================================================
+        iiOverHM = np.argwhere(autocorr>=0.5)
         
-        sig = np.interp(t,self.timeDelay,autocorr)
+        t00 = t[iiOverHM[0]-1]
+        t01  = t[iiOverHM[0]]
+        s00 = autocorr[iiOverHM[0]-1]
+        s01  = autocorr[iiOverHM[0]]
         
-        t0 = t[sig>=0.5][0]
-        t1 = t[sig>=0.5][-1]
+        t10 = t[iiOverHM[-1]-1]
+        t11  = t[iiOverHM[-1]]
+        s10 = autocorr[iiOverHM[-1]-1]
+        s11  = autocorr[iiOverHM[-1]]
+        
+        a0 = (s01-s00)/(t01-t00)
+        b0 = s00-a*t00
+        t0 = (0.5-b0) / a0
+        
+        a1 = (s11-s10)/(t11-t10)
+        b1 = s10-a*t10
+        t1 = (0.5-b1) / a1
+        
+        
+        
         self.autocorr_var.set(round(abs(t1-t0),1))
         
         
