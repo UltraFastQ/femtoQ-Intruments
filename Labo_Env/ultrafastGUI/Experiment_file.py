@@ -2034,6 +2034,7 @@ class FROG:
         self.graph_dict = {}
         self.PI = mainf.Frame[2].Linstage
         self.Spectro = mainf.Frame[3].Spectro
+        self.phaseExists = False
         
     def create_frame(self, frame):
         """
@@ -2213,37 +2214,39 @@ class FROG:
         
         
     def fast_retrieve(self):
-        wavelengths = self.wl_crop
-        delay = self.timeDelay
+        wavelengths = self.wl_crop*1e-9
+        delay = self.timeDelay*1e-15
         trace = self.trace
         
         pulseRetrieved, pulseFrequencies = fqpr.shgFROG(filename='', smoothTrace = True, relativeNoiseTreshold = 0.01,inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)[0:3:2]
-        t, E = pr.freq2time(pulseFrequencies, pulseRetrieved)
+        t, E = fqpr.freq2time(pulseFrequencies, pulseRetrieved)
         
         pulseTime = np.abs(E)**2
+        pulseTime /= pulseTime.max()
         pulseFreq = np.abs(pulseRetrieved)**2
+        pulseFreq /= pulseFreq.max()
         pulsePhase = np.unwrap(np.angle(pulseRetrieved))
         
         
-        iiOverHM = np.argwhere(pulseTime>=0.5)
+        iiOverHM = np.argwhere(pulseTime>=0.5).flatten()
         
         t00 = t[iiOverHM[0]-1]
         t01  = t[iiOverHM[0]]
         s00 = pulseTime[iiOverHM[0]-1]
         s01  = pulseTime[iiOverHM[0]]
         
-        t10 = t[iiOverHM[-1]-1]
-        t11  = t[iiOverHM[-1]]
-        s10 = pulseTime[iiOverHM[-1]-1]
-        s11  = pulseTime[iiOverHM[-1]]
+        t10 = t[iiOverHM[-1]]
+        t11  = t[iiOverHM[-1]+1]
+        s10 = pulseTime[iiOverHM[-1]]
+        s11  = pulseTime[iiOverHM[-1]+1]
         
         a0 = (s01-s00)/(t01-t00)
-        b0 = s00-a*t00
-        t0 = (0.5-b0) / a0
+        b0 = s00-a0*t00
+        t0 = (0.5-b0) / a0 * 1e15
         
         a1 = (s11-s10)/(t11-t10)
-        b1 = s10-a*t10
-        t1 = (0.5-b1) / a1
+        b1 = s10-a1*t10
+        t1 = (0.5-b1) / a1 * 1e15
         
         self.fwhm_var.set(round(abs(t1-t0),1))
         
@@ -2260,23 +2263,33 @@ class FROG:
         deltaV = np.sqrt( np.trapz(pulseFreq*(pulseFrequencies-v0)**2,pulseFrequencies) / np.trapz(pulseFreq,pulseFrequencies) )
         
         pulse_freq_graph = self.graph_dict['Retrieved pulse (frequency)']
-        pulse_spectralPhase_graph = pulse_freq_graph.axes.twinx()
+        
+        
+        if self.phaseExists is False:
+            self.pulse_spectralPhase_graph = pulse_freq_graph.axes.twinx()
+            self.LinePhase, = self.pulse_spectralPhase_graph.plot([],[],'--k')
+            self.pulse_spectralPhase_graph.set_ylabel('Spectral phase [rad]')
+            self.phaseExists = True
+        
+        
         pulse_freq_graph.axes.set_xlim([(v0-3*deltaV)/1e12,(v0+3*deltaV)/1e12])
         pulse_freq_graph.axes.set_ylim([0,1])
         
         pulse_freq_graph.Line.set_xdata(pulseFrequencies/1e12)
         pulse_freq_graph.Line.set_ydata(pulseFreq/np.max(pulseFreq))
-        pulse_freq_graph.update_graph()
         
         
         IIplot = pulseFreq > pulseFreq.max()/100
         
         pulsePhase -= np.average(pulsePhase[IIplot],weights = np.abs(pulseFreq[IIplot])**2)
        
-        pulse_spectralPhase_graph.set_ylabel('Spectral phase [rad]')
-        
-        
-        pulse_spectralPhase_graph.plot(pulseFrequencies[IIplot]/1e12,pulsePhase[IIplot],'--k')
+        phasemax = pulsePhase[IIplot].max()
+        phasemin = pulsePhase[IIplot].min()
+        self.pulse_spectralPhase_graph.set_ylim(phasemin,phasemax)
+
+        self.LinePhase.set_xdata(pulseFrequencies[IIplot]/1e12)
+        self.LinePhase.set_ydata(pulsePhase[IIplot])
+        pulse_freq_graph.update_graph()
 
 
     def adjust_2dgraph(self):#, step=None):
@@ -2525,24 +2538,24 @@ class FROG:
 #         sig = np.interp(t,self.timeDelay,autocorr)
 #         
 # =============================================================================
-        iiOverHM = np.argwhere(autocorr>=0.5)
+        iiOverHM = np.argwhere(autocorr>=0.5).flatten()
         
-        t00 = t[iiOverHM[0]-1]
-        t01  = t[iiOverHM[0]]
+        t00 = self.timeDelay[iiOverHM[0]-1]
+        t01  = self.timeDelay[iiOverHM[0]]
         s00 = autocorr[iiOverHM[0]-1]
         s01  = autocorr[iiOverHM[0]]
         
-        t10 = t[iiOverHM[-1]-1]
-        t11  = t[iiOverHM[-1]]
-        s10 = autocorr[iiOverHM[-1]-1]
-        s11  = autocorr[iiOverHM[-1]]
+        t10 = self.timeDelay[iiOverHM[-1]]
+        t11  = self.timeDelay[iiOverHM[-1]+1]
+        s10 = autocorr[iiOverHM[-1]]
+        s11  = autocorr[iiOverHM[-1]+1]
         
         a0 = (s01-s00)/(t01-t00)
-        b0 = s00-a*t00
+        b0 = s00-a0*t00
         t0 = (0.5-b0) / a0
         
         a1 = (s11-s10)/(t11-t10)
-        b1 = s10-a*t10
+        b1 = s10-a1*t10
         t1 = (0.5-b1) / a1
         
         
