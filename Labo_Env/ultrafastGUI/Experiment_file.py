@@ -4066,7 +4066,7 @@ class CHI3_Sampling:
         nsteps = int(np.ceil((max_pos - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
         # move = np.linspace(min_pos, max_pos, nsteps+1)
-        move = np.linspace(max_pos, min_pos, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
         self.S = np.zeros(nsteps+1)
         self.t= np.zeros(nsteps+1)
@@ -4104,7 +4104,7 @@ class CHI3_Sampling:
             # Measure real position
             pos[i] = self.PI.get_position()
             # Measure signal
-            self.t[i] = (pos[0]-pos[i])*2/1000/c*1e15
+            self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
             self.S[i] = np.mean(self.Zurich_acquire())*1000
             
             # Actualise progress bar
@@ -4161,7 +4161,7 @@ class CHI3_Sampling:
             self.v = self.v/1e12
             Spectrum_graph = self.graph_dict['Spectrum']
             Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.AA)])
-            Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
+            Spectrum_graph.axes.set_xlim([0, np.max(self.v)])
             Spectrum_graph.Line.set_xdata([self.v])
             Spectrum_graph.Line.set_ydata([self.AA])
             
