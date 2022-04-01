@@ -1698,7 +1698,7 @@ class CHI3_Sampling_ZeroDelay:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
-        pos_var.set(52.295)
+        pos_var.set(50)
         vel_var.set(1)
         min_var.set(52.27)
         max_var.set(52.31)

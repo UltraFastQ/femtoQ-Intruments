@@ -1993,7 +1993,7 @@ class Experiment(ttk.LabelFrame):
                       option=['Physics_Linear_Stage'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         create_layout(name='2DSI', function_=Experiment_file.TwoDSI, option=['Physics_Linear_Stage','Spectrometer'],
-                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
+                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
                              '2DSI trace': ['Wavelengths [nm]', 'Delay [um]'], 
                              'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]'],
                              'Shear reference':['Wavelengths [nm]', 'Stage posiiton [um]'],

@@ -50,7 +50,7 @@ class ueye_beam_profiler(QtGui.QWidget):
         """ Settings """
         self.x = np.linspace(0.5,self.numberHorizontalPixels-0.5,self.numberHorizontalPixels)*self.pixelSize
         self.y = np.linspace(0.5,self.numberVerticalPixels-0.5,self.numberVerticalPixels)*self.pixelSize
-        self.X, self.Y = np.meshgrid(self.x,self.y)
+        self.X, self.Y = np.meshgrid(self.x,self.y)                                                                                       
         self.xHighRes = np.linspace(0.5,self.numberHorizontalPixels-0.5,self.numberHorizontalPixels*4)*self.pixelSize
         self.yHighRes = np.linspace(0.5,self.numberVerticalPixels-0.5,self.numberVerticalPixels*4)*self.pixelSize
         self.yRange = [0, 255]
@@ -61,10 +61,10 @@ class ueye_beam_profiler(QtGui.QWidget):
         self.zoomValue = 1
         self.applyZoom = False
         self.maxCounts = 0
-        self.exposureSliderNumberSteps = 100
+        self.exposureSliderNumberSteps = 50
         self.checkBurntRows = False
         self.checkBurntColumns = False
-        self.countsThresholdBurntPixels = 150
+        self.countsThresholdBurntPixels = 50
         self.updateZoomCenter = False
         
         print('Model: ' + self.camName)
