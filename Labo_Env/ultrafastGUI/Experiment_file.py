@@ -5608,3 +5608,321 @@ class Horiba_spectrum:
         self.RefSignal_button['state'] = 'normal'
         self.RefOff_button['state'] = 'normal'
         self.Log_button['state'] = 'normal'
+        
+        
+        
+        
+        
+        
+class interferenceStability:
+    # This class is implicitly called in the main frame
+    """
+    This is a class to create the user interface required to run a FROG experiment.
+    It allows to control and read a spectrometer, control a PI stage, and then
+    run an experiment synchronizing the movement of the stage and the spectra acquisition.
+    
+    Attributes:
+        
+        
+    """
+        
+    def __init__(self, mainf = None):
+        """
+        This is the constructor for the FROG class.
+        Parameters:
+            
+        """
+        self.empty_var = []
+        self.graph_dict = {}
+        self.Spectro = mainf.Frame[3].Spectro
+        
+    def create_frame(self, frame):
+        """
+        The frame is created here, i.e. the labels, boxes and buttons are
+        defined here.
+        """
+        # Define labels
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+                # 
+        
+        self.directory_var=tk.StringVar()
+        
+        
+        self.directory_var.set('E:/Marco/Raw_data/Interference_stability/')
+           
+                
+        # Define variables
+                # PI stage
+        pos_var = tk.DoubleVar()
+        #vel_var = tk.DoubleVar()
+        min_var = tk.DoubleVar()
+        max_var = tk.DoubleVar()
+        step_var = tk.DoubleVar()
+        utime_var = tk.IntVar()
+        pos_var.set(0)
+        #vel_var.set(1)
+        min_var.set(-20)
+        max_var.set(20)
+        step_var.set(1)
+        utime_var.set(1)
+        
+        # Define entry boxes
+        # Define position of all objects on the grid
+                # PI stage
+        #self.con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        param_lbl.grid(row=4, column=0, columnspan=2, sticky='nsew')
+        
+        numDark_lbl = tk.Label(frame, text = 'Average how many dark spectra?')
+        numSpec_lbl = tk.Label(frame, text = 'Save how may spectra?')
+        numFile_lbl = tk.Label(frame, text = 'Save into how many files?')
+        numSpec_var = tk.IntVar()
+        numFile_var = tk.IntVar()
+        numDark_var = tk.IntVar()
+        numSpec_var.set(100)
+        numFile_var.set(1)
+        numDark_var.set(1)
+        
+        numSpec_e = tk.Entry(frame, width = 6, textvariable = numSpec_var)
+        numFile_e = tk.Entry(frame, width = 6, textvariable = numFile_var)
+        numDark_e = tk.Entry(frame, width = 6, textvariable = numDark_var)
+        numDark_lbl.grid(row=5, column=0, sticky='nsw')
+        numDark_e.grid(row=5, column=1, sticky='nse')
+        
+        numSpec_lbl.grid(row=6, column=0, sticky='nsw')
+        numSpec_e.grid(row=6, column=1, sticky='nse')
+        numFile_lbl.grid(row=7, column=0, sticky='nsw')
+        numFile_e.grid(row=7, column=1, sticky='nse')
+        
+        
+        p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
+        p_bar.grid(row=15, column=0, sticky='nsew', columnspan=2)
+        p_bar['maximum'] = 1
+        
+        def connect_spectrometer(self):
+            self.Spectro.connect(exp_dependencie=True)
+            self.spectro_start_button['state'] = 'normal'
+            self.cons_b['state'] = 'disabled'
+        
+        
+        
+        def get_average_dark_spectrum(self,numDark):
+            numDark = numDark.get()
+            self.Spectro.measure_average_darkspectrum(numDark)
+            self.sub_dark_button['state']='normal'
+        
+        
+        def get_dark_spectrum(self):
+            self.Spectro.measure_darkspectrum()
+            self.sub_dark_button['state']='normal'
+        
+        def remove_dark(self):
+            self.Spectro.dark_spectrum = not self.Spectro.dark_spectrum
+        
+        def rescale(self):
+            S = self.Spectro.get_intensities()
+            spectro_graph = self.graph_dict['Spectrometer']
+            spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+            spectro_graph.update_graph()
+        
+        # Temporary Spectrometer things
+        self.cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_spectrometer(self))
+        self.cons_b.grid(row=8, column=0, columnspan=2, sticky='nsew')
+        
+        inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
+        inte_var = tk.IntVar()
+        inte_var.set(10)
+        inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
+        inte_lbl.grid(row=9, column=0, sticky='nsw')
+        inte_e.grid(row=9, column=1,sticky='nse')
+        
+        totTime_lbl = tk.Label(frame, text = 'Total time of the measurement (s):')
+        totTime_var = tk.IntVar()
+        totTime_var.set(30)
+        totTime_e = tk.Entry(frame, width = 6, textvariable = totTime_var)
+        totTime_lbl.grid(row=16, column=0, sticky='nsw')
+        totTime_e.grid(row=16, column=1,sticky='nse')
+        
+        interTime_lbl = tk.Label(frame, text = 'How much time between each spectra (s):')
+        interTime_var = tk.IntVar()
+        interTime_var.set(1)
+        interTime_e = tk.Entry(frame, width = 6, textvariable = interTime_var)
+        interTime_lbl.grid(row=17, column=0, sticky='nsw')
+        interTime_e.grid(row=17, column=1,sticky='nse')
+        
+        
+        
+        inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
+        
+        
+        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
+                           command=lambda: get_average_dark_spectrum(self,numDark = numDark_var))
+        self.dark_button.grid(row=10,column=0,sticky='nsew')
+        
+        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
+                                    command=lambda: remove_dark(self))
+        self.sub_dark_button.grid(row=11,column=0,sticky='nsew')
+        
+        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
+                                        command=lambda: rescale(self))
+        self.rescale_button.grid(row=12,column=0,sticky='nsew')
+        
+        # Start & stop buttons :
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+                                      command=lambda: self.start_experiment(progress=p_bar, update_time=utime_var,
+                                            inte_time=inte_var, numSpec=numSpec_var, numFile=numFile_var,totalTime=totTime_var,intervalTime=interTime_var))
+        self.start_button.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=14, column=0, columnspan=2, sticky='nsew')
+
+            # For spectrometer :
+        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
+                                        command=lambda: self.start_spectro(inte_time=inte_var))
+        self.spectro_start_button.grid(row=2, column=0, sticky='nsew')
+        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
+                                             command=lambda: self.stop_spectro())
+        self.spectro_stop_button.grid(row=3, column=0, sticky='nsew')
+        
+        
+    def start_spectro(self, inte_time=None):
+        self.dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'disabled'
+        self.start_button['state'] = 'disabled'
+        self.running = True
+        
+        self.Spectro.adjust_integration_time(inte_time)
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        spectro_graph = self.graph_dict['Spectrometer']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        
+        while self.running is True:            
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)     
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+        
+        
+    def stop_spectro(self):
+        self.running = False
+        self.dark_button['state'] = 'disabled'
+        self.sub_dark_button['state'] = 'disabled'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'normal'  
+        self.start_button['state'] = 'normal'
+        
+
+    def stop_experiment(self):
+        self.running = False
+        self.spectro_start_button['state'] = 'normal'
+
+    def start_experiment(self, progress=None, update_time=None,
+                         inte_time=None, numSpec=None, numFile=None,totalTime=None,intervalTime=None):
+
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        #self.update_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'disabled'
+        self.running = True
+        
+            # Parameters initialisation
+        # numSpec = numSpec.get()
+        numFile = numFile.get()
+        update_time = update_time.get()
+        
+        totalTime = totalTime.get()
+        intervalTime = intervalTime.get()
+        
+        
+        numSpec=int(totalTime/intervalTime+1)
+        
+        
+        # Spectro
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        self.Spectro.adjust_integration_time(inte_time)
+        spectro_graph = self.graph_dict['Spectrometer']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        spectro_graph.Line.set_xdata(wl)
+        spectro_graph.Line.set_ydata(S)
+        
+        # Create folder to save
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        # folderPath = 'measurements/Batch acquisition - ' + timeStamp
+        folderPath = self.directory_var.get() + timeStamp+'_spectra'
+        os.mkdir(folderPath)
+        
+        
+        
+        # np.savez(self.directory_var.get() + timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
+        
+        
+        # Save wavelengths vector
+        np.save(folderPath + '/Wavelengths.npy', wl)
+        
+        # Determine how to split spectra
+        if numFile<2:
+            numFile = 1
+            lastFileNum = numSpec
+            mainFileNum = numSpec
+        else:
+            if numSpec%(numFile) == 0:
+                mainFileNum = round(numSpec/numFile)
+                lastFileNum = round(numSpec/numFile)
+                
+            elif  numSpec%(numFile-1) == 0:
+                mainFileNum = round(numSpec/(numFile-1))-1
+                lastFileNum = numFile-1
+            else:
+                lastFileNum = numSpec%(numFile-1)
+                mainFileNum = round((numSpec - lastFileNum)/(numFile-1))
+        
+            # Main scanning and measurements
+        for ii in range(numFile):
+            
+            if ii == numFile-1:
+                savSpecArray = np.zeros((lastFileNum, len(wl)))
+                
+            else:
+                savSpecArray = np.zeros((mainFileNum, len(wl)))
+            
+            for jj in range(numSpec):
+                savSpecArray[jj,:] = self.Spectro.get_intensities()
+                time.sleep(intervalTime)
+                # Actualise progress bar
+                if progress:
+                    progress['value'] = (jj+1)/(numSpec)
+                    progress.update()
+                
+                
+            fileName = 'spectra - ' + str(ii) + '.npy'
+            np.save(folderPath + '/' + fileName, savSpecArray)
+            
+            
+            if not self.running:
+                break       
+            
+            
+        if not self.running:
+            messagebox.showinfo(title='Error', message='Experiment was aborted')
+        else:
+            messagebox.showinfo(title='INFO', message='Measurements is done.')
+        
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
+        #self.update_button['state'] = 'normal'  
