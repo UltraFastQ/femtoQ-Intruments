@@ -5743,7 +5743,7 @@ class interferenceStability:
         totTime_e.grid(row=16, column=1,sticky='nse')
         
         interTime_lbl = tk.Label(frame, text = 'How much time between each spectra (s):')
-        interTime_var = tk.IntVar()
+        interTime_var = tk.DoubleVar()
         interTime_var.set(1)
         interTime_e = tk.Entry(frame, width = 6, textvariable = interTime_var)
         interTime_lbl.grid(row=17, column=0, sticky='nsw')
