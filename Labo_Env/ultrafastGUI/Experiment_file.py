@@ -4004,7 +4004,7 @@ class CHI3_Sampling:
                 Settling_time = 10.05*tc
             time.sleep(Settling_time)
         self.Zurich.info['daq'].subscribe(path)
-        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+        data_set = self.Zurich.info['daq'].poll(0.01,200,0,True)
 
 
         try:
