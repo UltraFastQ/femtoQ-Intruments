@@ -1983,7 +1983,9 @@ class Experiment(ttk.LabelFrame):
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
                              'FROG trace': ['Wavelengths [nm]', 'Delay [fs]'], 
                              'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]'],
-                             'Autocorrelation':['Delay [fs]','Normalized intensity']})
+                             'Autocorrelation':['Delay [fs]','Normalized intensity'],
+                             'Retrieved pulse (time)':['Time [fs]','Normalized power'],
+                             'Retrieved pulse (frequency)':['Frequency [THz]','Normalized power density']})
         create_layout(name='Electro Optic Sampling', function_=Experiment_file.Electro_Optic_Sampling,
                       option=['Physics_Linear_Stage'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
@@ -1991,7 +1993,7 @@ class Experiment(ttk.LabelFrame):
                       option=['Physics_Linear_Stage'],
                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],'Signal':['Time (fs)','Signal (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})
         create_layout(name='2DSI', function_=Experiment_file.TwoDSI, option=['Physics_Linear_Stage','Spectrometer'],
-                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
+                       graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
                              '2DSI trace': ['Wavelengths [nm]', 'Delay [um]'], 
                              'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]'],
                              'Shear reference':['Wavelengths [nm]', 'Stage posiiton [um]'],
@@ -2003,6 +2005,8 @@ class Experiment(ttk.LabelFrame):
                              'Signal': ['wavelength (nm)', 'Intensity (arb.u.)'],
                              'Pump_Probe': ['Wavelengths [nm]', 'Delay [um]']})
         create_layout(name='Batch Spectra', function_=Experiment_file.batchSpectra, option=['Spectrometer'],
+                      graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
+        create_layout(name='Interference stability', function_=Experiment_file.interferenceStability, option=['Spectrometer'],
                       graph={'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]']})
         create_layout(name="iHR320", function_=Experiment_file.iHR320,
                       option=["Monochrom"],
