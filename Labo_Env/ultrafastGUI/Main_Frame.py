@@ -2026,3 +2026,5 @@ class Experiment(ttk.LabelFrame):
 if __name__ == '__main__':
     app = MainFrame()
     app.mainloop()
+
+#Ceci est un exemple
