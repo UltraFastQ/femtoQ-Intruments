@@ -2016,6 +2016,8 @@ class Experiment(ttk.LabelFrame):
         create_layout(name='Horiba Spectrum', function_=Experiment_file.Horiba_spectrum, option=[],
                       graph={'Scanning': ['Step number', 'Elapsed time [s]'],'Signal':['Wavelength','Intensity (mV)']})        
         experiment_name.current(0)
+        create_layout(name='D-Scan', function_=Experiment_file.D_Scan, option=[],
+                      graph={'Scanning': ['Wavelength', 'Intensity'],'D-Scan trace':['Wavelengths [nm]','Dispersion Length [mm]']})        
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):

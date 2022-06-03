@@ -5848,3 +5848,207 @@ class interferenceStability:
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
         #self.update_button['state'] = 'normal'  
+        
+        
+class D_Scan:
+    def __init__(self, mainf=None):
+        """
+        The constructor for your Experiment.
+
+        Parameters:
+            mainf : This is the Mainframe, it cannot be anything else.
+        """
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+        self.Spectro = mainf.Frame[3].Spectro
+
+    def create_frame(self, frame):
+        """
+        This function is used to create the free frame mentionned in the
+        CreateLayout.This is where you place all of the widget you desire to
+        have in your experiment.
+
+        Parameters:
+            frame : This is the section attributed to your widget in the big
+            Experiment frame.
+        """
+        # Define variables
+                # PI stage
+        intTime_var = tk.DoubleVar()
+        disp_var = tk.StringVar()
+        name_var = tk.StringVar()
+        dir_var = tk.StringVar()
+        intTime_var.set(1)
+        disp_var.set("0, 1, 2, 3, 4, 5, 6")
+        name_var.set('D_Scan_Measurement')
+        dir_var.set('E:/Julien/D_Scan/')
+        
+        
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+        intTime_lbl = tk.Label(frame, text = 'Integration time [ms]:')
+        disp_lbl = tk.Label(frame, text = 'Sequence of dispersion')
+        name_lbl = tk.Label(frame, text = 'File Name')
+        dir_lbl = tk.Label(frame, text = 'Save Directory')
+        
+        
+        # Define entry boxes
+        intTime_e = tk.Entry(frame, width = 6, textvariable = intTime_var)
+        disp_e = tk.Entry(frame, width = 18, textvariable = disp_var)
+        intTime_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(intTime_var))
+        name_e = tk.Entry(frame, width=30, textvariable = name_var)
+        dir_e = tk.Entry(frame, width=30, textvariable = dir_var)
+        
+        # Define position of all objects on the grid
+        
+        param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
+        intTime_lbl.grid(row=8, column=0, sticky='nsw')
+        intTime_e.grid(row=8, column=1, sticky='nse')
+        disp_lbl.grid(row=9, column=0, sticky='nsw')
+        disp_e.grid(row=9, column=1, sticky='nse')
+        name_lbl.grid(row=23, column=0, sticky='nsw')
+        name_e.grid(row=23, column=1, sticky='nse')
+        dir_lbl.grid(row=24, column=0, sticky='nsw')
+        dir_e.grid(row=24, column=1, sticky='nse')
+        
+        #i put these before the buttons because putting them after creates an error for some reason
+        def get_dark_spectrum(self):
+            self.Spectro.measure_darkspectrum()
+            self.sub_dark_button['state']='normal'
+        
+        def remove_dark(self):
+            self.Spectro.dark_spectrum = not self.Spectro.dark_spectrum
+        
+        def rescale(self):
+            S = self.Spectro.get_intensities()
+            spectro_graph = self.graph_dict['Spectro']
+            spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+            spectro_graph.update_graph()
+        
+        
+        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
+                           command=lambda: get_dark_spectrum(self))
+        self.dark_button.grid(row=19,column=0,sticky='nsew')
+        
+        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
+                                    command=lambda: remove_dark(self))
+        self.sub_dark_button.grid(row=20,column=0,sticky='nsew')
+        
+        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
+                                        command=lambda: rescale(self))
+        self.rescale_button.grid(row=21,column=0,sticky='nsew')
+
+        self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
+                                      command=lambda: self.start_experiment(window_array=disp_var, intTime=intTime_var))
+        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+        
+        self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
+                                        command=lambda: self.save())
+        self.save_button.grid(row=22, column=0, columnspan=2, sticky='nsew')
+
+        self.start_button['state'] = 'normal'
+        self.dark_button['state'] = 'normal'
+        self.sub_dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+
+    def stop_experiment(self):
+        self.running = False
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.dark_button['state'] = 'normal'
+        self.sub_dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+
+    def start_experiment(self, window_array=None, intTime=None):
+
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        self.dark_button['state'] = 'disabled'
+        self.sub_dark_button['state'] = 'disabled'
+        self.rescale_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+        self.running = True
+        self.window_array = window_array.get()
+        self.window_array = [int(x) for x in self.window_array.split(", ")]
+        
+        #creating empty data matrix
+        try: 
+            self.data_matrix = np.zeros((len(self.window_array), len(self.Spectro.spectro.wavelengths())))
+            
+        except:
+            self.data_matrix = np.zeros((len(self.window_array), 512))
+        
+        #measurement loop
+        for i in self.window_array:
+            if not messagebox.askokcancel(title='INFO', message='Take measurement with ' + str(i) +' mm of dispersion'):
+                self.stop_experiment()
+                break
+            #'take measurement' from spectrometer
+            ###############################################
+            for j in range(len(self.data_matrix[0])):
+                self.data_matrix[i][j] = np.random.rand()
+           ############################################
+           
+            self.adjust_2dgraph()
+            
+        self.stop_experiment()
+            
+            
+        
+    def connect_spectrometer(self):
+        self.Spectro.connect(exp_dependencie=True)
+        self.spectro_start_button['state'] = 'normal'       
+    
+    def save(self):
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        np.savez(self.dir_var.get() + timeStamp + self.name_var.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.Spectro.spectro.wavelengths())
+
+        # Going back to initial state
+        self.running = False
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.dark_button['state'] = 'normal'
+        self.sub_dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+        
+    def adjust_2dgraph(self):#, step=None):
+# =============================================================================
+#         step = step.get()
+#         if step == 0:
+#             step=1
+# =============================================================================
+        #try:
+         #    wl = len(self.Spectro.spectro.wavelengths())
+        #except:
+         #   return
+        
+        parent2d = self.graph_dict["D-Scan trace"].parent
+        self.graph_dict["D-Scan trace"].destroy_graph()
+        #print(wl, step)
+        self.graph_dict["D-Scan trace"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
+                                                       figsize=[2,2], data_size= self.data_matrix.shape)
+       #trace = (self.data_matrix-np.min(self.data_matrix))
+       #trace = trace/np.max(trace)
+        trace = np.flipud(self.data_matrix)
+       
+        self.graph_dict["D-Scan trace"].change_data(trace,False)
+        self.graph_dict["D-Scan trace"].im.set_extent((0, len(self.data_matrix[0]), 0, len(self.data_matrix[:, 0])))
+        #aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
+        
+        aspectRatio = len(self.data_matrix[0])/(2*len(self.data_matrix[:, 0]))
+        
+        self.graph_dict["D-Scan trace"].axes.set_aspect(aspectRatio)
+        self.graph_dict["D-Scan trace"].axes.set_xlabel('Wavelengths [nm]')
+        self.graph_dict["D-Scan trace"].axes.set_ylabel('Dispersion  Length [mm]')
+        cbar = self.graph_dict["D-Scan trace"].Fig.colorbar(self.graph_dict["D-Scan trace"].im)
+        cbar.set_label('Normalized intensity')
+        self.graph_dict["D-Scan trace"].update_graph()
+        
