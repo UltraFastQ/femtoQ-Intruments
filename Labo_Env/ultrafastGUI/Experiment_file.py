@@ -5906,10 +5906,10 @@ class D_Scan:
         intTime_e.grid(row=8, column=1, sticky='nse')
         disp_lbl.grid(row=9, column=0, sticky='nsw')
         disp_e.grid(row=9, column=1, sticky='nse')
-        name_lbl.grid(row=23, column=0, sticky='nsw')
-        name_e.grid(row=23, column=1, sticky='nse')
-        dir_lbl.grid(row=24, column=0, sticky='nsw')
-        dir_e.grid(row=24, column=1, sticky='nse')
+        name_lbl.grid(row=26, column=0, sticky='nsw')
+        name_e.grid(row=26, column=1, sticky='nse')
+        dir_lbl.grid(row=27, column=0, sticky='nsw')
+        dir_e.grid(row=27, column=1, sticky='nse')
         
         #i put these before the buttons because putting them after creates an error for some reason
         def get_dark_spectrum(self):
@@ -5950,30 +5950,36 @@ class D_Scan:
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save())
         self.save_button.grid(row=22, column=0, columnspan=2, sticky='nsew')
+        
+        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
+                                        command=lambda: self.start_spectro(inte_time=intTime_var))
+        self.spectro_start_button.grid(row=24, column=0, sticky='nsew')
+        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
+                                             command=lambda: self.stop_spectro())
+        self.spectro_stop_button.grid(row=25, column=0, sticky='nsew')
+        
+        self.spectro_connect_button = tk.Button(frame, text='Connect Spectrometer', state='normal', width=18,
+                                                command=lambda: self.connect_spectrometer())
+        self.spectro_connect_button.grid(row=23, column=0, sticky='nsew')
 
         self.start_button['state'] = 'normal'
-        self.dark_button['state'] = 'normal'
-        self.sub_dark_button['state'] = 'normal'
-        self.rescale_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
+        
 
     def stop_experiment(self):
         self.running = False
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
-        self.dark_button['state'] = 'normal'
-        self.sub_dark_button['state'] = 'normal'
-        self.rescale_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
 
     def start_experiment(self, window_array=None, intTime=None):
 
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
-        self.dark_button['state'] = 'disabled'
-        self.sub_dark_button['state'] = 'disabled'
-        self.rescale_button['state'] = 'disabled'
         self.save_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'disabled'
         self.running = True
         self.window_array = window_array.get()
         self.window_array = [int(x) for x in self.window_array.split(", ")]
@@ -6014,9 +6020,6 @@ class D_Scan:
         self.running = False
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
-        self.dark_button['state'] = 'normal'
-        self.sub_dark_button['state'] = 'normal'
-        self.rescale_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
         
     def adjust_2dgraph(self):#, step=None):
@@ -6052,3 +6055,39 @@ class D_Scan:
         cbar.set_label('Normalized intensity')
         self.graph_dict["D-Scan trace"].update_graph()
         
+    def start_spectro(self, inte_time=None):
+        self.dark_button['state'] = 'normal'
+        self.sub_dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'disabled'
+        self.start_button['state'] = 'disabled'
+        self.spectro_connect_button['state'] = 'disabled'
+        self.running = True
+        
+        #self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
+        self.Spectro.adjust_integration_time(inte_time)
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        
+        while self.running is True:            
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)     
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+            
+    def stop_spectro(self):
+        self.running = False
+        self.dark_button['state'] = 'disabled'
+        self.sub_dark_button['state'] = 'disabled'
+        self.rescale_button['state'] = 'disabled'
+        self.spectro_stop_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'normal'
+        self.start_button['state'] = 'normal'
+        self.spectro_connect_button['state'] = 'normal'
