@@ -5994,10 +5994,10 @@ class D_Scan:
         
         #creating empty data matrix
         try: 
-            self.data_matrix = np.zeros((len(self.window_array), len(self.wl)))
+            self.data_matrix = np.zeros((self.window_array[-1]-self.window_array[0]+1, len(self.wl)))
             
         except:
-            self.data_matrix = np.zeros((len(self.window_array), 512))
+            self.data_matrix = np.zeros((self.window_array[-1]-self.window_array[0]+1, 512))
         
         #measurement loop
         for i in self.window_array:
@@ -6132,14 +6132,14 @@ class D_Scan:
        #trace = (self.data_matrix-np.min(self.data_matrix))
        #trace = trace/np.max(trace)
         trace = np.flipud(self.data_matrix)
+        aspectRatio = len(self.data_matrix[0])/(2*len(self.data_matrix[:, 0]))
+        
+        self.graph_dict["D-Scan trace"].axes.set_aspect(aspectRatio)
        
         self.graph_dict["D-Scan trace"].change_data(trace,False)
         self.graph_dict["D-Scan trace"].im.set_extent((0, len(self.data_matrix[0]), 0, len(self.data_matrix[:, 0])))
         #aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
         
-        aspectRatio = len(self.data_matrix[0])/(2*len(self.data_matrix[:, 0]))
-        
-        self.graph_dict["D-Scan trace"].axes.set_aspect(aspectRatio)
         self.graph_dict["D-Scan trace"].axes.set_xlabel('Wavelengths [nm]')
         self.graph_dict["D-Scan trace"].axes.set_ylabel('Dispersion  Length [mm]')
         cbar = self.graph_dict["D-Scan trace"].Fig.colorbar(self.graph_dict["D-Scan trace"].im)
