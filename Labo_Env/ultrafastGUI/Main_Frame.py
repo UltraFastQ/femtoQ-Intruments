@@ -2017,7 +2017,10 @@ class Experiment(ttk.LabelFrame):
                       graph={'Scanning': ['Step number', 'Elapsed time [s]'],'Signal':['Wavelength','Intensity (mV)']})        
         experiment_name.current(0)
         create_layout(name='D-Scan', function_=Experiment_file.D_Scan, option=[],
-                      graph={'Spectro': ['Wavelength', 'Intensity'],'D-Scan trace':['Wavelengths [nm]','Dispersion Length [mm]']})        
+                      graph={'Spectro': ['Wavelength', 'Intensity'],
+                             'D-Scan trace':['Wavelengths [nm]','Dispersion Length [mm]'],
+                             'Retrieved pulse (time)':['Time [fs]','Normalized power'],
+                             'Retrieved pulse (frequency)':['Frequency [THz]','Normalized power density']})        
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):
