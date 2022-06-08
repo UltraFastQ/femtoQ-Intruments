@@ -5967,6 +5967,9 @@ class D_Scan:
         self.save_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
         
+        self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
+                                        command=lambda: self.fast_retrieve())
+        self.retrieve_button.grid(row=28,column=0,sticky='nsew')
 
     def stop_experiment(self):
         self.running = False
@@ -6004,7 +6007,8 @@ class D_Scan:
            ############################################
            
             self.adjust_2dgraph()
-            
+
+        self.retrieve_button['state'] = 'normal'
         self.stop_experiment()
             
             
