@@ -16,6 +16,7 @@ import os
 import time
 import zhinst.utils
 from _horiba_ihr import HoribaIHR320
+import femtoQ.pulse_retrieval as fqpr
 
 
 class CreateLayout:
@@ -6021,7 +6022,88 @@ class D_Scan:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
+
+
+    def fast_retrieve(self):
+        wavelengths = self.wl_crop*1e-9
+        delay = self.timeDelay*1e-15
+        trace = self.trace.copy()
         
+        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgFROG(filename='', smoothTrace = True, relativeNoiseTreshold = 0.01,inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        t = timeRetrieved
+        E = pulseRetTime
+        
+        pulseTime = np.abs(E)**2
+        pulseTime /= pulseTime.max()
+        pulseFreq = np.abs(pulseRetrieved)**2
+        pulseFreq /= pulseFreq.max()
+        pulsePhase = np.unwrap(np.angle(pulseRetrieved))
+        
+        
+        iiOverHM = np.argwhere(pulseTime>=0.5).flatten()
+        
+        t00 = t[iiOverHM[0]-1]
+        t01  = t[iiOverHM[0]]
+        s00 = pulseTime[iiOverHM[0]-1]
+        s01  = pulseTime[iiOverHM[0]]
+        
+        t10 = t[iiOverHM[-1]]
+        t11  = t[iiOverHM[-1]+1]
+        s10 = pulseTime[iiOverHM[-1]]
+        s11  = pulseTime[iiOverHM[-1]+1]
+        
+        a0 = (s01-s00)/(t01-t00)
+        b0 = s00-a0*t00
+        t0 = (0.5-b0) / a0 * 1e15
+        
+        a1 = (s11-s10)/(t11-t10)
+        b1 = s10-a1*t10
+        t1 = (0.5-b1) / a1 * 1e15
+        
+        self.fwhm_var.set(round(abs(t1-t0),1))
+        
+        
+        pulse_time_graph = self.graph_dict['Retrieved pulse (time)']
+        pulse_time_graph.axes.set_xlim([t[0]*1e15,t[-1]*1e15])
+        pulse_time_graph.axes.set_ylim([0,1])
+        
+        pulse_time_graph.Line.set_xdata(t*1e15)
+        pulse_time_graph.Line.set_ydata(pulseTime/np.max(pulseTime))
+        pulse_time_graph.update_graph()
+        
+        v0 = np.trapz(pulseFreq*pulseFrequencies,pulseFrequencies) / np.trapz(pulseFreq,pulseFrequencies)
+        deltaV = np.sqrt( np.trapz(pulseFreq*(pulseFrequencies-v0)**2,pulseFrequencies) / np.trapz(pulseFreq,pulseFrequencies) )
+        
+        pulse_freq_graph = self.graph_dict['Retrieved pulse (frequency)']
+        
+        
+        if self.phaseExists is False:
+            self.pulse_spectralPhase_graph = pulse_freq_graph.axes.twinx()
+            self.LinePhase, = self.pulse_spectralPhase_graph.plot([],[],'--k')
+            self.pulse_spectralPhase_graph.set_ylabel('Spectral phase [rad]')
+            self.phaseExists = True
+        
+        
+        pulse_freq_graph.axes.set_xlim([(v0-3*deltaV)/1e12,(v0+3*deltaV)/1e12])
+        pulse_freq_graph.axes.set_ylim([0,1])
+        
+        pulse_freq_graph.Line.set_xdata(pulseFrequencies/1e12)
+        pulse_freq_graph.Line.set_ydata(pulseFreq/np.max(pulseFreq))
+        
+        
+        IIplot = pulseFreq > pulseFreq.max()/100
+        
+        pulsePhase -= np.average(pulsePhase[IIplot],weights = np.abs(pulseFreq[IIplot])**2)
+       
+        phasemax = pulsePhase[IIplot].max()
+        phasemin = pulsePhase[IIplot].min()
+        self.pulse_spectralPhase_graph.set_ylim(phasemin,phasemax)
+
+        self.LinePhase.set_xdata(pulseFrequencies[IIplot]/1e12)
+        self.LinePhase.set_ydata(pulsePhase[IIplot])
+        pulse_freq_graph.update_graph()
+
+
     def adjust_2dgraph(self):#, step=None):
 # =============================================================================
 #         step = step.get()
