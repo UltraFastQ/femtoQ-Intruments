@@ -5987,10 +5987,14 @@ class D_Scan:
         self.running = True
         self.window_array = window_array.get()
         self.window_array = [int(x) for x in self.window_array.split(", ")]
+        try:
+            self.wl=self.Spectro.spectro.wavelengths()
+        except:
+            self.wl=np.arange(1,513,1)
         
         #creating empty data matrix
         try: 
-            self.data_matrix = np.zeros((len(self.window_array), len(self.Spectro.spectro.wavelengths())))
+            self.data_matrix = np.zeros((len(self.window_array), len(self.wl)))
             
         except:
             self.data_matrix = np.zeros((len(self.window_array), 512))
@@ -6008,6 +6012,7 @@ class D_Scan:
            
             self.adjust_2dgraph()
 
+        self.trace=self.data_matrix.copy()
         self.retrieve_button['state'] = 'normal'
         self.stop_experiment()
             
@@ -6019,7 +6024,7 @@ class D_Scan:
     
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(self.dir_var.get() + timeStamp + self.name_var.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.Spectro.spectro.wavelengths())
+        np.savez(self.dir_var.get() + timeStamp + self.name_var.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.wl)
 
         # Going back to initial state
         self.running = False
@@ -6029,11 +6034,11 @@ class D_Scan:
 
 
     def fast_retrieve(self):
-        wavelengths = self.wl_crop*1e-9
-        delay = self.timeDelay*1e-15
+        wavelengths = self.wl*1e-9
+        delay = self.window_array
         trace = self.trace.copy()
         
-        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgFROG(filename='', smoothTrace = True, relativeNoiseTreshold = 0.01,inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgDscan(filename='', smoothTrace = True, relativeNoiseTreshold = 0.01,inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
         t = timeRetrieved
         E = pulseRetTime
         
