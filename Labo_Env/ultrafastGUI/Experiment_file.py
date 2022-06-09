@@ -5993,15 +5993,15 @@ class D_Scan:
             self.wl=np.arange(1,513,1)
         
         #creating empty data matrix
-        try: 
-            self.data_matrix = np.zeros((self.window_array[-1]-self.window_array[0]+1, len(self.wl)))
+        #try: 
+            self.data_matrix = np.zeros((len(self.window_array), len(self.wl)))
             
-        except:
-            self.data_matrix = np.zeros((self.window_array[-1]-self.window_array[0]+1, 512))
+        #except:
+         #   self.data_matrix = np.zeros((len(self.window_array), 512))
         
         #measurement loop
-        for i in self.window_array:
-            if not messagebox.askokcancel(title='INFO', message='Take measurement with ' + str(i) +' mm of dispersion'):
+        for i in range(len(self.window_array)):
+            if not messagebox.askokcancel(title='INFO', message='Take measurement with ' + str(self.window_array[i]) +' mm of dispersion'):
                 self.stop_experiment()
                 break
             #'take measurement' from spectrometer
@@ -6137,8 +6137,20 @@ class D_Scan:
         self.graph_dict["D-Scan trace"].axes.set_aspect(aspectRatio)
        
         self.graph_dict["D-Scan trace"].change_data(trace,False)
-        self.graph_dict["D-Scan trace"].im.set_extent((0, len(self.data_matrix[0]), 0, len(self.data_matrix[:, 0])))
+        self.graph_dict["D-Scan trace"].im.set_extent((self.wl[0], self.wl[-1], self.window_array[0], self.window_array[-1]))
         #aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
+        
+        #Setting tick positions and labels
+        disp_ticks = []
+        step = (self.window_array[-1]-self.window_array[0])/(len(self.window_array)-1)
+        i=self.window_array[0]
+        while i<self.window_array[-1]:
+            disp_ticks.append(i)
+            i += step
+        disp_ticks.append(self.window_array[-1])
+        #messagebox.showinfo("bfobf", disp_ticks)
+        #self.graph_dict["D-Scan trace"].axes.set_xticks(ticks = self.wl)
+        self.graph_dict["D-Scan trace"].axes.set_yticks(ticks = disp_ticks, labels = self.window_array)
         
         self.graph_dict["D-Scan trace"].axes.set_xlabel('Wavelengths [nm]')
         self.graph_dict["D-Scan trace"].axes.set_ylabel('Dispersion  Length [mm]')
