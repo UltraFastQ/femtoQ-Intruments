@@ -5881,7 +5881,7 @@ class D_Scan:
         name_var = tk.StringVar()
         dir_var = tk.StringVar()
         intTime_var.set(1)
-        disp_var.set("0, 1, 2, 3, 4, 5, 6")
+        disp_var.set("0, 1, 2, 3, 4, 5, 6, 7")
         name_var.set('D_Scan_Measurement')
         dir_var.set('E:/Julien/D_Scan/')
         
@@ -5902,15 +5902,15 @@ class D_Scan:
         
         # Define position of all objects on the grid
         
-        param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
-        intTime_lbl.grid(row=8, column=0, sticky='nsw')
-        intTime_e.grid(row=8, column=1, sticky='nse')
-        disp_lbl.grid(row=9, column=0, sticky='nsw')
-        disp_e.grid(row=9, column=1, sticky='nse')
-        name_lbl.grid(row=26, column=0, sticky='nsw')
-        name_e.grid(row=26, column=1, sticky='nse')
-        dir_lbl.grid(row=27, column=0, sticky='nsw')
-        dir_e.grid(row=27, column=1, sticky='nse')
+        param_lbl.grid(row=0, column=0, columnspan=2, sticky='nsew')
+        intTime_lbl.grid(row=1, column=0, sticky='nsw')
+        intTime_e.grid(row=1, column=1, sticky='nse')
+        disp_lbl.grid(row=3, column=0, sticky='nsw')
+        disp_e.grid(row=3, column=1, sticky='nse')
+        name_lbl.grid(row=23, column=0, sticky='nsw')
+        name_e.grid(row=23, column=1, sticky='nse')
+        dir_lbl.grid(row=25, column=0, sticky='nsw')
+        dir_e.grid(row=25, column=1, sticky='nse')
         
         #i put these before the buttons because putting them after creates an error for some reason
         def get_dark_spectrum(self):
@@ -5929,39 +5929,39 @@ class D_Scan:
         
         self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
                            command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=19,column=0,sticky='nsew')
+        self.dark_button.grid(row=11,column=0,sticky='nsew')
         
         self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
                                     command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=20,column=0,sticky='nsew')
+        self.sub_dark_button.grid(row=13,column=0,sticky='nsew')
         
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                         command=lambda: rescale(self))
-        self.rescale_button.grid(row=21,column=0,sticky='nsew')
+        self.rescale_button.grid(row=15,column=0,sticky='nsew')
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
                                       command=lambda: self.start_experiment(window_array=disp_var, intTime=intTime_var))
-        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+        self.stop_button.grid(row=21, column=0, columnspan=2, sticky='nsew')
         
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save())
-        self.save_button.grid(row=22, column=0, columnspan=2, sticky='nsew')
+        self.save_button.grid(row=27, column=0, columnspan=2, sticky='nsew')
         
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
                                         command=lambda: self.start_spectro(inte_time=intTime_var))
-        self.spectro_start_button.grid(row=24, column=0, sticky='nsew')
+        self.spectro_start_button.grid(row=7, column=0, sticky='nsew')
         self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
                                              command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=25, column=0, sticky='nsew')
+        self.spectro_stop_button.grid(row=9, column=0, sticky='nsew')
         
         self.spectro_connect_button = tk.Button(frame, text='Connect Spectrometer', state='normal', width=18,
                                                 command=lambda: self.connect_spectrometer())
-        self.spectro_connect_button.grid(row=23, column=0, sticky='nsew')
+        self.spectro_connect_button.grid(row=5, column=0, columnspan=2, sticky='nsew')
 
         self.start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
@@ -5969,7 +5969,7 @@ class D_Scan:
         
         self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
                                         command=lambda: self.fast_retrieve())
-        self.retrieve_button.grid(row=28,column=0,sticky='nsew')
+        self.retrieve_button.grid(row=17,column=0,sticky='nsew')
 
     def stop_experiment(self):
         self.running = False
