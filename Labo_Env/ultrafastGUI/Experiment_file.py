@@ -3927,7 +3927,7 @@ class CHI3_Sampling:
                 Settling_time = 10.05*tc
             time.sleep(Settling_time)
         self.Zurich.info['daq'].subscribe(path)
-        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+        data_set = self.Zurich.info['daq'].poll(0.01,200,0,True)
 
 
         try:
@@ -3989,7 +3989,7 @@ class CHI3_Sampling:
         nsteps = int(np.ceil((max_pos - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
         # move = np.linspace(min_pos, max_pos, nsteps+1)
-        move = np.linspace(max_pos, min_pos, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
         pos = np.zeros(nsteps+1)
         self.S = np.zeros(nsteps+1)
         self.t= np.zeros(nsteps+1)
@@ -4027,7 +4027,7 @@ class CHI3_Sampling:
             # Measure real position
             pos[i] = self.PI.get_position()
             # Measure signal
-            self.t[i] = (pos[0]-pos[i])*2/1000/c*1e15
+            self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
             self.S[i] = np.mean(self.Zurich_acquire())*1000
             
             # Actualise progress bar
