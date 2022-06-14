@@ -5881,7 +5881,7 @@ class D_Scan:
         name_var = tk.StringVar()
         dir_var = tk.StringVar()
         intTime_var.set(1)
-        disp_var.set("0, 1, 2, 3, 4, 5, 6")
+        disp_var.set("0, 1, 2, 3, 4, 5, 6, 7")
         name_var.set('D_Scan_Measurement')
         dir_var.set('E:/Julien/D_Scan/')
         
@@ -5902,15 +5902,15 @@ class D_Scan:
         
         # Define position of all objects on the grid
         
-        param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
-        intTime_lbl.grid(row=8, column=0, sticky='nsw')
-        intTime_e.grid(row=8, column=1, sticky='nse')
-        disp_lbl.grid(row=9, column=0, sticky='nsw')
-        disp_e.grid(row=9, column=1, sticky='nse')
-        name_lbl.grid(row=26, column=0, sticky='nsw')
-        name_e.grid(row=26, column=1, sticky='nse')
-        dir_lbl.grid(row=27, column=0, sticky='nsw')
-        dir_e.grid(row=27, column=1, sticky='nse')
+        param_lbl.grid(row=0, column=0, columnspan=2, sticky='nsew')
+        intTime_lbl.grid(row=1, column=0, sticky='nsw')
+        intTime_e.grid(row=1, column=1, sticky='nse')
+        disp_lbl.grid(row=3, column=0, sticky='nsw')
+        disp_e.grid(row=3, column=1, sticky='nse')
+        name_lbl.grid(row=23, column=0, sticky='nsw')
+        name_e.grid(row=23, column=1, sticky='nse')
+        dir_lbl.grid(row=25, column=0, sticky='nsw')
+        dir_e.grid(row=25, column=1, sticky='nse')
         
         #i put these before the buttons because putting them after creates an error for some reason
         def get_dark_spectrum(self):
@@ -5929,39 +5929,39 @@ class D_Scan:
         
         self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
                            command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=19,column=0,sticky='nsew')
+        self.dark_button.grid(row=11,column=0,sticky='nsew')
         
         self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
                                     command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=20,column=0,sticky='nsew')
+        self.sub_dark_button.grid(row=13,column=0,sticky='nsew')
         
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                         command=lambda: rescale(self))
-        self.rescale_button.grid(row=21,column=0,sticky='nsew')
+        self.rescale_button.grid(row=15,column=0,sticky='nsew')
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
                                       command=lambda: self.start_experiment(window_array=disp_var, intTime=intTime_var))
-        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+        self.stop_button.grid(row=21, column=0, columnspan=2, sticky='nsew')
         
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save())
-        self.save_button.grid(row=22, column=0, columnspan=2, sticky='nsew')
+        self.save_button.grid(row=27, column=0, columnspan=2, sticky='nsew')
         
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
                                         command=lambda: self.start_spectro(inte_time=intTime_var))
-        self.spectro_start_button.grid(row=24, column=0, sticky='nsew')
+        self.spectro_start_button.grid(row=7, column=0, sticky='nsew')
         self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
                                              command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=25, column=0, sticky='nsew')
+        self.spectro_stop_button.grid(row=9, column=0, sticky='nsew')
         
         self.spectro_connect_button = tk.Button(frame, text='Connect Spectrometer', state='normal', width=18,
                                                 command=lambda: self.connect_spectrometer())
-        self.spectro_connect_button.grid(row=23, column=0, sticky='nsew')
+        self.spectro_connect_button.grid(row=5, column=0, columnspan=2, sticky='nsew')
 
         self.start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
@@ -5969,7 +5969,7 @@ class D_Scan:
         
         self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
                                         command=lambda: self.fast_retrieve())
-        self.retrieve_button.grid(row=28,column=0,sticky='nsew')
+        self.retrieve_button.grid(row=17,column=0,sticky='nsew')
 
     def stop_experiment(self):
         self.running = False
@@ -5993,21 +5993,24 @@ class D_Scan:
             self.wl=np.arange(1,513,1)
         
         #creating empty data matrix
-        try: 
-            self.data_matrix = np.zeros((self.window_array[-1]-self.window_array[0]+1, len(self.wl)))
+        #try: 
+        self.data_matrix = np.zeros((len(self.window_array), len(self.wl)))
             
-        except:
-            self.data_matrix = np.zeros((self.window_array[-1]-self.window_array[0]+1, 512))
+        #except:
+         #   self.data_matrix = np.zeros((len(self.window_array), 512))
         
         #measurement loop
-        for i in self.window_array:
-            if not messagebox.askokcancel(title='INFO', message='Take measurement with ' + str(i) +' mm of dispersion'):
+        for i in range(len(self.window_array)):
+            if not messagebox.askokcancel(title='INFO', message='Take measurement with ' + str(self.window_array[i]) +' mm of dispersion'):
                 self.stop_experiment()
                 break
-            #'take measurement' from spectrometer
+            #take measurement from spectrometer
             ###############################################
-            for j in range(len(self.data_matrix[0])):
-                self.data_matrix[i][j] = np.random.rand()
+            try:
+               self.data_matrix[i] = self.Spectro.get_intensities()
+            except:
+                for j in range(len(self.data_matrix[0])):
+                    self.data_matrix[i][j] = np.random.rand()
            ############################################
            
             self.adjust_2dgraph()
@@ -6131,14 +6134,32 @@ class D_Scan:
                                                        figsize=[2,2], data_size= self.data_matrix.shape)
        #trace = (self.data_matrix-np.min(self.data_matrix))
        #trace = trace/np.max(trace)
-        trace = np.flipud(self.data_matrix)
+        trace = np.flipud(self.data_matrix/self.data_matrix.max())
         aspectRatio = len(self.data_matrix[0])/(2*len(self.data_matrix[:, 0]))
         
         self.graph_dict["D-Scan trace"].axes.set_aspect(aspectRatio)
        
         self.graph_dict["D-Scan trace"].change_data(trace,False)
-        self.graph_dict["D-Scan trace"].im.set_extent((0, len(self.data_matrix[0]), 0, len(self.data_matrix[:, 0])))
+        self.graph_dict["D-Scan trace"].im.set_extent((self.wl[0], self.wl[-1], self.window_array[0], self.window_array[-1]))
         #aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
+        
+        #Setting tick positions and labels
+        disp_ticks = []
+        step = (self.window_array[-1]-self.window_array[0])/(len(self.window_array)-1)
+        i=self.window_array[0]
+        while i<self.window_array[-1]:
+            disp_ticks.append(i)
+            i += step
+        disp_ticks.append(self.window_array[-1])
+        #messagebox.showinfo("bfobf", disp_ticks)
+        #wl_ticks = []
+        #i=self.wl[0]
+        #while i<self.wl[-1]:
+        #    wl_ticks.append(i)
+        #    i += 100
+        
+        #self.graph_dict["D-Scan trace"].axes.set_xticks(ticks = wl_ticks)
+        self.graph_dict["D-Scan trace"].axes.set_yticks(ticks = disp_ticks, labels = self.window_array)
         
         self.graph_dict["D-Scan trace"].axes.set_xlabel('Wavelengths [nm]')
         self.graph_dict["D-Scan trace"].axes.set_ylabel('Dispersion  Length [mm]')
