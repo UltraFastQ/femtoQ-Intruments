@@ -6035,13 +6035,12 @@ class D_Scan:
         self.start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
 
-
     def fast_retrieve(self):
         wavelengths = self.wl*1e-9
-        delay = self.window_array
+        delay = self.window_array                                     # Here delay is actually insertion
         trace = self.trace.copy()
         
-        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgDscan(filename='', smoothTrace = True, relativeNoiseTreshold = 0.01,inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgDscan(filename='', inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
         t = timeRetrieved
         E = pulseRetTime
         
