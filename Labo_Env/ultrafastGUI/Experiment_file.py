@@ -6006,11 +6006,11 @@ class D_Scan:
                 break
             #take measurement from spectrometer
             ###############################################
-            try:
-               self.data_matrix[i] = self.Spectro.get_intensities()
-            except:
-                for j in range(len(self.data_matrix[0])):
-                    self.data_matrix[i][j] = np.random.rand()
+            self.data_matrix[i] = self.Spectro.get_intensities()
+            if np.isnan(self.data_matrix[i][0]):
+                self.data_matrix[i] = np.random.rand(len(self.wl))
+                #for j in range(len(self.data_matrix[0])):
+                 #   self.data_matrix[i][j] = np.random.rand()
            ############################################
            
             self.adjust_2dgraph()
