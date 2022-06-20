@@ -5223,29 +5223,11 @@ class Horiba_spectrum:
         max_lbl = tk.Label(frame, text = 'Max. wavelength. (nm):')
         step_lbl = tk.Label(frame, text = 'Step size (nm):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
-        
-        def connect_mono(self):
-            self.con_b['state'] = 'disabled'
-            
-            name='ihr32'
-            config={'port':2,
-                    'out_of_limits':'closest',
-                    'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
-                                'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
-                                'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
-                                },
-                    'limits':[0,15800]
-
-                    }
-
-            config_path = ''
-            self.mono = HoribaIHR320(name,config,config_path)
-            messagebox.showinfo(title="Monochromator", message="Horiba iHR320 is connected")
-            #messagebox.showinfo(title="Monochromator", message=f"{self.mono._state}")
+    
         
         # Define buttons and their action
                 # Pi Stage
-        con_b = tk.Button(frame, text='Initialize Horiba Monochromator',
+        self.con_b = tk.Button(frame, text='Initialize Horiba Monochromator',
                                       command=lambda: self.connect_mono())
 
         # Define variables
@@ -5273,7 +5255,7 @@ class Horiba_spectrum:
 
         # Define position of all objects on the grid
                 # PI stage
-        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        self.con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
         pos_lbl.grid(row=4, column=0, sticky='nsw')
         pos_e.grid(row=4, column=1, sticky='nse')
         param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
@@ -5312,6 +5294,26 @@ class Horiba_spectrum:
         self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
         self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
         self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
+
+    def connect_mono(self):
+        self.con_b['state'] = 'disabled'
+        
+        name='ihr32'
+        config={'port':2,
+                'out_of_limits':'closest',
+                'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
+                            'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
+                            'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
+                            },
+                'limits':[0,15800]
+
+                }
+
+        config_path = ''
+        self.mono = HoribaIHR320(name,config,config_path)
+        messagebox.showinfo(title="Monochromator", message="Horiba iHR320 is connected")
+        #messagebox.showinfo(title="Monochromator", message=f"{self.mono._state}")
+
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(timeStamp+'_EOS_measurement',time = self.L,signal = self.S)
