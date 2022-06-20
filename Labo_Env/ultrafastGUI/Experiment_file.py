@@ -6008,11 +6008,11 @@ class D_Scan:
                 break
             #take measurement from spectrometer
             ###############################################
-            try:
-               self.data_matrix[i] = self.Spectro.get_intensities()
-            except:
-                for j in range(len(self.data_matrix[0])):
-                    self.data_matrix[i][j] = np.random.rand()
+            self.data_matrix[i] = self.Spectro.get_intensities()
+            if np.isnan(self.data_matrix[i][0]):
+                self.data_matrix[i] = np.random.rand(len(self.wl))
+                #for j in range(len(self.data_matrix[0])):
+                 #   self.data_matrix[i][j] = np.random.rand()
            ############################################
            
             self.adjust_2dgraph()
@@ -6037,13 +6037,12 @@ class D_Scan:
         self.start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
 
-
     def fast_retrieve(self):
         wavelengths = self.wl*1e-9
-        delay = self.window_array
+        delay = self.window_array                                     # Here delay is actually insertion
         trace = self.trace.copy()
         
-        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgDscan(filename='', smoothTrace = True, relativeNoiseTreshold = 0.01,inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgDscan(filename='', inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
         t = timeRetrieved
         E = pulseRetTime
         
