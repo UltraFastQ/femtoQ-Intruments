@@ -2014,7 +2014,7 @@ class Experiment(ttk.LabelFrame):
         create_layout(name='Boxcar', function_=Experiment_file.Boxcar, option=[],
                       graph={'Scanning': ['Step number', 'Elapsed time [s]']})
         create_layout(name='Horiba Spectrum', function_=Experiment_file.Horiba_spectrum, option=[],
-                      graph={'Scanning': ['Step number', 'Elapsed time [s]'],'Signal':['Wavelength','Intensity (mV)']})        
+                      graph={'Scanning': ['Step number', 'Elapsed time [s]'],'Signal':['Wavelength','Intensity (mV)'],'Spectrum':['Frequency (THz)','Normalized intensity']})        
         experiment_name.current(0)
         create_layout(name='D-Scan', function_=Experiment_file.D_Scan, option=[],
                       graph={'Spectro': ['Wavelength', 'Intensity'],

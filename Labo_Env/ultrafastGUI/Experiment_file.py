@@ -5217,37 +5217,67 @@ class Horiba_spectrum:
     def create_frame(self, frame):
         # Define labels
                 # Delay line
+        sli_lbl = tk.Label(frame, text = 'Input slit width (mm):')
+        sle_lbl = tk.Label(frame, text = 'Output sit width (mm):')
         pos_lbl = tk.Label(frame, text = 'Go to wavelength (nm):')
+        gra_lbl = tk.Label(frame, text = 'Set grating (g/mm):')
         param_lbl = tk.Label(frame, text = 'Experiment parameters')
         min_lbl = tk.Label(frame, text = 'Min. wavelength. (nm):')
         max_lbl = tk.Label(frame, text = 'Max. wavelength. (nm):')
         step_lbl = tk.Label(frame, text = 'Step size (nm):')
         utime_lbl = tk.Label(frame, text='Update graph after [s]:')
-    
+        
+        def connect_mono(self):
+            self.con_b['state'] = 'disabled'
+            
+            name='ihr32'
+            config={'port':2,
+                    'out_of_limits':'closest',
+                    'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
+                                'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
+                                'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
+                                },
+                    'limits':[0,15800]
+
+                    }
+
+            config_path = ''
+            self.mono = HoribaIHR320(name,config,config_path)
+            messagebox.showinfo(title="Monochromator", message="Horiba iHR320 is connected")
+            #messagebox.showinfo(title="Monochromator", message=f"{self.mono._state}")
+            self.start_button['state'] = 'normal'
         
         # Define buttons and their action
                 # Pi Stage
-        self.con_b = tk.Button(frame, text='Initialize Horiba Monochromator',
-                                      command=lambda: self.connect_mono())
+        self.con_b = tk.Button(frame, text='Connect monochromator', command=lambda: connect_mono(self))
 
         # Define variables
                 # PI stage
-        pos_var = tk.DoubleVar()
+        sli_var = tk.DoubleVar()
+        sle_var = tk.DoubleVar()
+        self.pos_var = tk.DoubleVar()
+        gra_var = tk.DoubleVar()
         min_var = tk.DoubleVar()
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.wait_var = tk.IntVar()
-        pos_var.set(1000)
+        sli_var.set(1)
+        sle_var.set(0.5)
+        self.pos_var.set(1000)
+        gra_var.set(150)
         min_var.set(1000)
         max_var.set(2000)
         step_var.set(100)
         utime_var.set(1)
-        
+        self.wait_var.set(1)
         
         # Define entry boxes
                 # PI stage
-        pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
+        sli_e = tk.Entry(frame, width = 6, textvariable = sli_var)
+        sle_e = tk.Entry(frame, width = 6, textvariable = sle_var)
+        pos_e = tk.Entry(frame, width = 6, textvariable = self.pos_var)
+        gra_e = tk.Entry(frame, width = 6, textvariable = gra_var)
         min_e = tk.Entry(frame, width = 6, textvariable = min_var)
         max_e = tk.Entry(frame, width = 6, textvariable = max_var)
         step_e = tk.Entry(frame, width = 6, textvariable = step_var)
@@ -5256,8 +5286,14 @@ class Horiba_spectrum:
         # Define position of all objects on the grid
                 # PI stage
         self.con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+        sli_lbl.grid(row=2, column=0, sticky='nsw')
+        sli_e.grid(row=2, column=1, sticky='nse')
+        sle_lbl.grid(row=3, column=0, sticky='nsw')
+        sle_e.grid(row=3, column=1, sticky='nse')
         pos_lbl.grid(row=4, column=0, sticky='nsw')
         pos_e.grid(row=4, column=1, sticky='nse')
+        gra_lbl.grid(row=5, column=0, sticky='nsw')
+        gra_e.grid(row=5, column=1, sticky='nse')
         param_lbl.grid(row=6, column=0, columnspan=2, sticky='nsew')
         min_lbl.grid(row=7, column=0, sticky='nsw')
         min_e.grid(row=7, column=1, sticky='nse')
@@ -5274,7 +5310,12 @@ class Horiba_spectrum:
         # Select a key and its effect when pressed in an entry box
             # PI stage
         pos_e.bind('<Return>', lambda e: self.mono.set_position(self.pos_var.get()))
-            
+        gra_e.bind('<Return>', lambda e: self.mono.set_turret(gra_var.get()))
+        sli_e.bind('<Return>', lambda e: self.mono.set_front_entrance_slit(sli_var.get()))
+        sle_e.bind('<Return>', lambda e: self.mono.set_front_exit_slit(sle_var.get()))
+
+
+
         # Start & stop buttons :
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
@@ -5294,30 +5335,10 @@ class Horiba_spectrum:
         self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
         self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
         self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
-
-    def connect_mono(self):
-        self.con_b['state'] = 'disabled'
-        
-        name='ihr32'
-        config={'port':2,
-                'out_of_limits':'closest',
-                'gratings':{'grating 1; 600 lines per mm':{'lines_per_mm':600,'index':0},
-                            'grating 2; 150 lines per mm':{'lines_per_mm':150,'index':1},
-                            'grating 3; 120 lines per mm':{'lines_per_mm':120,'index':2}
-                            },
-                'limits':[0,15800]
-
-                }
-
-        config_path = ''
-        self.mono = HoribaIHR320(name,config,config_path)
-        messagebox.showinfo(title="Monochromator", message="Horiba iHR320 is connected")
-        #messagebox.showinfo(title="Monochromator", message=f"{self.mono._state}")
-
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(timeStamp+'_EOS_measurement',time = self.L,signal = self.S)
-            
+        np.savez('C:/Users/gabri/Universite/Measurement/Horiba_spectrum/' + timeStamp + '_spectrum',lamda = self.L,signal = self.S)
+
     def SignalRef(self):
         if self.refExists is False:
             self.graph_dict['Signal'].LineRef, =  self.graph_dict['Signal'].axes.plot([], [])
@@ -5391,7 +5412,6 @@ class Horiba_spectrum:
         self.save_button['state'] = 'disabled'
         self.RefSignal_button['state'] = 'disabled'
         self.RefOff_button['state'] = 'disabled'
-        self.Log_button['state'] = 'disabled'
         self.running = True
 
         # Imports
@@ -5437,7 +5457,7 @@ class Horiba_spectrum:
         scan_graph.update_graph()
         EOS_graph = self.graph_dict['Signal']
         EOS_graph.axes.set_ylim([-10,10])
-        EOS_graph.axes.set_xlim([0, (max_pos-min_pos)*2/1000/c*1e15])
+        EOS_graph.axes.set_xlim([min_pos,max_pos])
         EOS_graph.Line.set_xdata([])
         EOS_graph.Line.set_ydata([])
         if self.plotRefSignal is True:
@@ -5457,7 +5477,7 @@ class Horiba_spectrum:
             pos[i] = move[i]
             # Measure signal
             self.L[i] = pos[i]
-            self.S[i] = np.mean(self.Zurich_acquire())*1000
+            self.S[i] = -np.mean(self.Zurich_acquire())*1000
             
             # Actualise progress bar
             if progress:
@@ -5470,7 +5490,7 @@ class Horiba_spectrum:
                 scan_graph.update_graph()
                 EOS_graph.Line.set_xdata(self.L[:i])
                 EOS_graph.Line.set_ydata(self.S[:i])
-                EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+                EOS_graph.axes.set_ylim([np.min(self.S),np.max(self.S)])
                 EOS_graph.update_graph()
                 
                 last_gu = time.time()
@@ -5485,7 +5505,7 @@ class Horiba_spectrum:
             scan_graph.update_graph()
             EOS_graph.Line.set_xdata(self.L)
             EOS_graph.Line.set_ydata(self.S)
-            EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+            EOS_graph.axes.set_ylim([np.min(self.S),np.max(self.S)])
             EOS_graph.update_graph()
             
             dp = np.std(pos-move)
@@ -5532,8 +5552,6 @@ class Horiba_spectrum:
         self.save_button['state'] = 'normal'
         self.RefSignal_button['state'] = 'normal'
         self.RefOff_button['state'] = 'normal'
-        self.Log_button['state'] = 'normal'
-
 
 
 
