@@ -6005,8 +6005,7 @@ class D_Scan:
         self.save_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
         self.running = True
-        self.window_array = window_array.get()
-        self.window_array = [int(x) for x in self.window_array.split(", ")]
+        self.window_array = np.fromstring(window_array.get(),dtype=float, sep=', ')
         try:
             self.wl=self.Spectro.spectro.wavelengths()
         except:
@@ -6028,7 +6027,7 @@ class D_Scan:
             ###############################################
             self.data_matrix[i] = self.Spectro.get_intensities()
             if np.isnan(self.data_matrix[i][0]):
-                self.data_matrix[i] = np.random.rand(len(self.wl))
+                self.data_matrix[i] = 0.2*np.random.rand(len(self.wl))+np.exp(-((self.wl-(250+10*self.window_array[i]))/(120/(1+0.5*self.window_array[i])))**2)
                 #for j in range(len(self.data_matrix[0])):
                  #   self.data_matrix[i][j] = np.random.rand()
            ############################################
@@ -6060,7 +6059,10 @@ class D_Scan:
         delay = self.window_array                                     # Here delay is actually insertion
         trace = self.trace.copy()
         
-        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgDscan(filename='', inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        pulseRetrieved, pulseFrequencies = fqpr.shgDscan(filename='', inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        
+        
+        
         t = timeRetrieved
         E = pulseRetTime
         
