@@ -5932,6 +5932,12 @@ class D_Scan:
         dir_lbl.grid(row=25, column=0, sticky='nsw')
         dir_e.grid(row=25, column=1, sticky='nse')
         
+        step1_lbl = tk.Label(frame, text = '')
+        step1_lbl.grid(row=16, column=1, sticky='nsw')
+        
+        step2_lbl = tk.Label(frame, text = '')
+        step2_lbl.grid(row=22, column=1, sticky='nsw')
+        
         #i put these before the buttons because putting them after creates an error for some reason
         def get_dark_spectrum(self):
             self.Spectro.measure_darkspectrum()
@@ -5961,12 +5967,12 @@ class D_Scan:
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
                                       command=lambda: self.start_experiment(window_array=disp_var, intTime=intTime_var))
-        self.start_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=17, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=21, column=0, columnspan=2, sticky='nsew')
+        self.stop_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
         
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save())
@@ -5989,7 +5995,7 @@ class D_Scan:
         
         self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
                                         command=lambda: self.fast_retrieve())
-        self.retrieve_button.grid(row=17,column=0,sticky='nsew')
+        self.retrieve_button.grid(row=21,column=0,columnspan=2, sticky='nsew')
 
     def stop_experiment(self):
         self.running = False
