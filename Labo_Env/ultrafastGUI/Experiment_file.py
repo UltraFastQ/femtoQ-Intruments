@@ -5902,8 +5902,8 @@ class D_Scan:
         dir_var = tk.StringVar()
         intTime_var.set(1)
         disp_var.set("0, 1, 2, 3, 4, 5, 6, 7")
-        name_var.set('D_Scan_Measurement')
-        dir_var.set('E:/Julien/D_Scan/')
+        name_var.set('_D_Scan_Measurement')
+        dir_var.set("C:/Users/jlauz/OneDrive/Bureau/Data FemtoQ/Julien/")
         
         
         param_lbl = tk.Label(frame, text = 'Experiment parameters')
@@ -5975,7 +5975,7 @@ class D_Scan:
         self.stop_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
         
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
-                                        command=lambda: self.save())
+                                        command=lambda: self.save(directory=dir_var, name=name_var))
         self.save_button.grid(row=27, column=0, columnspan=2, sticky='nsew')
         
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
@@ -6050,10 +6050,12 @@ class D_Scan:
         self.Spectro.connect(exp_dependencie=True)
         self.spectro_start_button['state'] = 'normal'       
     
-    def save(self):
+    def save(self, directory=None, name=None):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(self.dir_var.get() + timeStamp + self.name_var.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.wl)
-
+        try: np.savez(directory.get() + timeStamp + name.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.wl)
+        except:
+            messagebox.showerror("Error", "Error while saving, might be wrong directory.")
+            
         # Going back to initial state
         self.running = False
         self.stop_button['state'] = 'disabled'
