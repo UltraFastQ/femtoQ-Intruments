@@ -5337,7 +5337,7 @@ class Horiba_spectrum:
         self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez('C:/Users/gabri/Universite/Measurement/Horiba_spectrum/' + timeStamp + '_spectrum',lamda = self.L,signal = self.S)
+        np.savez('E:/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/measurements/' + timeStamp + '_spectrum',lamda = self.L,signal = self.S)
 
     def SignalRef(self):
         if self.refExists is False:
@@ -5477,7 +5477,7 @@ class Horiba_spectrum:
             pos[i] = move[i]
             # Measure signal
             self.L[i] = pos[i]
-            self.S[i] = -np.mean(self.Zurich_acquire())*1000
+            self.S[i] = np.mean(self.Zurich_acquire())*1000
             
             # Actualise progress bar
             if progress:
