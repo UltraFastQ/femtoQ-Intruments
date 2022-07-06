@@ -5902,8 +5902,8 @@ class D_Scan:
         dir_var = tk.StringVar()
         intTime_var.set(1)
         disp_var.set("0, 1, 2, 3, 4, 5, 6, 7")
-        name_var.set('D_Scan_Measurement')
-        dir_var.set('E:/Julien/D_Scan/')
+        name_var.set('_D_Scan_Measurement')
+        dir_var.set("C:/Users/jlauz/OneDrive/Bureau/Data FemtoQ/Julien/")
         
         
         param_lbl = tk.Label(frame, text = 'Experiment parameters')
@@ -5931,6 +5931,12 @@ class D_Scan:
         name_e.grid(row=23, column=1, sticky='nse')
         dir_lbl.grid(row=25, column=0, sticky='nsw')
         dir_e.grid(row=25, column=1, sticky='nse')
+        
+        step1_lbl = tk.Label(frame, text = '')
+        step1_lbl.grid(row=16, column=1, sticky='nsw')
+        
+        step2_lbl = tk.Label(frame, text = '')
+        step2_lbl.grid(row=22, column=1, sticky='nsw')
         
         #i put these before the buttons because putting them after creates an error for some reason
         def get_dark_spectrum(self):
@@ -5961,15 +5967,15 @@ class D_Scan:
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
                                       command=lambda: self.start_experiment(window_array=disp_var, intTime=intTime_var))
-        self.start_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
+        self.start_button.grid(row=17, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=21, column=0, columnspan=2, sticky='nsew')
+        self.stop_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
         
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
-                                        command=lambda: self.save())
+                                        command=lambda: self.save(directory=dir_var, name=name_var))
         self.save_button.grid(row=27, column=0, columnspan=2, sticky='nsew')
         
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
@@ -5989,7 +5995,7 @@ class D_Scan:
         
         self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
                                         command=lambda: self.fast_retrieve())
-        self.retrieve_button.grid(row=17,column=0,sticky='nsew')
+        self.retrieve_button.grid(row=21,column=0,columnspan=2, sticky='nsew')
 
     def stop_experiment(self):
         self.running = False
@@ -6005,8 +6011,7 @@ class D_Scan:
         self.save_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
         self.running = True
-        self.window_array = window_array.get()
-        self.window_array = [int(x) for x in self.window_array.split(", ")]
+        self.window_array = np.fromstring(window_array.get(),dtype=float, sep=', ')
         try:
             self.wl=self.Spectro.spectro.wavelengths()
         except:
@@ -6028,7 +6033,7 @@ class D_Scan:
             ###############################################
             self.data_matrix[i] = self.Spectro.get_intensities()
             if np.isnan(self.data_matrix[i][0]):
-                self.data_matrix[i] = np.random.rand(len(self.wl))
+                self.data_matrix[i] = 0.2*np.random.rand(len(self.wl))+np.exp(-((self.wl-(250+10*self.window_array[i]))/(120/(1+0.5*self.window_array[i])))**2)
                 #for j in range(len(self.data_matrix[0])):
                  #   self.data_matrix[i][j] = np.random.rand()
            ############################################
@@ -6045,10 +6050,12 @@ class D_Scan:
         self.Spectro.connect(exp_dependencie=True)
         self.spectro_start_button['state'] = 'normal'       
     
-    def save(self):
+    def save(self, directory=None, name=None):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(self.dir_var.get() + timeStamp + self.name_var.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.wl)
-
+        try: np.savez(directory.get() + timeStamp + name.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.wl)
+        except:
+            messagebox.showerror("Error", "Error while saving, might be wrong directory.")
+            
         # Going back to initial state
         self.running = False
         self.stop_button['state'] = 'disabled'
@@ -6060,7 +6067,10 @@ class D_Scan:
         delay = self.window_array                                     # Here delay is actually insertion
         trace = self.trace.copy()
         
-        pulseRetrieved, pulseFrequencies, pulseRetTime, timeRetrieved = fqpr.shgDscan(filename='', inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        pulseRetrieved, pulseFrequencies = fqpr.shgDscan(filename='', inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        
+        
+        
         t = timeRetrieved
         E = pulseRetTime
         
