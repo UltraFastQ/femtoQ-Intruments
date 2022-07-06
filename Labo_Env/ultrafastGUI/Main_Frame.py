@@ -1896,6 +1896,7 @@ class Ueye_Frame(tk.Frame):
                 average, fwhm, click=False):
         return
         if not self.Spectro.spectro:
+            
             return
 
         try:
