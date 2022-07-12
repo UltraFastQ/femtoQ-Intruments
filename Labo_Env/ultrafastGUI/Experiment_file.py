@@ -3931,9 +3931,9 @@ class CHI3_Sampling:
         self.Zurich.info['daq'].subscribe(path)
         if self.wait_var.get() == 1:
             # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
-            data_set = self.Zurich.info['daq'].poll(0.5,200,0,True)
+            data_set = self.Zurich.info['daq'].poll(0.5,100,0,True)
         else:
-            data_set = self.Zurich.info['daq'].poll(0.01,200,0,True)
+            data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
 
 
         try:
