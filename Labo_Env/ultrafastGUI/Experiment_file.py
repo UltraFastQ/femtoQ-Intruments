@@ -3915,19 +3915,25 @@ class CHI3_Sampling:
         tc= self.Zurich.info['daq'].getDouble(path2)
         # print
         order= self.Zurich.info['daq'].getDouble(path3)
+        # if self.wait_var.get() == 1:
+        #     # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
+        #     if order == 1:
+        #         Settling_time = 4.61*tc
+        #     elif order == 2:
+        #         Settling_time = 6.64*tc
+        #     elif order == 3:
+        #         Settling_time = 8.41*tc
+        #     elif order == 4:
+        #         Settling_time = 10.05*tc
+        #     time.sleep(Settling_time)
+        # self.Zurich.info['daq'].subscribe(path)
+        # data_set = self.Zurich.info['daq'].poll(0.01,200,0,True)
+        self.Zurich.info['daq'].subscribe(path)
         if self.wait_var.get() == 1:
             # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
-            if order == 1:
-                Settling_time = 4.61*tc
-            elif order == 2:
-                Settling_time = 6.64*tc
-            elif order == 3:
-                Settling_time = 8.41*tc
-            elif order == 4:
-                Settling_time = 10.05*tc
-            time.sleep(Settling_time)
-        self.Zurich.info['daq'].subscribe(path)
-        data_set = self.Zurich.info['daq'].poll(0.01,200,0,True)
+            data_set = self.Zurich.info['daq'].poll(0.5,200,0,True)
+        else:
+            data_set = self.Zurich.info['daq'].poll(0.01,200,0,True)
 
 
         try:
