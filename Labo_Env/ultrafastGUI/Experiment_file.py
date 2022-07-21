@@ -1969,6 +1969,7 @@ class CHI3_Sampling_ZeroDelay:
                 spectro_graph.Line.set_ydata(S)
                 spectro_graph.update_graph()
                 Signal_graph.Line.set_xdata(2*self.pos[:i])
+                # Signal_graph.Line.set_ydata(self.Si[:i])
                 Signal_graph.Line.set_ydata(self.Si[:i]/np.max(self.Si))
                 Signal_graph.update_graph()
                 
