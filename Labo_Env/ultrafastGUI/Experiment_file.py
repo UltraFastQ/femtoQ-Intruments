@@ -3788,6 +3788,7 @@ class CHI3_Sampling:
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
         self.wait_var = tk.IntVar()
+        self.wait_var2 = tk.IntVar()
         
         pos_var.set(50)
         self.vel_var.set(1)
@@ -3851,8 +3852,10 @@ class CHI3_Sampling:
         self.Log_button = tk.Button(frame, text='Log Spectrum ON/OFF', state='disabled',command=lambda: self.LogSpectrum())
         self.Log_button.grid(row=16, columnspan=2, sticky='nsew')
         self.save_button.grid(row=20, column=0, columnspan=2, sticky='nsew')
-        self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
-        self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
+        self.wait = tk.Checkbutton(frame,text='Wait 1s', variable=self.wait_var)   
+        self.wait.grid(row=21, column=0, columnspan=2, sticky='nsew')
+        self.wait2 = tk.Checkbutton(frame,text='Wait 2s', variable=self.wait_var2)   
+        self.wait2.grid(row=22, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(self.directory_var.get() + timeStamp+'_EOS_measurement',time = self.t,signal = self.S)
@@ -3932,10 +3935,19 @@ class CHI3_Sampling:
         self.Zurich.info['daq'].subscribe(path)
         if self.wait_var.get() == 1:
             # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
-            data_set = self.Zurich.info['daq'].poll(0.5,100,0,True)
-        else:
+            data_set = self.Zurich.info['daq'].poll(1,100,0,True)
+        # else:
+        #     data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+            
+        if self.wait_var2.get() == 1:
+            # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
+            data_set = self.Zurich.info['daq'].poll(2,100,0,True)
+        # else:
+        #     data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+        if (self.wait_var.get() == 0 & self.wait_var2.get() == 0):
+            # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
             data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
-
+        
 
         try:
             data = data_set[path]['x']
