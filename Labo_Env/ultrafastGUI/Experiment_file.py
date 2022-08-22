@@ -4341,6 +4341,22 @@ class PumpProbe:
 
       
 
+        param_lbl = tk.Label(frame, text = 'Retrieval Algorithm')
+        param_lbl.grid(row=25, column=0, columnspan=2, sticky='nsew')
+
+        retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe())
+        retrieve_b.grid(row=26, column=0, columnspan=2, sticky='nsew')
+
+        self.data_exist=False
+
+
+
+    def Retrieve_pump_probe(self):
+        if self.data_exist==False:
+            print('No data acquired')
+        else:
+            print('Awww yiiii')
+        return
 
         
     def start_spectro(self, inte_time=None):
@@ -4506,10 +4522,8 @@ class PumpProbe:
         signal_graph.Line.set_xdata(wl)
         signal_graph.Line.set_ydata(self.trace[0])
 
-        delta_ts = np.zeros([nsteps+1,len(wl)])
-        arduino = serial.Serial('COM9', 115200, timeout=None)
-        time.sleep(3)
-        
+        data_dict={}
+                
             # Main scanning and measurements
         for i in range(nsteps+1):
             
@@ -4526,44 +4540,23 @@ class PumpProbe:
             # Measure real position
             pos[i] = self.PI.get_position()
             
-
-            #spectra_brut=[]
-            spectra_brut = [[], []]
-            
+            spectra_pos=[]            
             
             start_daq=time.time()
             while time.time()-start_daq < int_period/1000. :
-                on_off = int(not int(arduino.read()))
-                # spectra_brut.append(np.array(self.Spectro.get_intensities()))
-                spectra_brut[on_off].append(np.array(self.Spectro.get_intensities()))
-
-            if len(spectra_brut[0]) > len(spectra_brut[1]):
-                spectra_brut[0].pop()
-            elif len(spectra_brut[1]) > len(spectra_brut[0]):
-                spectra_brut[1].pop()
+                spectra_pos.append(np.array(self.Spectro.get_intensities()))
                 
-            spectra_brut=np.array(spectra_brut)
+            spectra_pos=np.array(spectra_pos)
             spectra_brut[spectra_brut==0]=1
             
-            # f1=open("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i) + ".npy",'a')
-            
-            # f1.truncate(0)
-        
-            delta_ts[i]=((np.array(spectra_brut[1]) - np.array(spectra_brut[0])) / np.array(spectra_brut[0])).mean(axis=0)
-            delta_ts=np.clip(delta_ts, a_min=-10, a_max=10)
-            np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\position" + str(i), spectra_brut)
-
-                  
-            # trace_brut=np.average((np.array(spectra_brute[1])-np.array(spectra_brute[0]))/np.array(spectra_brute[0]),axis=0)
-            # self.trace[i] = trace_brut
-
+            data_dict['pos_{}'.format(i)] = spectra_pos
 
             scan_graph.Line.set_xdata(iteration[:i])
             scan_graph.Line.set_ydata(pos[:i])
             scan_graph.update_graph()
             signal_graph.Line.set_xdata(wl)
-            signal_graph.Line.set_ydata(delta_ts[-1])
-            signal_graph.axes.set_ylim([np.min(delta_ts[i])*1.1,np.max(delta_ts[i])*1.1])
+            signal_graph.Line.set_ydata(spectra_pos[-1])
+            signal_graph.axes.set_ylim([np.min(spectra_pos[-1]),np.max(spectra_pos[-1])])
             signal_graph.update_graph()            
             
             # Actualise progress bar
@@ -4573,14 +4566,11 @@ class PumpProbe:
                 
             if not self.running:
                 break
-               
-        # f1.close()
-            
-        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum\delta_ts", delta_ts)
+                           
+        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\data_dict.npz", data_dict)
         
-        # np.savetxt("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + ".txt",self.trace, fmt="%s", delimiter=", ")
-        np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npy",pos)
-        np.save("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.npy",wl)
+        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npz",pos)
+        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.npz",wl)
         
         if not self.running:
             return_vel = tk.IntVar()
@@ -4598,12 +4588,11 @@ class PumpProbe:
             scan_graph.update_graph()
                 #Spectro signal and integrated signal
             spectro_graph.Line.set_xdata(wl)
-            spectro_graph.Line.set_ydata(self.trace[i])
+            spectro_graph.Line.set_ydata(self.spectro_pos[-1])
             spectro_graph.update_graph()
 
             self.timeDelay =self.pos_2_delay(zero,pos)
             self.wl=wl
-            self.adjust_2dgraph(delta_ts)        
             
             dp = np.std(pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
@@ -4622,8 +4611,7 @@ class PumpProbe:
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
-        self.adjust_2dgraph(delta_ts)        
-
+        self.data_exist=True
 
 
 
