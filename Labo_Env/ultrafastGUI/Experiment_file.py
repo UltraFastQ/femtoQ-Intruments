@@ -4276,20 +4276,61 @@ class PumpProbe:
         
         # Temporary Spectrometer things
         cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_and_disable_spectro(self))
-        cons_b.grid(row=15, column=0, columnspan=2, sticky='nsew')
+        cons_b.grid(row=14, column=0, columnspan=2, sticky='nsew')
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
         inte_var.set(1)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
-        inte_lbl.grid(row=16, column=0, sticky='nsw')
-        inte_e.grid(row=16, column=1,sticky='nse')
+        inte_lbl.grid(row=15, column=0, sticky='nsw')
+        inte_e.grid(row=15, column=1,sticky='nse')
         int_period_lbl = tk.Label(frame, text = 'Integration period (ms):')
         int_period_var = tk.IntVar()
         int_period_var.set(60000)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
-        int_period_lbl.grid(row=17, column=0, sticky='nsw')
-        int_period_e.grid(row=17, column=1,sticky='nse')
+        int_period_lbl.grid(row=16, column=0, sticky='nsw')
+        int_period_e.grid(row=16, column=1,sticky='nse')
+
+        
+        inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
+        
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+                                      command=lambda: self.start_experiment(max_pos=self.delay_2_pos(zero_var.get(),max_t_var.get()), min_pos=self.delay_2_pos(zero_var.get(),min_t_var.get()), zero=zero_var, step=step_t_var.get()*sc.c/(2e12), progress=p_bar, update_time=utime_var,
+                                            inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
+        self.start_button.grid(row=12, column=0, sticky='nsew')
+        
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=12, column=1, sticky='nsew')
+        
+        
+        
+        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
+                                        command=lambda: self.start_spectro(inte_time=inte_var))
+        self.spectro_start_button.grid(row=17, column=0, sticky='nsew')
+
+        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
+                                             command=lambda: self.stop_spectro())
+        self.spectro_stop_button.grid(row=17, column=1, sticky='nsew')
+        
+        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
+                           command=lambda: get_dark_spectrum(self))
+        self.dark_button.grid(row=18,column=0,sticky='nsew')
+        
+        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
+                                    command=lambda: remove_dark(self))
+        self.sub_dark_button.grid(row=18,column=1,sticky='nsew')
+        
+        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
+                                        command=lambda: rescale(self))
+        self.rescale_button.grid(row=19,column=0,sticky='nsew')
+        
+
+      
+
+        param_lbl = tk.Label(frame, text = 'Retrieval Algorithm')
+        param_lbl.grid(row=20, column=0, columnspan=2, sticky='nsew')
+
 
         minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
@@ -4299,63 +4340,42 @@ class PumpProbe:
         maxwl_var.set(1050)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
-        minwl_lbl.grid(row=18, column=0, sticky='nsw')
-        maxwl_lbl.grid(row=19, column=0, sticky='nsw')
-        minwl_e.grid(row=18, column=1, sticky='nse')
-        maxwl_e.grid(row=19, column=1, sticky='nse')
-        
-        inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
-        
-        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
-                           command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=22,column=0,sticky='nsew')
-        
-        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
-                                    command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=23,column=0,sticky='nsew')
-        
-        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
-                                        command=lambda: rescale(self))
-        self.rescale_button.grid(row=24,column=0,sticky='nsew')
-        
-        # Start & stop buttons :
+        minwl_lbl.grid(row=21, column=0, sticky='nsw')
+        maxwl_lbl.grid(row=22, column=0, sticky='nsw')
+        minwl_e.grid(row=21, column=1, sticky='nse')
+        maxwl_e.grid(row=22, column=1, sticky='nse')
 
-        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-                                      command=lambda: self.start_experiment(max_pos=self.delay_2_pos(zero_var.get(),max_t_var.get()), min_pos=self.delay_2_pos(zero_var.get(),min_t_var.get()), zero=zero_var, step=step_t_var.get()*sc.c/(2e12), progress=p_bar, update_time=utime_var,
-                                            inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
-        self.start_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
-        # The other lines are required option you would like to change before an experiment with the correct binding
-        # and/or other function you can see the WhiteLight for more exemple.
-        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
-                                     command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=14, column=0, columnspan=2, sticky='nsew')
 
-            # For spectrometer :
-        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
-                                        command=lambda: self.start_spectro(inte_time=inte_var))
-        self.spectro_start_button.grid(row=20, column=0, sticky='nsew')
-        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
-                                             command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=21, column=0, sticky='nsew')
-        
+        self.filename_ret_var = tk.StringVar()
+        self.filename_ret_var.set(self.filename_var.get())
+        filename_ret_e = tk.Entry(frame, width = 18, textvariable = self.filename_ret_var)
+        filename_ret_lbl = tk.Label(frame, text = 'Retrieval Filename:')
+        filename_ret_lbl.grid(row=23, column=0, sticky='nsw')
+        filename_ret_e.grid(row=23, column=1, sticky='nse')
 
-      
-
-        param_lbl = tk.Label(frame, text = 'Retrieval Algorithm')
-        param_lbl.grid(row=25, column=0, columnspan=2, sticky='nsew')
 
         retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe())
-        retrieve_b.grid(row=26, column=0, columnspan=2, sticky='nsew')
+        retrieve_b.grid(row=24, column=0, columnspan=2, sticky='nsew')
 
         self.data_exist=False
 
 
 
     def Retrieve_pump_probe(self):
+        Run_retrieve=True
         if self.data_exist==False:
             print('No data acquired')
+            if messagebox.askokcancel(title='INFO', message='Use file {}'.format(self.filename_ret_var.get())):
+                file=self.filename_ret_var.get()
+            else:
+                Run_reetrieve=False
         else:
-            print('Awww yiiii')
+            file=self.filename_var.get()
+        if not Run_retrieve:
+            return
+        
+        
+        
         return
 
         
