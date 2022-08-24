@@ -4276,20 +4276,20 @@ class PumpProbe:
         
         # Temporary Spectrometer things
         cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_and_disable_spectro(self))
-        cons_b.grid(row=14, column=0, columnspan=2, sticky='nsew')
+        cons_b.grid(row=15, column=0, columnspan=2, sticky='nsew')
         
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
         inte_var.set(1)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
-        inte_lbl.grid(row=15, column=0, sticky='nsw')
-        inte_e.grid(row=15, column=1,sticky='nse')
+        inte_lbl.grid(row=16, column=0, sticky='nsw')
+        inte_e.grid(row=16, column=1,sticky='nse')
         int_period_lbl = tk.Label(frame, text = 'Integration period (ms):')
         int_period_var = tk.IntVar()
         int_period_var.set(60000)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
-        int_period_lbl.grid(row=16, column=0, sticky='nsw')
-        int_period_e.grid(row=16, column=1,sticky='nse')
+        int_period_lbl.grid(row=17, column=0, sticky='nsw')
+        int_period_e.grid(row=17, column=1,sticky='nse')
 
         
         inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
@@ -4304,32 +4304,36 @@ class PumpProbe:
         self.stop_button.grid(row=12, column=1, sticky='nsew')
         
         
+        self.save_button = tk.Button(frame, text='Save Data To File', state='disabled', width=18,
+                                     command=lambda: self.save_data())
+        self.save_button.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        
         
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
                                         command=lambda: self.start_spectro(inte_time=inte_var))
-        self.spectro_start_button.grid(row=17, column=0, sticky='nsew')
+        self.spectro_start_button.grid(row=18, column=0, sticky='nsew')
 
         self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
                                              command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=17, column=1, sticky='nsew')
+        self.spectro_stop_button.grid(row=18, column=1, sticky='nsew')
         
         self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
                            command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=18,column=0,sticky='nsew')
+        self.dark_button.grid(row=19,column=0,sticky='nsew')
         
         self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
                                     command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=18,column=1,sticky='nsew')
+        self.sub_dark_button.grid(row=19,column=1,sticky='nsew')
         
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                         command=lambda: rescale(self))
-        self.rescale_button.grid(row=19,column=0,sticky='nsew')
+        self.rescale_button.grid(row=20,column=0,sticky='nsew')
         
 
       
 
         param_lbl = tk.Label(frame, text = 'Retrieval Algorithm')
-        param_lbl.grid(row=20, column=0, columnspan=2, sticky='nsew')
+        param_lbl.grid(row=21, column=0, columnspan=2, sticky='nsew')
 
 
         minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
@@ -4340,35 +4344,34 @@ class PumpProbe:
         maxwl_var.set(950)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
-        minwl_lbl.grid(row=21, column=0, sticky='nsw')
-        maxwl_lbl.grid(row=22, column=0, sticky='nsw')
-        minwl_e.grid(row=21, column=1, sticky='nse')
-        maxwl_e.grid(row=22, column=1, sticky='nse')
+        minwl_lbl.grid(row=22, column=0, sticky='nsw')
+        maxwl_lbl.grid(row=23, column=0, sticky='nsw')
+        minwl_e.grid(row=22, column=1, sticky='nse')
+        maxwl_e.grid(row=23, column=1, sticky='nse')
 
         timingWL_lbl = tk.Label(frame, text = 'Timing beam WL (nm)')
         timingWL_var = tk.DoubleVar()
         timingWL_var.set(532)
         timingWL_e = tk.Entry(frame, width = 6, textvariable = timingWL_var)
-        timingWL_lbl.grid(row=23, column=0, sticky='nsw')
-        timingWL_e.grid(row=23, column=1, sticky='nse')
+        timingWL_lbl.grid(row=24, column=0, sticky='nsw')
+        timingWL_e.grid(row=24, column=1, sticky='nse')
 
         self.filename_ret_var = tk.StringVar()
         self.filename_ret_var.set(self.filename_var.get())
         filename_ret_e = tk.Entry(frame, width = 18, textvariable = self.filename_ret_var)
         filename_ret_lbl = tk.Label(frame, text = 'Retrieval Filename:')
-        filename_ret_lbl.grid(row=24, column=0, sticky='nsw')
-        filename_ret_e.grid(row=24, column=1, sticky='nse')
+        filename_ret_lbl.grid(row=25, column=0, sticky='nsw')
+        filename_ret_e.grid(row=25, column=1, sticky='nse')
 
 
         retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=minwl_var.get(),max_wl=maxwl_var.get(),timingWL=timingWL_var.get()))
-        retrieve_b.grid(row=25, column=0, columnspan=2, sticky='nsew')
+        retrieve_b.grid(row=26, column=0, columnspan=2, sticky='nsew')
 
         self.data_exist=False
 
 
 
     def Retrieve_pump_probe(self,min_wl=None,max_wl=None, timingWL=None):
-        Run_retrieve=True
         if self.data_exist==False:
 
             if messagebox.askokcancel(title='INFO', message='No current data\n Use file {}'.format(self.filename_ret_var.get())):
@@ -4396,15 +4399,19 @@ class PumpProbe:
             pump_series=data_pos[:,np.where(wavelength-timingWL == np.min(wavelength-timingWL))]
             pump_series-=np.average(pump_series)
 
-            pump_on=pump_series >= 0.9*max(pump_series)
-            pump_off=pump_series <= 0.9*min(pump_series)
+            pump_on=pump_series >= 0.8*max(pump_series)
+            pump_off=pump_series <= 0.8*min(pump_series)
 
             data_on_temporary=[]
             data_off_temporary=[]
             
             
+            
             for k in range(len(data_pos)):
                 if pump_on[k]==True:
+                    data_on_temporary.append(data_pos[k])
+                    if pump_on[k]==False:
+                        data_on_temporary
                     print('ON')
                 elif pump_off==True:
                     print('OFF')
@@ -4657,8 +4664,10 @@ class PumpProbe:
         progress.update()
         self.stop_button['state'] = 'disabled'
         self.start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
         self.data_exist=True
+        
 
 
 
