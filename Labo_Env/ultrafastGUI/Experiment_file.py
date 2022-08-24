@@ -4389,7 +4389,7 @@ class PumpProbe:
         position=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\pos.npz")
         wavelength=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\wl.npz")
         
-        trace=np.zeros([len(position),len(wavelength)])
+        self.trace = np.zeros((len(position),wavelength.shape[0]))
         
         for i in range(len(position)):
             data_pos=data["pos_{}".format(i)]
@@ -4409,12 +4409,12 @@ class PumpProbe:
             for k in range(len(data_pos)):
                 if pump_on[k]==True:
                     data_on_temporary.append(data_pos[k])
-                    if pump_on[k]==False:
+                    if pump_on[k+1]==False:
                         data_on.append(np.average(data_on_temporary),axis=0)
                         data_on_temporary=[]
                 elif pump_off==True:
                     data_off_temporary.append(data_pos[k])
-                    if pump_off[k]==False:
+                    if pump_off[k+1]==False:
                         data_off.append(np.average(data_off_temporary),axis=0)
                         data_off_temporary=[]
             
@@ -4426,8 +4426,8 @@ class PumpProbe:
             if data_off.shape[0]>data_on.shape[0]:
                 data_off = np.delete(data_off,-1)
 
-            trace[i]=np.average((data_on-data_off)/data_off,axis=0)
-
+            self.trace[i]=np.average((data_on-data_off)/data_off,axis=0)
+            self.adjust_2dgraph()
 
         return
 
@@ -4485,7 +4485,7 @@ class PumpProbe:
         self.graph_dict["Pump_Probe"].destroy_graph()
         self.graph_dict["Pump_Probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
                                                        figsize=[2,2], data_size= np.transpose(self.trace).shape,cmap='seismic',aspect='auto',vmin=-0.1,vmax=0.1)
-        self.graph_dict["Pump_Probe"].change_data(np.transpose(delta_ts),False)
+        self.graph_dict["Pump_Probe"].change_data(np.transpose(self.trace),False)
         self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl[-1],self.wl[0]))
         aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl[-1]-self.wl[0]))
         self.graph_dict["Pump_Probe"].axes.set_aspect(aspectRatio)
@@ -4587,26 +4587,17 @@ class PumpProbe:
         minwl = minwl.get()
         maxwl = maxwl.get()
 
-        self.trace = np.zeros((nsteps+1,self.wl.shape[0]))
         signal_graph = self.graph_dict['Signal']
         signal_graph.axes.set_ylim([1,-1])
         signal_graph.axes.set_xlim([np.min(self.wl),np.max(self.wl)])
         signal_graph.Line.set_xdata(self.wl)
-        signal_graph.Line.set_ydata(self.trace[0])
+        signal_graph.Line.set_ydata(S)
 
         self.data_dict={}
                 
             # Main scanning and measurements
         for i in range(nsteps+1):
-            
-            try:
-                os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\spectrum")
-            except OSError:
-                l=1
-            else:
-                l=0
-
-            
+        
             # Move stage to required position
             self.PI.go_2position(move[i])
             # Measure real position
