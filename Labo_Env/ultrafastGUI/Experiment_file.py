@@ -4392,8 +4392,6 @@ class PumpProbe:
         trace=np.zeros([len(position),len(wavelength)])
         
         for i in range(len(position)):
-            trace_pos=np.zeros(len(wavelength))
-            
             data_pos=data["pos_{}".format(i)]
             
             pump_series=data_pos[:,np.where(wavelength-timingWL == np.min(wavelength-timingWL))]
@@ -4405,17 +4403,32 @@ class PumpProbe:
             data_on_temporary=[]
             data_off_temporary=[]
             
-            
+            data_on=[]
+            data_off=[]
             
             for k in range(len(data_pos)):
                 if pump_on[k]==True:
                     data_on_temporary.append(data_pos[k])
                     if pump_on[k]==False:
-                        data_on_temporary
-                    print('ON')
+                        data_on.append(np.average(data_on_temporary),axis=0)
+                        data_on_temporary=[]
                 elif pump_off==True:
-                    print('OFF')
-        
+                    data_off_temporary.append(data_pos[k])
+                    if pump_off[k]==False:
+                        data_off.append(np.average(data_off_temporary),axis=0)
+                        data_off_temporary=[]
+            
+            data_on=np.array(data_on)
+            data_off=np.array(data_off)
+            
+            if data_on.shape[0]>data_off.shape[0]:
+                data_on = np.delete(data_on,-1)
+            if data_off.shape[0]>data_on.shape[0]:
+                data_off = np.delete(data_off,-1)
+
+            trace[i]=np.average((data_on-data_off)/data_off,axis=0)
+
+
         return
 
         
