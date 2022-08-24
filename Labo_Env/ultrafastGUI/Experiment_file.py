@@ -4336,8 +4336,8 @@ class PumpProbe:
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
-        minwl_var.set(950)
-        maxwl_var.set(1050)
+        minwl_var.set(650)
+        maxwl_var.set(950)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
         minwl_lbl.grid(row=21, column=0, sticky='nsw')
@@ -4345,36 +4345,69 @@ class PumpProbe:
         minwl_e.grid(row=21, column=1, sticky='nse')
         maxwl_e.grid(row=22, column=1, sticky='nse')
 
+        timingWL_lbl = tk.Label(frame, text = 'Timing beam WL (nm)')
+        timingWL_var = tk.DoubleVar()
+        timingWL_var.set(532)
+        timingWL_e = tk.Entry(frame, width = 6, textvariable = timingWL_var)
+        timingWL_lbl.grid(row=23, column=0, sticky='nsw')
+        timingWL_e.grid(row=23, column=1, sticky='nse')
 
         self.filename_ret_var = tk.StringVar()
         self.filename_ret_var.set(self.filename_var.get())
         filename_ret_e = tk.Entry(frame, width = 18, textvariable = self.filename_ret_var)
         filename_ret_lbl = tk.Label(frame, text = 'Retrieval Filename:')
-        filename_ret_lbl.grid(row=23, column=0, sticky='nsw')
-        filename_ret_e.grid(row=23, column=1, sticky='nse')
+        filename_ret_lbl.grid(row=24, column=0, sticky='nsw')
+        filename_ret_e.grid(row=24, column=1, sticky='nse')
 
 
-        retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe())
-        retrieve_b.grid(row=24, column=0, columnspan=2, sticky='nsew')
+        retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=minwl_var.get(),max_wl=maxwl_var.get(),timingWL=timingWL_var.get()))
+        retrieve_b.grid(row=25, column=0, columnspan=2, sticky='nsew')
 
         self.data_exist=False
 
 
 
-    def Retrieve_pump_probe(self):
+    def Retrieve_pump_probe(self,min_wl=None,max_wl=None, timingWL=None):
         Run_retrieve=True
         if self.data_exist==False:
-            print('No data acquired')
-            if messagebox.askokcancel(title='INFO', message='Use file {}'.format(self.filename_ret_var.get())):
+
+            if messagebox.askokcancel(title='INFO', message='No current data\n Use file {}'.format(self.filename_ret_var.get())):
                 file=self.filename_ret_var.get()
             else:
-                Run_reetrieve=False
+                return
         else:
-            file=self.filename_var.get()
-        if not Run_retrieve:
-            return
+            if messagebox.askokcancel(title='INFO', message='Use current data for retrieval?'):
+                file=self.filename_var.get()
+            else:
+                return
+
         
+        data=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\data_dict.npz")
+        position=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\pos.npz")
+        wavelength=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\wl.npz")
         
+        trace=np.zeros([len(position),len(wavelength)])
+        
+        for i in range(len(position)):
+            trace_pos=np.zeros(len(wavelength))
+            
+            data_pos=data["pos_{}".format(i)]
+            
+            pump_series=data_pos[:,np.where(wavelength-timingWL == np.min(wavelength-timingWL))]
+            pump_series-=np.average(pump_series)
+
+            pump_on=pump_series >= 0.9*max(pump_series)
+            pump_off=pump_series <= 0.9*min(pump_series)
+
+            data_on_temporary=[]
+            data_off_temporary=[]
+            
+            
+            for k in range(len(data_pos)):
+                if pump_on[k]==True:
+                    print('ON')
+                elif pump_off==True:
+                    print('OFF')
         
         return
 
@@ -4451,9 +4484,8 @@ class PumpProbe:
     def start_experiment(self, min_pos=None, max_pos=None, zero=None, step = None, progress=None, update_time=None,
                          inte_time=None, int_period=None, minwl=None, maxwl=None):
 
-        filename_final=self.filename_var.get()
         try:
-            os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final))        
+            os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()))        
         except OSError:
             l=1
         else:
@@ -4500,7 +4532,7 @@ class PumpProbe:
         nsteps = int(np.ceil((max_pos - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(max_pos, min_pos, nsteps+1)
-        pos = np.zeros(nsteps+1)
+        self.pos = np.zeros(nsteps+1)
 
         self.PI.set_velocity(vel=self.vel_disp)
         self.PI.go_2position(move[0]-0.001)
@@ -4524,31 +4556,31 @@ class PumpProbe:
 
             # Spectro
         self.Spectro.set_trigger(0)
-        wl = self.Spectro.spectro.wavelengths()
+        self.wl = self.Spectro.spectro.wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectro']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
-        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
-        spectro_graph.Line.set_xdata(wl)
+        spectro_graph.axes.set_xlim([np.min(self.wl),np.max(self.wl)])
+        spectro_graph.Line.set_xdata(self.wl)
         spectro_graph.Line.set_ydata(S)
         minwl = minwl.get()
         maxwl = maxwl.get()
 
-        self.trace = np.zeros((nsteps+1,wl.shape[0]))
+        self.trace = np.zeros((nsteps+1,self.wl.shape[0]))
         signal_graph = self.graph_dict['Signal']
         signal_graph.axes.set_ylim([1,-1])
-        signal_graph.axes.set_xlim([np.min(wl),np.max(wl)])
-        signal_graph.Line.set_xdata(wl)
+        signal_graph.axes.set_xlim([np.min(self.wl),np.max(self.wl)])
+        signal_graph.Line.set_xdata(self.wl)
         signal_graph.Line.set_ydata(self.trace[0])
 
-        data_dict={}
+        self.data_dict={}
                 
             # Main scanning and measurements
         for i in range(nsteps+1):
             
             try:
-                os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\spectrum")
+                os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\spectrum")
             except OSError:
                 l=1
             else:
@@ -4558,7 +4590,7 @@ class PumpProbe:
             # Move stage to required position
             self.PI.go_2position(move[i])
             # Measure real position
-            pos[i] = self.PI.get_position()
+            self.pos[i] = self.PI.get_position()
             
             spectra_pos=[]            
             
@@ -4567,14 +4599,14 @@ class PumpProbe:
                 spectra_pos.append(np.array(self.Spectro.get_intensities()))
                 
             spectra_pos=np.array(spectra_pos)
-            spectra_brut[spectra_brut==0]=1
+            spectra_pos[spectra_pos==0]=1
             
-            data_dict['pos_{}'.format(i)] = spectra_pos
+            self.data_dict['pos_{}'.format(i)] = spectra_pos
 
             scan_graph.Line.set_xdata(iteration[:i])
-            scan_graph.Line.set_ydata(pos[:i])
+            scan_graph.Line.set_ydata(self.pos[:i])
             scan_graph.update_graph()
-            signal_graph.Line.set_xdata(wl)
+            signal_graph.Line.set_xdata(self.wl)
             signal_graph.Line.set_ydata(spectra_pos[-1])
             signal_graph.axes.set_ylim([np.min(spectra_pos[-1]),np.max(spectra_pos[-1])])
             signal_graph.update_graph()            
@@ -4587,10 +4619,6 @@ class PumpProbe:
             if not self.running:
                 break
                            
-        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\data_dict.npz", data_dict)
-        
-        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_pos.npz",pos)
-        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(filename_final) + "\_" + str(filename_final) + "_wl.npz",wl)
         
         if not self.running:
             return_vel = tk.IntVar()
@@ -4604,23 +4632,22 @@ class PumpProbe:
             self.PI.set_velocity(return_vel)
             self.PI.go_2position(self.pos_var)
             scan_graph.Line.set_xdata(iteration)
-            scan_graph.Line.set_ydata(pos)
+            scan_graph.Line.set_ydata(self.pos)
             scan_graph.update_graph()
                 #Spectro signal and integrated signal
-            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_xdata(self.wl)
             spectro_graph.Line.set_ydata(self.spectro_pos[-1])
             spectro_graph.update_graph()
 
-            self.timeDelay =self.pos_2_delay(zero,pos)
-            self.wl=wl
+            self.timeDelay =self.pos_2_delay(zero,self.pos)
             
-            dp = np.std(pos-move)
+            dp = np.std(self.pos-move)
             messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
 
 
 
         # Final calculations
-        self.timeDelay =self.pos_2_delay(zero,pos)
+        self.timeDelay =self.pos_2_delay(zero,self.pos)
         
 
 
@@ -4632,6 +4659,13 @@ class PumpProbe:
         self.start_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
         self.data_exist=True
+
+
+
+    def save_data(self):
+        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\data_dict.npz", self.data_dict)
+        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\pos.npz",self.pos)
+        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\wl.npz",self.wl)
 
 
 
