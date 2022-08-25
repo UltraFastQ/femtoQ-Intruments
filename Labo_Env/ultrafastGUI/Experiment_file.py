@@ -4195,12 +4195,12 @@ class PumpProbe:
         utime_var = tk.IntVar()
         self.pos_var.set(0)
         self.vel_var.set(1)
-        self.filename_var.set("2021-MM-JJ_Test_1")
+        self.filename_var.set("2022-MM-JJ_Test_1")
         self.vel_disp.set(2)
-        min_t_var.set(-1)
-        max_t_var.set(10)
-        zero_var.set(-33.717)
-        step_t_var.set(300)
+        min_t_var.set(-100)
+        max_t_var.set(1000)
+        zero_var.set(0)
+        step_t_var.set(200)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
         utime_var.set(1)
@@ -4242,11 +4242,11 @@ class PumpProbe:
         utime_e.grid(row=10, column=1, sticky='nse')
 
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
-        p_bar.grid(row=13, column=0, sticky='nsew', columnspan=2)
+        p_bar.grid(row=14, column=0, sticky='nsew', columnspan=2)
         p_bar['maximum'] = 1
         # Select a key and its effect when pressed in an entry box
             # PI stage
-        pos_e.bind('<Return>', lambda e: self.PI.go_2position(self.pos_var))
+        pos_e.bind('<Return>', lambda e: self.PI.go_2position(self.pos_var.get()))
         vel_e.bind('<Return>', lambda e: self.PI.set_velocity(self.vel_var))
 
 
@@ -4286,7 +4286,7 @@ class PumpProbe:
         inte_e.grid(row=16, column=1,sticky='nse')
         int_period_lbl = tk.Label(frame, text = 'Integration period (ms):')
         int_period_var = tk.IntVar()
-        int_period_var.set(60000)
+        int_period_var.set(1000)
         int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
         int_period_lbl.grid(row=17, column=0, sticky='nsw')
         int_period_e.grid(row=17, column=1,sticky='nse')
@@ -4294,9 +4294,9 @@ class PumpProbe:
         
         inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
         
-        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
-                                      command=lambda: self.start_experiment(max_pos=self.delay_2_pos(zero_var.get(),max_t_var.get()), min_pos=self.delay_2_pos(zero_var.get(),min_t_var.get()), zero=zero_var, step=step_t_var.get()*sc.c/(2e12), progress=p_bar, update_time=utime_var,
-                                            inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18, 
+                                      command=lambda: self.start_experiment(max_pos=self.delay_2_pos(zero_var.get(),max_t_var.get()) , min_pos=self.delay_2_pos(zero_var.get(),min_t_var.get()), zero=zero_var, step=step_t_var.get()*sc.c/(2e12), progress=p_bar, 
+                                                                            update_time=utime_var, inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
         self.start_button.grid(row=12, column=0, sticky='nsew')
         
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
@@ -4351,7 +4351,7 @@ class PumpProbe:
 
         timingWL_lbl = tk.Label(frame, text = 'Timing beam WL (nm)')
         timingWL_var = tk.DoubleVar()
-        timingWL_var.set(532)
+        timingWL_var.set(530)
         timingWL_e = tk.Entry(frame, width = 6, textvariable = timingWL_var)
         timingWL_lbl.grid(row=24, column=0, sticky='nsw')
         timingWL_e.grid(row=24, column=1, sticky='nse')
@@ -4385,50 +4385,63 @@ class PumpProbe:
                 return
 
         
-        data=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\data_dict.npz")
-        position=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\pos.npz")
-        wavelength=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\wl.npz")
+        data=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\data_dict.npz", allow_pickle=True)
+        delay=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\delay.npz", allow_pickle=True)
+        wavelength=np.load("E:\Gabriel\Laser_Cooling_Measurement\_" + str(file) + "\wl.npz", allow_pickle=True)
         
-        self.trace = np.zeros((len(position),wavelength.shape[0]))
         
-        for i in range(len(position)):
+        delay=np.array(delay['delay'])
+        wavelength=np.array(wavelength['wl'])
+              
+        self.timeDelay = delay
+        self.wl=wavelength
+
+        self.trace = np.zeros((len(delay),wavelength.shape[0]))
+        
+        for i in range(len(delay)):
             data_pos=data["pos_{}".format(i)]
-            
-            pump_series=data_pos[:,np.where(wavelength-timingWL == np.min(wavelength-timingWL))]
+                        
+            witness=abs(wavelength-timingWL) == np.min(abs(wavelength-timingWL))
+                        
+            pump_series=data_pos[:,witness]
             pump_series-=np.average(pump_series)
 
-            pump_on=pump_series >= 0.8*max(pump_series)
-            pump_off=pump_series <= 0.8*min(pump_series)
-
+            pump_on=pump_series >= 0.7*max(pump_series)
+            pump_off=pump_series <= 0.7*min(pump_series)
+                        
             data_on_temporary=[]
             data_off_temporary=[]
             
             data_on=[]
             data_off=[]
             
-            for k in range(len(data_pos)):
+            for k in range(len(data_pos)-1):
                 if pump_on[k]==True:
                     data_on_temporary.append(data_pos[k])
                     if pump_on[k+1]==False:
-                        data_on.append(np.average(data_on_temporary),axis=0)
+                        data_on.append(np.average(data_on_temporary,axis=0))
                         data_on_temporary=[]
-                elif pump_off==True:
+                elif pump_off[k]==True:
                     data_off_temporary.append(data_pos[k])
                     if pump_off[k+1]==False:
-                        data_off.append(np.average(data_off_temporary),axis=0)
+                        data_off.append(np.average(data_off_temporary,axis=0))
                         data_off_temporary=[]
             
             data_on=np.array(data_on)
             data_off=np.array(data_off)
             
             if data_on.shape[0]>data_off.shape[0]:
-                data_on = np.delete(data_on,-1)
-            if data_off.shape[0]>data_on.shape[0]:
-                data_off = np.delete(data_off,-1)
+                data_on = np.delete(data_on,-1,0)
+            elif data_off.shape[0]>data_on.shape[0]:
+                data_off = np.delete(data_off,-1,0)
+
+            data_off[data_off==0]=0.001
 
             self.trace[i]=np.average((data_on-data_off)/data_off,axis=0)
-            self.adjust_2dgraph()
-
+            self.adjust_2dgraph(self.trace)
+            
+        messagebox.showinfo(title='Data Analysis Complete', message='Data Analysis Complete')
+        
         return
 
         
@@ -4470,7 +4483,7 @@ class PumpProbe:
         
 
 
-    def adjust_2dgraph(self,delta_ts):#, step=None):
+    def adjust_2dgraph(self,trace):#, step=None):
 # =============================================================================
 #         step = step.get()
 #         if step == 0:
@@ -4484,8 +4497,8 @@ class PumpProbe:
         parent2d = self.graph_dict["Pump_Probe"].parent
         self.graph_dict["Pump_Probe"].destroy_graph()
         self.graph_dict["Pump_Probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
-                                                       figsize=[2,2], data_size= np.transpose(self.trace).shape,cmap='seismic',aspect='auto',vmin=-0.1,vmax=0.1)
-        self.graph_dict["Pump_Probe"].change_data(np.transpose(self.trace),False)
+                                                       figsize=[2,2], data_size= np.transpose(trace).shape,cmap='seismic',aspect='auto',vmin=-0.1,vmax=0.1)
+        self.graph_dict["Pump_Probe"].change_data(np.transpose(trace),False)
         self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl[-1],self.wl[0]))
         aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl[-1]-self.wl[0]))
         self.graph_dict["Pump_Probe"].axes.set_aspect(aspectRatio)
@@ -4504,17 +4517,17 @@ class PumpProbe:
     def start_experiment(self, min_pos=None, max_pos=None, zero=None, step = None, progress=None, update_time=None,
                          inte_time=None, int_period=None, minwl=None, maxwl=None):
 
-        try:
-            os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()))        
-        except OSError:
-            l=1
-        else:
-            l=0
-
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
         self.running = True
+
+        try:
+            os.mkdir("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()))
+            print('Directory created')
+        except OSError:
+            if not messagebox.askokcancel(title='INFO', message='File Name Already Used\n (Click OK to overwrite files)\n (Click Cancel to abort experiment)'):
+                self.stop_experiment()
 
         # Imports
         from pipython import pitools
@@ -4647,7 +4660,7 @@ class PumpProbe:
             scan_graph.update_graph()
                 #Spectro signal and integrated signal
             spectro_graph.Line.set_xdata(self.wl)
-            spectro_graph.Line.set_ydata(self.spectro_pos[-1])
+            spectro_graph.Line.set_ydata(spectra_pos[-1])
             spectro_graph.update_graph()
 
             self.timeDelay =self.pos_2_delay(zero,self.pos)
@@ -4673,12 +4686,11 @@ class PumpProbe:
         self.data_exist=True
         
 
-
-
     def save_data(self):
-        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\data_dict.npz", self.data_dict)
-        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\pos.npz",self.pos)
-        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\wl.npz",self.wl)
+        np.savez_compressed("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\data_dict.npz", **self.data_dict)
+        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\delay.npz",delay=self.timeDelay, allow_pickle=True)
+        np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\wl.npz",wl=self.wl, allow_pickle=True)
+        messagebox.showinfo(title='Data Saved', message='Data Saved')
 
 
 
