@@ -4278,25 +4278,31 @@ class PumpProbe:
         cons_b = tk.Button(frame, text='Connect spectrometer', command=lambda: connect_and_disable_spectro(self))
         cons_b.grid(row=15, column=0, columnspan=2, sticky='nsew')
         
+        self.align_state=False
+
+        self.align_button = tk.Button(frame, text='Alignment Mode', command=lambda: Alignment_Mode(self))
+        self.align_button.grid(row=16, column=0, columnspan=2, sticky='nsew')
+
+        
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         inte_var = tk.IntVar()
         inte_var.set(1)
         inte_e = tk.Entry(frame, width = 6, textvariable = inte_var)
-        inte_lbl.grid(row=16, column=0, sticky='nsw')
-        inte_e.grid(row=16, column=1,sticky='nse')
+        inte_lbl.grid(row=17, column=0, sticky='nsw')
+        inte_e.grid(row=17, column=1,sticky='nse')
         int_period_lbl = tk.Label(frame, text = 'Integration period (ms):')
-        int_period_var = tk.IntVar()
-        int_period_var.set(1000)
-        int_period_e = tk.Entry(frame, width = 6, textvariable = int_period_var)
-        int_period_lbl.grid(row=17, column=0, sticky='nsw')
-        int_period_e.grid(row=17, column=1,sticky='nse')
+        self.int_period_var = tk.IntVar()
+        self.int_period_var.set(1000)
+        int_period_e = tk.Entry(frame, width = 6, textvariable = self.int_period_var)
+        int_period_lbl.grid(row=18, column=0, sticky='nsw')
+        int_period_e.grid(row=18, column=1,sticky='nse')
 
         
         inte_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(inte_var))
         
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18, 
                                       command=lambda: self.start_experiment(max_pos=self.delay_2_pos(zero_var.get(),max_t_var.get()) , min_pos=self.delay_2_pos(zero_var.get(),min_t_var.get()), zero=zero_var, step=step_t_var.get()*sc.c/(2e12), progress=p_bar, 
-                                                                            update_time=utime_var, inte_time=inte_var, int_period=int_period_var, minwl=minwl_var, maxwl=maxwl_var))
+                                                                            update_time=utime_var, inte_time=inte_var, int_period=self.int_period_var, minwl=minwl_var, maxwl=maxwl_var))
         self.start_button.grid(row=12, column=0, sticky='nsew')
         
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
@@ -4311,29 +4317,29 @@ class PumpProbe:
         
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
                                         command=lambda: self.start_spectro(inte_time=inte_var))
-        self.spectro_start_button.grid(row=18, column=0, sticky='nsew')
+        self.spectro_start_button.grid(row=19, column=0, sticky='nsew')
 
         self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
                                              command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=18, column=1, sticky='nsew')
+        self.spectro_stop_button.grid(row=19, column=1, sticky='nsew')
         
         self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
                            command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=19,column=0,sticky='nsew')
+        self.dark_button.grid(row=20,column=0,sticky='nsew')
         
         self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
                                     command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=19,column=1,sticky='nsew')
+        self.sub_dark_button.grid(row=20,column=1,sticky='nsew')
         
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                         command=lambda: rescale(self))
-        self.rescale_button.grid(row=20,column=0,sticky='nsew')
+        self.rescale_button.grid(row=21,column=0,sticky='nsew')
         
 
       
 
         param_lbl = tk.Label(frame, text = 'Retrieval Algorithm')
-        param_lbl.grid(row=21, column=0, columnspan=2, sticky='nsew')
+        param_lbl.grid(row=22, column=0, columnspan=2, sticky='nsew')
 
 
         minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
@@ -4344,28 +4350,28 @@ class PumpProbe:
         maxwl_var.set(950)
         minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
         maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
-        minwl_lbl.grid(row=22, column=0, sticky='nsw')
-        maxwl_lbl.grid(row=23, column=0, sticky='nsw')
-        minwl_e.grid(row=22, column=1, sticky='nse')
-        maxwl_e.grid(row=23, column=1, sticky='nse')
+        minwl_lbl.grid(row=23, column=0, sticky='nsw')
+        maxwl_lbl.grid(row=24, column=0, sticky='nsw')
+        minwl_e.grid(row=23, column=1, sticky='nse')
+        maxwl_e.grid(row=24, column=1, sticky='nse')
 
         timingWL_lbl = tk.Label(frame, text = 'Timing beam WL (nm)')
-        timingWL_var = tk.DoubleVar()
-        timingWL_var.set(530)
-        timingWL_e = tk.Entry(frame, width = 6, textvariable = timingWL_var)
-        timingWL_lbl.grid(row=24, column=0, sticky='nsw')
-        timingWL_e.grid(row=24, column=1, sticky='nse')
+        self.timingWL_var = tk.DoubleVar()
+        self.timingWL_var.set(530)
+        timingWL_e = tk.Entry(frame, width = 6, textvariable = self.timingWL_var)
+        timingWL_lbl.grid(row=25, column=0, sticky='nsw')
+        timingWL_e.grid(row=25, column=1, sticky='nse')
 
         self.filename_ret_var = tk.StringVar()
         self.filename_ret_var.set(self.filename_var.get())
         filename_ret_e = tk.Entry(frame, width = 18, textvariable = self.filename_ret_var)
         filename_ret_lbl = tk.Label(frame, text = 'Retrieval Filename:')
-        filename_ret_lbl.grid(row=25, column=0, sticky='nsw')
-        filename_ret_e.grid(row=25, column=1, sticky='nse')
+        filename_ret_lbl.grid(row=26, column=0, sticky='nsw')
+        filename_ret_e.grid(row=26, column=1, sticky='nse')
 
 
-        retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=minwl_var.get(),max_wl=maxwl_var.get(),timingWL=timingWL_var.get()))
-        retrieve_b.grid(row=26, column=0, columnspan=2, sticky='nsew')
+        retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=minwl_var.get(),max_wl=maxwl_var.get(),timingWL=self.timingWL_var.get()))
+        retrieve_b.grid(row=27, column=0, columnspan=2, sticky='nsew')
 
         self.data_exist=False
 
@@ -4443,6 +4449,68 @@ class PumpProbe:
         messagebox.showinfo(title='Data Analysis Complete', message='Data Analysis Complete')
         
         return
+
+
+    def Alignment_Mode(self):
+        self.align_state = not self.align_state
+        data_pos=[]
+        wavelength=self.Spectro.spectro.wavelengths()
+        witness=abs(wavelength-self.timingWL.get()) == np.min(abs(wavelength-self.timingWL.get()))
+        while self.align_state == True:
+            
+            start_daq=time.time()
+            while time.time()-start_daq < self.int_period_var.get/1000. :
+                data_pos.append(np.array(self.Spectro.get_intensities()))
+                
+            data_pos=np.array(data_pos)
+            data_pos[data_pos==0]=1
+                                    
+            pump_series=data_pos[:,witness]
+            pump_series-=np.average(pump_series)
+            
+            pump_on=pump_series >= 0.7*max(pump_series)
+            pump_off=pump_series <= 0.7*min(pump_series)
+                        
+            data_on_temporary=[]
+            data_off_temporary=[]
+            
+            data_on=[]
+            data_off=[]
+            
+            for k in range(len(data_pos)-1):
+                if pump_on[k]==True:
+                    data_on_temporary.append(data_pos[k])
+                    if pump_on[k+1]==False:
+                        data_on.append(np.average(data_on_temporary,axis=0))
+                        data_on_temporary=[]
+                elif pump_off[k]==True:
+                    data_off_temporary.append(data_pos[k])
+                    if pump_off[k+1]==False:
+                        data_off.append(np.average(data_off_temporary,axis=0))
+                        data_off_temporary=[]
+            
+            data_on=np.array(data_on)
+            data_off=np.array(data_off)
+            
+            if data_on.shape[0]>data_off.shape[0]:
+                data_on = np.delete(data_on,-1,0)
+            elif data_off.shape[0]>data_on.shape[0]:
+                data_off = np.delete(data_off,-1,0)
+            
+            data_off[data_off==0]=0.001
+            
+            S=np.average((data_on-data_off)/data_off,axis=0)
+            
+            signal_graph = self.graph_dict['Signal']
+            signal_graph.axes.set_ylim([1,-1])
+            signal_graph.axes.set_xlim([np.min(self.wl),np.max(self.wl)])
+            signal_graph.Line.set_xdata(self.wl)
+            signal_graph.Line.set_ydata(S)
+            
+            
+            data_pos=[]            
+
+
 
         
     def start_spectro(self, inte_time=None):
