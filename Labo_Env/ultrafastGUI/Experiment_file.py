@@ -4199,7 +4199,7 @@ class PumpProbe:
         self.vel_disp.set(2)
         min_t_var.set(-100)
         max_t_var.set(1000)
-        zero_var.set(0)
+        zero_var.set(4.225)
         step_t_var.set(200)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
