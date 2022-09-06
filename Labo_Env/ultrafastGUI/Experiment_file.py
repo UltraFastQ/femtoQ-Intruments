@@ -4203,7 +4203,7 @@ class PumpProbe:
         step_t_var.set(200)
         # delay_var.set(-1*self.pos_2_delay(0,step_var.get()/1000))
         # step_var.set(self.delay_2_pos(delay_var.get()))
-        utime_var.set(1)
+        utime_var.set(0.1)
 
         # Define entry boxes
                 # PI stage
@@ -4280,7 +4280,7 @@ class PumpProbe:
         
         self.align_state=False
 
-        self.align_button = tk.Button(frame, text='Alignment Mode', command=lambda: Alignment_Mode(self))
+        self.align_button = tk.Button(frame, text='Alignment Mode', command=lambda: self.Alignment_Mode())
         self.align_button.grid(row=16, column=0, columnspan=2, sticky='nsew')
 
         
@@ -4302,7 +4302,7 @@ class PumpProbe:
         
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18, 
                                       command=lambda: self.start_experiment(max_pos=self.delay_2_pos(zero_var.get(),max_t_var.get()) , min_pos=self.delay_2_pos(zero_var.get(),min_t_var.get()), zero=zero_var, step=step_t_var.get()*sc.c/(2e12), progress=p_bar, 
-                                                                            update_time=utime_var, inte_time=inte_var, int_period=self.int_period_var, minwl=minwl_var, maxwl=maxwl_var))
+                                                                            update_time=utime_var, inte_time=inte_var, int_period=self.int_period_var))
         self.start_button.grid(row=12, column=0, sticky='nsew')
         
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
@@ -4344,12 +4344,12 @@ class PumpProbe:
 
         minwl_lbl = tk.Label(frame, text = 'min wl for integration(nm)')
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration(nm)')
-        minwl_var = tk.DoubleVar()
-        maxwl_var = tk.DoubleVar()
-        minwl_var.set(650)
-        maxwl_var.set(950)
-        minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var)
-        maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var)
+        self.minwl_var = tk.DoubleVar()
+        self.maxwl_var = tk.DoubleVar()
+        self.minwl_var.set(600)
+        self.maxwl_var.set(950)
+        minwl_e = tk.Entry(frame, width = 6, textvariable = self.minwl_var)
+        maxwl_e = tk.Entry(frame, width = 6, textvariable = self.maxwl_var)
         minwl_lbl.grid(row=23, column=0, sticky='nsw')
         maxwl_lbl.grid(row=24, column=0, sticky='nsw')
         minwl_e.grid(row=23, column=1, sticky='nse')
@@ -4357,7 +4357,7 @@ class PumpProbe:
 
         timingWL_lbl = tk.Label(frame, text = 'Timing beam WL (nm)')
         self.timingWL_var = tk.DoubleVar()
-        self.timingWL_var.set(530)
+        self.timingWL_var.set(531)
         timingWL_e = tk.Entry(frame, width = 6, textvariable = self.timingWL_var)
         timingWL_lbl.grid(row=25, column=0, sticky='nsw')
         timingWL_e.grid(row=25, column=1, sticky='nse')
@@ -4370,7 +4370,7 @@ class PumpProbe:
         filename_ret_e.grid(row=26, column=1, sticky='nse')
 
 
-        retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=minwl_var.get(),max_wl=maxwl_var.get(),timingWL=self.timingWL_var.get()))
+        retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=self.minwl_var.get(),max_wl=self.maxwl_var.get(),timingWL=self.timingWL_var.get()))
         retrieve_b.grid(row=27, column=0, columnspan=2, sticky='nsew')
 
         self.data_exist=False
@@ -4378,6 +4378,7 @@ class PumpProbe:
 
 
     def Retrieve_pump_probe(self,min_wl=None,max_wl=None, timingWL=None):
+        from scipy.signal import savgol_filter
         if self.data_exist==False:
 
             if messagebox.askokcancel(title='INFO', message='No current data\n Use file {}'.format(self.filename_ret_var.get())):
@@ -4402,14 +4403,19 @@ class PumpProbe:
         self.timeDelay = delay
         self.wl=wavelength
 
+        signal_graph = self.graph_dict['Signal']
+        signal_graph.Line.set_xdata(wavelength)
+        signal_graph.axes.set_xlim([self.minwl_var.get(),self.maxwl_var.get()])
+        signal_graph.axes.set_ylim([-0.1,0.1])
+
         self.trace = np.zeros((len(delay),wavelength.shape[0]))
         
         for i in range(len(delay)):
             data_pos=data["pos_{}".format(i)]
                         
-            witness=abs(wavelength-timingWL) == np.min(abs(wavelength-timingWL))
+            witness=abs(wavelength-self.timingWL_var.get()) <= 1
                         
-            pump_series=data_pos[:,witness]
+            pump_series=np.average(data_pos[:,witness],axis=1)
             pump_series-=np.average(pump_series)
 
             pump_on=pump_series >= 0.7*max(pump_series)
@@ -4445,7 +4451,16 @@ class PumpProbe:
 
             self.trace[i]=np.average((data_on-data_off)/data_off,axis=0)
             self.adjust_2dgraph(self.trace)
-            
+                        
+            signal_graph.Line.set_ydata(self.trace[i])
+            signal_graph.update_graph()
+
+        self.trace-=savgol_filter(self.trace[0], 15, 2)
+        self.adjust_2dgraph(self.trace)
+
+        signal_graph.Line.set_ydata(self.trace[i])
+        signal_graph.update_graph()
+        
         messagebox.showinfo(title='Data Analysis Complete', message='Data Analysis Complete')
         
         return
@@ -4455,17 +4470,23 @@ class PumpProbe:
         self.align_state = not self.align_state
         data_pos=[]
         wavelength=self.Spectro.spectro.wavelengths()
-        witness=abs(wavelength-self.timingWL.get()) == np.min(abs(wavelength-self.timingWL.get()))
+        witness=abs(wavelength-self.timingWL_var.get()) <= 1
+        
+        signal_graph = self.graph_dict['Signal']
+        signal_graph.Line.set_xdata(wavelength)
+        signal_graph.axes.set_xlim([self.minwl_var.get(),self.maxwl_var.get()])
+        signal_graph.axes.set_ylim([-0.5,0.5])
+
         while self.align_state == True:
-            
+
             start_daq=time.time()
-            while time.time()-start_daq < self.int_period_var.get/1000. :
+            while time.time()-start_daq < self.int_period_var.get()/1000. :
                 data_pos.append(np.array(self.Spectro.get_intensities()))
                 
             data_pos=np.array(data_pos)
             data_pos[data_pos==0]=1
                                     
-            pump_series=data_pos[:,witness]
+            pump_series=np.average(data_pos[:,witness],axis=1)
             pump_series-=np.average(pump_series)
             
             pump_on=pump_series >= 0.7*max(pump_series)
@@ -4501,13 +4522,9 @@ class PumpProbe:
             
             S=np.average((data_on-data_off)/data_off,axis=0)
             
-            signal_graph = self.graph_dict['Signal']
-            signal_graph.axes.set_ylim([1,-1])
-            signal_graph.axes.set_xlim([np.min(self.wl),np.max(self.wl)])
-            signal_graph.Line.set_xdata(self.wl)
             signal_graph.Line.set_ydata(S)
-            
-            
+            signal_graph.update_graph()
+
             data_pos=[]            
 
 
@@ -4565,11 +4582,11 @@ class PumpProbe:
         parent2d = self.graph_dict["Pump_Probe"].parent
         self.graph_dict["Pump_Probe"].destroy_graph()
         self.graph_dict["Pump_Probe"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
-                                                       figsize=[2,2], data_size= np.transpose(trace).shape,cmap='seismic',aspect='auto',vmin=-0.1,vmax=0.1)
+                                                       figsize=[2,2], data_size= np.transpose(trace).shape,cmap='seismic',vmin=-0.05,vmax=0.05)
         self.graph_dict["Pump_Probe"].change_data(np.transpose(trace),False)
-        self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.wl[-1],self.wl[0]))
+        self.graph_dict["Pump_Probe"].im.set_extent((self.timeDelay[0],self.timeDelay[-1],self.minwl_var.get(),self.maxwl_var.get()))
         aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl[-1]-self.wl[0]))
-        self.graph_dict["Pump_Probe"].axes.set_aspect(aspectRatio)
+        self.graph_dict["Pump_Probe"].axes.set_aspect('auto')
         self.graph_dict["Pump_Probe"].axes.set_xlabel('Delay [ps]')
         self.graph_dict["Pump_Probe"].axes.set_ylabel('Wavelengths [nm]')
         cbar = self.graph_dict["Pump_Probe"].Fig.colorbar(self.graph_dict["Pump_Probe"].im)
@@ -4583,7 +4600,7 @@ class PumpProbe:
         self.spectro_start_button['state'] = 'normal'
 
     def start_experiment(self, min_pos=None, max_pos=None, zero=None, step = None, progress=None, update_time=None,
-                         inte_time=None, int_period=None, minwl=None, maxwl=None):
+                         inte_time=None, int_period=None):
 
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
@@ -4632,7 +4649,7 @@ class PumpProbe:
             # Steps and position vector initialisation
         nsteps = int(np.ceil((max_pos - min_pos)/step))
         iteration = np.linspace(0, nsteps, nsteps+1)
-        move = np.linspace(max_pos, min_pos, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
         self.pos = np.zeros(nsteps+1)
 
         self.PI.set_velocity(vel=self.vel_disp)
@@ -4665,8 +4682,6 @@ class PumpProbe:
         spectro_graph.axes.set_xlim([np.min(self.wl),np.max(self.wl)])
         spectro_graph.Line.set_xdata(self.wl)
         spectro_graph.Line.set_ydata(S)
-        minwl = minwl.get()
-        maxwl = maxwl.get()
 
         signal_graph = self.graph_dict['Signal']
         signal_graph.axes.set_ylim([1,-1])
