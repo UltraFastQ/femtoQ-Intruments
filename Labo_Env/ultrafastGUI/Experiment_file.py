@@ -4373,6 +4373,10 @@ class PumpProbe:
         retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=minwl_var.get(),max_wl=maxwl_var.get(),timingWL=self.timingWL_var.get()))
         retrieve_b.grid(row=27, column=0, columnspan=2, sticky='nsew')
 
+        save_trace_b = tk.Button(frame, text='Save Pump-Probe Trace', command=lambda: self.save_trace())
+        save_trace_b.grid(row=28, column=0, columnspan=2, sticky='nsew')
+
+
         self.data_exist=False
 
 
@@ -4759,6 +4763,14 @@ class PumpProbe:
         np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\delay.npz",delay=self.timeDelay, allow_pickle=True)
         np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\wl.npz",wl=self.wl, allow_pickle=True)
         messagebox.showinfo(title='Data Saved', message='Data Saved')
+
+    def save_trace(self):
+        try:
+            self.trace
+            np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_var.get()) + "\trace.npz",trace=self.trace, allow_pickle=True)
+            messagebox.showinfo(title='Data Saved', message='Data Saved')
+        except AttributeError:
+            messagebox.showinfo(title='Trace Error', message='Trace not retrieved yet')
 
 
 
