@@ -1756,6 +1756,7 @@ class SpectroFrame(tk.Frame):
                 self.after(t, self.measure, button, variable, dual_p, average,
                            fwhm)
 
+
 # Frame dispositions for the spectrometer interactions
 class Ueye_Frame(tk.Frame):
     def __init__(self, parent, mainf=None):
