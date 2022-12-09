@@ -4377,14 +4377,29 @@ class PumpProbe:
 
         self.subtract_var = tk.IntVar()
         self.subtract_var.set(1)
-        self.subtract = tk.Checkbutton(frame,text='Subtract negative delay?', variable=self.subtract_var)   
-        self.subtract.grid(row=28, column=0, columnspan=2, sticky='nsew')
+        subtract = tk.Checkbutton(frame,text='Subtract negative delay?', variable=self.subtract_var)   
+        subtract.grid(row=28, column=0, sticky='nsew')
+
+        self.subtract_int_var = tk.IntVar()
+        self.subtract_int_var.set(3)
+        subtract_int = tk.Entry(frame, width=6, textvariable=self.subtract_int_var)   
+        subtract_int.grid(row=28, column=1, sticky='nsew')
+
+        self.g_factor_var = tk.IntVar()
+        self.g_factor_var.set(0)
+        g_factor = tk.Checkbutton(frame,text=r'Apply p(x) Correction, order:', variable=self.g_factor_var)   
+        g_factor.grid(row=29, column=0, sticky='nsew')
+
+        self.g_factor_int_var = tk.IntVar()
+        self.g_factor_int_var.set(5)
+        g_factor_int = tk.Entry(frame, width=6, textvariable=self.g_factor_int_var)   
+        g_factor_int.grid(row=29, column=1, sticky='nsew')
 
         retrieve_b = tk.Button(frame, text='Retrieve Pump-Probe Signal', command=lambda: self.Retrieve_pump_probe(min_wl=self.minwl_var.get(),max_wl=self.maxwl_var.get(),timingWL=self.timingWL_var.get()))
-        retrieve_b.grid(row=29, column=0, columnspan=2, sticky='nsew')
+        retrieve_b.grid(row=30, column=0, columnspan=2, sticky='nsew')
 
         save_trace_b = tk.Button(frame, text='Save Pump-Probe Trace', command=lambda: self.save_trace())
-        save_trace_b.grid(row=30, column=0, columnspan=2, sticky='nsew')
+        save_trace_b.grid(row=31, column=0, columnspan=2, sticky='nsew')
 
 
         self.data_exist=False
@@ -4467,16 +4482,31 @@ class PumpProbe:
                 delta=data_off.shape[0]-data_on.shape[0]
                 data_off = np.delete(data_off,np.arange(-delta,0,1),axis=0)
             
-            data_off[data_off==0]=0.0000001
+            data_off[data_off==0]=1
+            
+            g_x=np.ones([len(data_on),len(wavelength)])
+            
+            if self.g_factor_var.get()==True:
+                wvlt=wavelength[np.r_[274:296,396:791,859:1009]]
+                data_on_factor=data_on[:,np.r_[274:296,396:791,859:1009]]
+                data_off_factor=data_off[:,np.r_[274:296,396:791,859:1009]]
+            
 
-            self.trace[i]=savgol_filter(np.average((data_on-data_off)/data_off,axis=0), 11, 2)
+                for k in range(len(data_on_factor)):
+                    p_x=data_on_factor[k]/data_off_factor[k]
+                    f_x=np.poly1d(np.polyfit(wvlt-700,p_x,self.g_factor_int_var.get()))
+                    g_x[k]=f_x(wavelength-700)
+                        
+            self.trace[i]=savgol_filter(np.average(((data_on/g_x)-(data_off))/(data_off),axis=0), 11, 2)
             self.adjust_2dgraph(self.trace)
                         
             signal_graph.Line.set_ydata(self.trace[i])
             signal_graph.update_graph()
 
+    
+
         if self.subtract_var.get()==True:
-            self.trace-=np.average(self.trace[0:3],axis=0)
+            self.trace-=np.average(self.trace[0:self.subtract_int_var.get()],axis=0)
         self.adjust_2dgraph(self.trace)
 
         signal_graph.Line.set_ydata(self.trace[i])
@@ -4497,7 +4527,7 @@ class PumpProbe:
         signal_graph = self.graph_dict['Signal']
         signal_graph.Line.set_xdata(wavelength)
         signal_graph.axes.set_xlim([self.minwl_var.get(),self.maxwl_var.get()])
-        signal_graph.axes.set_ylim([-0.1,0.1])
+        signal_graph.axes.set_ylim([-0.04,0.04])
 
         while self.align_state == True:
 
@@ -4547,8 +4577,8 @@ class PumpProbe:
             
             S=np.average((data_on-data_off)/data_off,axis=0)
             
-            S_ave=savgol_filter(S, 25, 2)
-            
+            S_ave=savgol_filter(S, 11, 0)
+            # S_ave=S
             
             signal_graph.Line.set_ydata(S_ave)
             signal_graph.update_graph()
@@ -4626,7 +4656,7 @@ class PumpProbe:
 
     def adjust_2dgraph(self,trace):#, step=None):
 
-        logthresh=3
+        logthresh=4
         
         parent2d = self.graph_dict["Pump_Probe"].parent
         self.graph_dict["Pump_Probe"].destroy_graph()
@@ -4853,7 +4883,7 @@ class PumpProbe:
     def save_trace(self):
         try:
             self.trace
-            np.savez("E:\Gabriel\Laser_Cooling_Measurement\_2022-11-23_Test_4_pump875_230uw_znse\trace.npz", trace=self.trace, allow_pickle=True)
+            np.savez("E:\Gabriel\Laser_Cooling_Measurement\_" + str(self.filename_ret_var.get()) + "\trace.npz", trace=self.trace, allow_pickle=True)
             messagebox.showinfo(title='Data Saved', message='Data Saved')
         except AttributeError:
             messagebox.showinfo(title='Trace Error', message='Trace not retrieved yet')
