@@ -6,11 +6,10 @@ Created on Wed Oct 30 11:44:18 2019
 """
 
 import sys
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore,QtWidgets
 import numpy as np
 import pyqtgraph as pg
-import ueyeclass as ueye
-
+import ueyeclassXLE as ueye
 import scipy.optimize as opt
 import os
 import datetime
@@ -19,7 +18,7 @@ import datetime
 
 
 
-class ueye_beam_profiler(QtGui.QWidget):
+class ueye_beam_profiler(QtWidgets.QWidget):
     
     
     def __init__(self, camName, camHandle):
@@ -36,12 +35,13 @@ class ueye_beam_profiler(QtGui.QWidget):
         """ Acquire camera parameters """
         self.camName = camName
         self.camHandle = camHandle
-        self.camExposure = self.camHandle.Exp.value
-        self.camExposureMin = self.camHandle.minExp.value
-        self.camExposureMax = self.camHandle.maxExp.value
-        self.pixelSize = camHandle.pixelSizeMicron
-        self.numberVerticalPixels = self.camHandle.height.value
-        self.numberHorizontalPixels = self.camHandle.width.value
+        self.camExposure = self.camHandle.get_exposure()
+        self.camExposureMin = self.camHandle.get_exposure_min()
+        self.camExposureMax = self.camHandle.get_exposure_max()
+        self.camFPS = self.camHandle.get_framerate()
+        self.pixelSize =  self.camHandle.get_pixelSize()
+        self.numberVerticalPixels = self.camHandle.get_height()
+        self.numberHorizontalPixels = self.camHandle.get_width()
         self.horizontalLength = self.numberHorizontalPixels*self.pixelSize
         self.verticalLength = self.numberVerticalPixels*self.pixelSize
         self.today = str(datetime.date.today())
@@ -51,7 +51,7 @@ class ueye_beam_profiler(QtGui.QWidget):
         """ Settings """
         self.x = np.linspace(0.5,self.numberHorizontalPixels-0.5,self.numberHorizontalPixels)*self.pixelSize
         self.y = np.linspace(0.5,self.numberVerticalPixels-0.5,self.numberVerticalPixels)*self.pixelSize
-        self.X, self.Y = np.meshgrid(self.x,self.y)                                                                                       
+        self.X, self.Y = np.meshgrid(self.x,self.y)
         self.xHighRes = np.linspace(0.5,self.numberHorizontalPixels-0.5,self.numberHorizontalPixels*4)*self.pixelSize
         self.yHighRes = np.linspace(0.5,self.numberVerticalPixels-0.5,self.numberVerticalPixels*4)*self.pixelSize
         self.yRange = [0, 255]
@@ -62,7 +62,7 @@ class ueye_beam_profiler(QtGui.QWidget):
         self.zoomValue = 1
         self.applyZoom = False
         self.maxCounts = 0
-        self.exposureSliderNumberSteps = 50
+        self.exposureSliderNumberSteps = 100
         self.checkBurntRows = False
         self.checkBurntColumns = False
         self.countsThresholdBurntPixels = 50
@@ -125,13 +125,13 @@ class ueye_beam_profiler(QtGui.QWidget):
         """
         
         """ Create window """
-        self.mainbox = QtGui.QWidget()
+        self.mainbox = QtWidgets.QWidget()
         self.setWindowTitle('Ueye laser beam profiler')
         
         """ Add figures as main display """
-        vbox = QtGui.QVBoxLayout(self.mainbox)
-        hbox_0 = QtGui.QHBoxLayout()
-        hbox_1 = QtGui.QHBoxLayout()
+        vbox = QtWidgets.QVBoxLayout(self.mainbox)
+        hbox_0 = QtWidgets.QHBoxLayout()
+        hbox_1 = QtWidgets.QHBoxLayout()
         self.setLayout(vbox)
         self.canvas = pg.GraphicsLayoutWidget()
         vbox.addWidget(self.canvas)
@@ -139,29 +139,29 @@ class ueye_beam_profiler(QtGui.QWidget):
         """ Add controls under main display """
         
         # Exposure time
-        self.label = QtGui.QLabel("Exposure time")
+        self.label = QtWidgets.QLabel("Exposure time")
         self.label.setAlignment(QtCore.Qt.AlignCenter)
-        self.exposureSlider = QtGui.QSlider(QtCore.Qt.Horizontal)
+        self.exposureSlider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.exposureSlider.setMinimum(0)
         self.exposureSlider.setMaximum( self.exposureSliderNumberSteps-1)
         self.exposureSlider.setValue(0)
         self.exposureSlider.setSingleStep(0)
         
         # Burnt pixel detection
-        self.burntcolumnscheckbox = QtGui.QCheckBox("Detect and ignore burnt columns (experimental)")
-        self.burntrowscheckbox = QtGui.QCheckBox("Detect and ignore burnt rows  (experimental)")
+        self.burntcolumnscheckbox = QtWidgets.QCheckBox("Detect and ignore burnt columns (experimental)")
+        self.burntrowscheckbox = QtWidgets.QCheckBox("Detect and ignore burnt rows  (experimental)")
         
         # 
-        self.fitcheckbox = QtGui.QCheckBox("Toggle gaussian fits")
-        self.imagecheckbox = QtGui.QCheckBox("Toggle camera display")
-        self.zoomLabel = QtGui.QLabel("Zoom value: ")
+        self.fitcheckbox = QtWidgets.QCheckBox("Toggle gaussian fits")
+        self.imagecheckbox = QtWidgets.QCheckBox("Toggle camera display")
+        self.zoomLabel = QtWidgets.QLabel("Zoom value: ")
         self.zoomLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.zoomValuetextbox = QtGui.QLineEdit(str(self.zoomValue))
-        self.zoomValuecheckbox = QtGui.QCheckBox("Toggle zoom")
-        self.zoomCentercheckbox = QtGui.QCheckBox("Toggle zoom position update")
+        self.zoomValuetextbox = QtWidgets.QLineEdit(str(self.zoomValue))
+        self.zoomValuecheckbox = QtWidgets.QCheckBox("Toggle zoom")
+        self.zoomCentercheckbox = QtWidgets.QCheckBox("Toggle zoom position update")
         
         
-        self.saveDataButton = QtGui.QPushButton("Save image data")
+        self.saveDataButton = QtWidgets.QPushButton("Save image data")
         
         # Add widgets to gui. Widgets in vbox are stacked vertically, while
         # those in hbox_1 are stacked horizontally
@@ -472,7 +472,11 @@ class ueye_beam_profiler(QtGui.QWidget):
             
         if not todayDataFolderExists:
             os.mkdir(self.saveFolder)
-       
+      
+    def closeEvent(self, event):
+        self.camHandle.disconnect_device()
+        self.timer.stop()
+        event.accept()
     
 
 def connect_camera():
@@ -482,11 +486,12 @@ def connect_camera():
     """
     camHandle = ueye.UeyeCamera()
     
-    names = camHandle.return_devices()
+    devices = camHandle.return_devices()
     
-    camHandle.connect_device(names[0])
+    camHandle.connect_device(devices)
+    camName = devices[0].DisplayName()
 
-    return names[0], camHandle
+    return camName, camHandle
 
 
 
@@ -497,15 +502,18 @@ def main():
     
     """
     
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     app.setApplicationName('Ueye beam profiler')
     
     
     camName, camHandle = connect_camera()
-    
+    camHandle.configure_device('1080p',10)
     ex = ueye_beam_profiler(camName, camHandle)
-    app.exec_()
-    camHandle.disconnect_device()
+    ex.show()    
+    #QtCore.QTimer.singleShot(0, ex.close) # <---
+    sys.exit(app.exec_())
+    #app.exec_()
+    #camHandle.disconnect_device()
 
 
 if __name__ == '__main__':

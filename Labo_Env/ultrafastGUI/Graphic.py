@@ -804,3 +804,6 @@ class TwoDFrame:
         self.axes.set_yscale('linear')
         self.update_graph()
 
+    def imshow_symlog(self, vmin, vmax, cmap='seismic', aspect=1, logthresh=5):
+        
+        self.im = self.axes.imshow(self.data, cmap=cmap, aspect=aspect, norm=matplotlib.colors.SymLogNorm(10**-logthresh) )
