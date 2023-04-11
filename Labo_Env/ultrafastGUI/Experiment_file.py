@@ -18,7 +18,6 @@ import zhinst.utils
 from _horiba_ihr import HoribaIHR320
 import femtoQ.pulse_retrieval as fqpr
 from class_NanoPZ import NanoPZ
-import instrumental.drivers.spectrometers.thorlabs_ccs as ccscode
 from pylablib.devices import Thorlabs
 
 
@@ -6946,6 +6945,7 @@ class FROG_DFC:
             self.stage.move_by(rel_pos)
         
         def connect_spectrometer(self):
+            import instrumental.drivers.spectrometers.thorlabs_ccs as ccscode
             self.Spectro = ccscode.CCS()
             self.spectro_start_button['state'] = 'normal'
             self.cons_b['state'] = 'disabled'
