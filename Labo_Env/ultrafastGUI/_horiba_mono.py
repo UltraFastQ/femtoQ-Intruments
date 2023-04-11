@@ -62,11 +62,11 @@ class HoribaMono(HasTurret, IsHomeable, HasLimits, HasPosition, IsDaemon):
         self._units = "nm"
         
         try:
-            turret_i = loadtxt("C:/Users/UltrafastQ/Anaconda3/Lib/site-packages/yaqd_horiba/turret.txt",unpack=True)
+            turret_i = loadtxt("C:/Users/gabri/anaconda3/Lib/site-packages/yaqd_horiba/turret.txt",unpack=True)
         except:
             print("Manually check what is the ihr320's current grating;\n insert 0 for the 600 grooves/mm grating,\n 1 for the 150 grooves/mm grating or\n 2 for the 120 grooves/mm grating")
             turret_i = input("Grating index: ")
-            my_file = open("C:/Users/UltrafastQ/Anaconda3/Lib/site-packages/yaqd_horiba/turret.txt", "w")
+            my_file = open("C:/Users/gabri/anaconda3/Lib/site-packages/yaqd_horiba/turret.txt", "w")
             my_file.write(f'{turret_i}')
             my_file.close()
             
@@ -166,7 +166,7 @@ class HoribaMono(HasTurret, IsHomeable, HasLimits, HasPosition, IsDaemon):
         print(message2)
         
         if modifyTurret:
-            my_file = open("C:/Users/UltrafastQ/Anaconda3\Lib/site-packages\/yaqd_horiba/turret.txt", "w")
+            my_file = open("C:/Users/gabri/anaconda3/Lib/site-packages/yaqd_horiba/turret.txt", "w")
             my_file.write(f'{turret_i}')
             my_file.close()
         

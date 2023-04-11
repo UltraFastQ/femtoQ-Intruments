@@ -1756,7 +1756,6 @@ class SpectroFrame(tk.Frame):
                 self.after(t, self.measure, button, variable, dual_p, average,
                            fwhm)
 
-
 # Frame dispositions for the spectrometer interactions
 class Ueye_Frame(tk.Frame):
     def __init__(self, parent, mainf=None):
@@ -1897,7 +1896,6 @@ class Ueye_Frame(tk.Frame):
                 average, fwhm, click=False):
         return
         if not self.Spectro.spectro:
-            
             return
 
         try:
@@ -2022,7 +2020,21 @@ class Experiment(ttk.LabelFrame):
                       graph={'Spectro': ['Wavelength', 'Intensity'],
                              'D-Scan trace':['Wavelengths [nm]','Dispersion Length [mm]'],
                              'Retrieved pulse (time)':['Time [fs]','Normalized power'],
-                             'Retrieved pulse (frequency)':['Frequency [THz]','Normalized power density']})        
+                             'Retrieved pulse (frequency)':['Frequency [THz]','Normalized power density']})   
+        create_layout(name='FROG MaiTai', function_=Experiment_file.FROG_MaiTai, option=[],
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
+                             'FROG trace': ['Wavelengths [nm]', 'Delay [fs]'], 
+                             'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]'],
+                             'Autocorrelation':['Delay [fs]','Normalized intensity'],
+                             'Retrieved pulse (time)':['Time [fs]','Normalized power'],
+                             'Retrieved pulse (frequency)':['Frequency [THz]','Normalized power density']})
+        create_layout(name='FROG DFC', function_=Experiment_file.FROG_DFC, option=[],
+                      graph={'Scanning': ['Step number', 'Measured stage position [mm]'],
+                             'FROG trace': ['Wavelengths [nm]', 'Delay [fs]'], 
+                             'Spectrometer': ['Wavelengths [nm]', 'Intensity [arb.u.]'],
+                             'Autocorrelation':['Delay [fs]','Normalized intensity'],
+                             'Retrieved pulse (time)':['Time [fs]','Normalized power'],
+                             'Retrieved pulse (frequency)':['Frequency [THz]','Normalized power density']})
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):
