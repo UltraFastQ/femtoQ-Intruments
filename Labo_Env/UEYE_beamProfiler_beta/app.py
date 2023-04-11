@@ -10,7 +10,6 @@ from PyQt5 import QtGui, QtCore
 import numpy as np
 import pyqtgraph as pg
 import ueyeclass as ueye
-
 import scipy.optimize as opt
 import os
 import datetime
