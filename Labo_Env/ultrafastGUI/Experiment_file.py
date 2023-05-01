@@ -6977,6 +6977,7 @@ class FROG_DFC:
             self.max_e['state'] = 'normal'
             self.step_e['state'] = 'normal'
             self.utime_e['state'] = 'normal'
+            self.nb_s_e['state'] = 'normal'
             if self.Spectro != None:
                 self.start_button['state'] = 'normal'
             
@@ -7000,6 +7001,7 @@ class FROG_DFC:
         max_lbl = tk.Label(frame, text = 'Max. pos. (um):')
         step_lbl = tk.Label(frame, text = 'Step size (um):')
         utime_lbl = tk.Label(frame, text='Update graph after (s):')
+        nb_s_lbl = tk.Label(frame, text='Spectra per delay:')
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         minwl_lbl = tk.Label(frame, text = 'min wl for integration (nm)')
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration (nm)')
@@ -7012,6 +7014,7 @@ class FROG_DFC:
         max_var = tk.DoubleVar()
         step_var = tk.DoubleVar()
         utime_var = tk.IntVar()
+        nb_s_var = tk.IntVar()
         inte_var = tk.IntVar()
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
@@ -7019,10 +7022,11 @@ class FROG_DFC:
         
         pos_var.set(0)
         posr_var.set(0)
-        min_var.set(-40)
-        max_var.set(40)
+        min_var.set(-250)
+        max_var.set(250)
         step_var.set(1)
         utime_var.set(1)
+        nb_s_var.set(1)
         inte_var.set(5)
         minwl_var.set(700)
         maxwl_var.set(850)
@@ -7035,6 +7039,7 @@ class FROG_DFC:
         self.max_e = tk.Entry(frame, width = 6, textvariable = max_var,state = 'disabled')
         self.step_e = tk.Entry(frame, width = 6, textvariable = step_var,state = 'disabled')
         self.utime_e = tk.Entry(frame, width = 6, textvariable = utime_var,state = 'disabled')
+        self.nb_s_e = tk.Entry(frame, width = 6, textvariable = nb_s_var,state = 'disabled')
         self.inte_e = tk.Entry(frame, width = 6, textvariable = inte_var,state = 'disabled')
         self.minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var,state = 'disabled')
         self.maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var,state = 'disabled')
@@ -7060,7 +7065,7 @@ class FROG_DFC:
                                              command=lambda: self.stop_spectro())
         self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
                                       command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
-                                            inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var))
+                                            inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var,nb_s=nb_s_var))
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
 
@@ -7092,23 +7097,25 @@ class FROG_DFC:
         self.step_e.grid(row=8, column=1, sticky='nse')
         utime_lbl.grid(row=9, column=0, sticky='nsw')
         self.utime_e.grid(row=9, column=1, sticky='nse')
-        self.start_button.grid(row=10, column=0, columnspan=2, sticky='nsew')
-        p_bar.grid(row=11, column=0, sticky='nsew', columnspan=2)
-        self.stop_button.grid(row=12, column=0, columnspan=2, sticky='nsew')
-        self.cons_b.grid(row=13, column=0, columnspan=2, sticky='nsew')
-        inte_lbl.grid(row=14, column=0, sticky='nsw')
-        self.inte_e.grid(row=14, column=1,sticky='nse')
-        minwl_lbl.grid(row=15, column=0, sticky='nsw')
-        self.minwl_e.grid(row=15, column=1, sticky='nse')
-        maxwl_lbl.grid(row=16, column=0, sticky='nsw')
-        self.maxwl_e.grid(row=16, column=1, sticky='nse')
-        self.spectro_start_button.grid(row=17, column=0, sticky='nsew')
-        self.spectro_stop_button.grid(row=18, column=0, sticky='nsew')
-        self.get_dark_button.grid(row=19,column=0,sticky='nsew')
-        self.rescale_button.grid(row=20,column=0,sticky='nsew')
-        self.save_button.grid(row=21,column=0,sticky='nsew')
-        autocorr_lbl.grid(row=22, column=0, sticky='nsw')
-        self.autocorr_e.grid(row=22, column=1, sticky='nse')        
+        nb_s_lbl.grid(row=10, column=0, sticky='nsw')
+        self.nb_s_e.grid(row=10, column=1, sticky='nse')
+        self.start_button.grid(row=11, column=0, columnspan=2, sticky='nsew')
+        p_bar.grid(row=12, column=0, sticky='nsew', columnspan=2)
+        self.stop_button.grid(row=13, column=0, columnspan=2, sticky='nsew')
+        self.cons_b.grid(row=14, column=0, columnspan=2, sticky='nsew')
+        inte_lbl.grid(row=15, column=0, sticky='nsw')
+        self.inte_e.grid(row=15, column=1,sticky='nse')
+        minwl_lbl.grid(row=16, column=0, sticky='nsw')
+        self.minwl_e.grid(row=16, column=1, sticky='nse')
+        maxwl_lbl.grid(row=17, column=0, sticky='nsw')
+        self.maxwl_e.grid(row=17, column=1, sticky='nse')
+        self.spectro_start_button.grid(row=18, column=0, sticky='nsew')
+        self.spectro_stop_button.grid(row=19, column=0, sticky='nsew')
+        self.get_dark_button.grid(row=20,column=0,sticky='nsew')
+        self.rescale_button.grid(row=21,column=0,sticky='nsew')
+        self.save_button.grid(row=22,column=0,sticky='nsew')
+        autocorr_lbl.grid(row=23, column=0, sticky='nsw')
+        self.autocorr_e.grid(row=23, column=1, sticky='nse')        
 
     def adjust_2dgraph(self):#, step=None):
 
@@ -7136,6 +7143,7 @@ class FROG_DFC:
         self.spectro_start_button['state'] = 'disabled'
         self.start_button['state'] = 'disabled'
         self.inte_e["state"] = "disabled"
+        self.nb_s_e["state"] = "normal"
         
         self.running = True
         
@@ -7191,7 +7199,7 @@ class FROG_DFC:
         self.spectro_start_button['state'] = 'normal'
 
     def start_experiment(self, min_pos=None, max_pos=None, step = None, progress=None, update_time=None,
-                         inte_time=None, minwl=None, maxwl=None):
+                         inte_time=None, minwl=None, maxwl=None,nb_s=None):
 
         self.save_button['state'] = 'disabled'
         self.stop_button['state'] = 'normal'
@@ -7207,6 +7215,7 @@ class FROG_DFC:
         min_pos = min_pos.get()
         step = step.get()
         update_time = update_time.get()
+        nb_s = nb_s.get()
         
         # Steps and position vector initialisation
         nsteps = int(np.ceil((max_pos - min_pos)/step))
@@ -7245,21 +7254,43 @@ class FROG_DFC:
         self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
         self.trace = np.zeros((nsteps+1,self.wl_crop.shape[0]))
         
-            # Main scanning and measurements
+        # initial displacement to min_pos if not there already
+        if self.stage.get_position()/34.555 != min_pos:
+            self.stage.move_to(min_pos*34.555)
+            time.sleep(2)
+        
+        # Main scanning and measurements
         for i in range(nsteps+1):
+            
             # Move stage to required position
             self.stage.move_to(move[i]*34.555)
             time.sleep(1)
             # Measure real position
             pos[i] = self.stage.get_position()/34.555
             
-            # Acquire spectrum and plot graph 
-            wl = self.Spectro._wavelength_array
-            self.Spectro.start_single_scan()
-            S = self.Spectro.get_scan_data() - self.background
+            # sum of nb_s spectra at same delay
+            nb_si=0
+            S = None
             
+            while nb_si != nb_s:
+                if nb_si != 0:
+                    time.sleep(0.2) # temps entre mesures à ajuster
+                # Acquire spectrum and plot graph 
+                wl = self.Spectro._wavelength_array
+                
+                if S == None:
+                    self.Spectro.start_single_scan()
+                    S = self.Spectro.get_scan_data() - self.background
+                else: 
+                    self.Spectro.start_single_scan()
+                    # verifier si addition de spectres fonctionne
+                    S += self.Spectro.get_scan_data() - self.background
+                
+                nb_si += 1
+                
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
+            S_crop = S_crop/max(S_crop)
             Si[i] = np.trapz(S_crop,wl_crop) 
             self.trace[i] = S_crop
             
@@ -7274,7 +7305,7 @@ class FROG_DFC:
                 scan_graph.update_graph()
                 #Spectro signal and integrated signal
                 spectro_graph.Line.set_xdata(wl)
-                spectro_graph.Line.set_ydata(S)
+                spectro_graph.Line.set_ydata(S/nb_s) # a verifier
                 spectro_graph.update_graph()
                 Signal_graph.Line.set_xdata(2*pos[:i]*1e-6/299792458*1e15)
                 Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
