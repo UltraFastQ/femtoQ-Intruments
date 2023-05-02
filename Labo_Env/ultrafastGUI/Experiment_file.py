@@ -7238,7 +7238,11 @@ class FROG_DFC:
         # Spectro
         wl = self.Spectro._wavelength_array
         self.Spectro.start_single_scan()
-        S = self.Spectro.get_scan_data()- self.background
+        try:
+            S = self.Spectro.get_scan_data()- self.background
+        except:
+                S = self.Spectro.get_scan_data()
+                
         self.Spectro.set_integration_time(str(inte_time.get()/1000)+"s")
         spectro_graph = self.graph_dict['Spectrometer']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)])
@@ -7268,9 +7272,19 @@ class FROG_DFC:
             # Measure real position
             pos[i] = self.stage.get_position()/34.555
             
+            """
+            wl = self.Spectro._wavelength_array
+            self.Spectro.start_single_scan()
+            try:
+                S = self.Spectro.get_scan_data()- self.background
+            except:
+                    S = self.Spectro.get_scan_data()
+            """
+            
+            
             # sum of nb_s spectra at same delay
             nb_si=0
-            S = None
+            S = S*0
             
             while nb_si != nb_s:
                 if nb_si != 0:
@@ -7278,19 +7292,25 @@ class FROG_DFC:
                 # Acquire spectrum and plot graph 
                 wl = self.Spectro._wavelength_array
                 
-                if S == None:
+                if S.all() == 0:
                     self.Spectro.start_single_scan()
-                    S = self.Spectro.get_scan_data() - self.background
+                    try:
+                        S = self.Spectro.get_scan_data()- self.background
+                    except:
+                            S = self.Spectro.get_scan_data()
                 else: 
                     self.Spectro.start_single_scan()
                     # verifier si addition de spectres fonctionne
-                    S += self.Spectro.get_scan_data() - self.background
+                    try:
+                        S += self.Spectro.get_scan_data()- self.background
+                    except:
+                            S += self.Spectro.get_scan_data()
                 
                 nb_si += 1
-                
+            
+            #S = S/max(S)
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
-            S_crop = S_crop/max(S_crop)
             Si[i] = np.trapz(S_crop,wl_crop) 
             self.trace[i] = S_crop
             
@@ -7305,7 +7325,8 @@ class FROG_DFC:
                 scan_graph.update_graph()
                 #Spectro signal and integrated signal
                 spectro_graph.Line.set_xdata(wl)
-                spectro_graph.Line.set_ydata(S/nb_s) # a verifier
+                spectro_graph.Line.set_ydata(S/np.max(S))
+                #spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
                 spectro_graph.update_graph()
                 Signal_graph.Line.set_xdata(2*pos[:i]*1e-6/299792458*1e15)
                 Signal_graph.Line.set_ydata(Si[:i]/np.max(Si))
