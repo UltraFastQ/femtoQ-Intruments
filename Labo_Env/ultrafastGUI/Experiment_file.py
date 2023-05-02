@@ -7073,7 +7073,8 @@ class FROG_DFC:
                                        command=lambda: rescale(self)) 
         
         self.save_button = tk.Button(frame, text='Save trace', state='disabled',width=18,
-                                        command=lambda: self.save())
+                                        command=lambda: self.save(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
+                                              inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var,nb_s=nb_s_var))
         
         # Values sent to devices and their action
         self.pos_e.bind('<Return>', lambda e: self.stage.move_to(pos_var.get()*34.555))
@@ -7184,11 +7185,12 @@ class FROG_DFC:
         
         
         
-    def save(self):
+    def save(self,max_pos=None, min_pos=None, step=None, progress=None, update_time=None,
+          inte_time=None, minwl=None, maxwl=None,nb_s=None,laser=None):
         
-        
+        laser = "_Slave"
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(timeStamp+'_FROG_trace_pythonformat',wavelengths = self.wl_crop,time = self.timeDelay,trace = self.trace)
+        np.savez(timeStamp+'_FROG_trace_pythonformat'+laser+'_pm'+str(f"{max_pos.get()}")+"um_"+str(f"{step.get()}")+"um_"+str(f"{inte_time.get()}")+"ms_"+str(f"{nb_s.get()}")+"spectra_per_delay",wavelengths = self.wl_crop,time = self.timeDelay,trace = self.trace)
         
         #np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_M.dat', self.trace, fmt='%.18e', delimiter='\t', newline='\n')       
         #np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_L.dat', self.wl_crop, fmt='%.18e', delimiter='\t', newline='\n')  
@@ -7284,30 +7286,28 @@ class FROG_DFC:
             
             # sum of nb_s spectra at same delay
             nb_si=0
-            S = S*0
-            
+
             while nb_si != nb_s:
                 if nb_si != 0:
                     time.sleep(0.2) # temps entre mesures à ajuster
-                # Acquire spectrum and plot graph 
-                wl = self.Spectro._wavelength_array
-                
-                if S.all() == 0:
+                    
+                    wl = self.Spectro._wavelength_array
+                    self.Spectro.start_single_scan()
+                    try:
+                        S += self.Spectro.get_scan_data()- self.background
+                    except:
+                            S += self.Spectro.get_scan_data()
+                else: 
+                    wl = self.Spectro._wavelength_array
                     self.Spectro.start_single_scan()
                     try:
                         S = self.Spectro.get_scan_data()- self.background
                     except:
                             S = self.Spectro.get_scan_data()
-                else: 
-                    self.Spectro.start_single_scan()
-                    # verifier si addition de spectres fonctionne
-                    try:
-                        S += self.Spectro.get_scan_data()- self.background
-                    except:
-                            S += self.Spectro.get_scan_data()
                 
                 nb_si += 1
-            
+                
+            # Acquire spectrum and plot graph
             #S = S/max(S)
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
@@ -7336,9 +7336,13 @@ class FROG_DFC:
             if not self.running:
                 break       
         if not self.running:
+            self.stage.move_to(0)
+            time.sleep(2)
             self.stage.stop()
             messagebox.showinfo(title='Error', message='Experiment was aborted')
         else:
+            self.stage.move_to(0)
+            time.sleep(2)
             self.stage.stop()
             scan_graph.Line.set_xdata(iteration)
             scan_graph.Line.set_ydata(pos)
