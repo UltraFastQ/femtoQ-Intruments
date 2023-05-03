@@ -6936,6 +6936,7 @@ class FROG_DFC:
         self.stage = None
         self.background = []
         
+        
     def create_frame(self, frame):
         """
         The frame is created here, i.e. the labels, boxes and buttons are
@@ -6984,6 +6985,19 @@ class FROG_DFC:
         def get_dark_spectrum(self):
             self.background = self.Spectro.get_scan_data()
 
+        def lasers(self,laser): 
+            if laser == "Master":
+                self.master_b['state'] = 'disabled'
+                self.slave_b['state'] = 'normal'
+                print(laser)
+            else:
+                self.slave_b['state'] = 'disabled'
+                self.master_b['state'] = 'normal'
+                print(laser)
+                
+            self.laser_var.set(laser)
+            
+
         def rescale(self):
             try:
                 S = self.Spectro.get_scan_data()-self.background
@@ -7005,7 +7019,8 @@ class FROG_DFC:
         inte_lbl = tk.Label(frame, text = 'Integration time (ms):')
         minwl_lbl = tk.Label(frame, text = 'min wl for integration (nm)')
         maxwl_lbl = tk.Label(frame, text = 'max wl for integration (nm)')
-        autocorr_lbl = tk.Label(frame, text = 'Autocorrelation FWHM (fs)')                      
+        autocorr_lbl = tk.Label(frame, text = 'Autocorrelation FWHM (fs)')
+        laser_lbl = tk.Label(frame, text = 'Which laser?')  
                 
         # Define variables
         pos_var = tk.DoubleVar()
@@ -7019,7 +7034,8 @@ class FROG_DFC:
         minwl_var = tk.DoubleVar()
         maxwl_var = tk.DoubleVar()
         self.autocorr_var = tk.DoubleVar()
-        
+        self.laser_var = tk.StringVar()
+
         pos_var.set(0)
         posr_var.set(0)
         min_var.set(-250)
@@ -7031,6 +7047,7 @@ class FROG_DFC:
         minwl_var.set(700)
         maxwl_var.set(850)
         self.autocorr_var.set(0)
+        self.laser_var.set("None")
         
         # Define entry boxes
         self.pos_e = tk.Entry(frame, width = 6, textvariable = pos_var,state = 'disabled')
@@ -7044,6 +7061,7 @@ class FROG_DFC:
         self.minwl_e = tk.Entry(frame, width = 6, textvariable = minwl_var,state = 'disabled')
         self.maxwl_e = tk.Entry(frame, width = 6, textvariable = maxwl_var,state = 'disabled')
         self.autocorr_e = tk.Entry(frame, width = 6, textvariable = self.autocorr_var, state = 'disabled')
+        self.laser_e = tk.Entry(frame, width = 6, textvariable = self.laser_var, state = 'disabled')
         
         p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
         p_bar['maximum'] = 1
@@ -7072,9 +7090,14 @@ class FROG_DFC:
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                        command=lambda: rescale(self)) 
         
+        self.master_b = tk.Button(frame, text='Master', state='normal',width=18,
+                                       command=lambda: lasers(self,"Master"))
+        self.slave_b = tk.Button(frame, text='Slave', state='normal',width=18,
+                                       command=lambda: lasers(self,"Slave"))
+        
         self.save_button = tk.Button(frame, text='Save trace', state='disabled',width=18,
                                         command=lambda: self.save(max_pos=max_var, min_pos=min_var, step=step_var, progress=p_bar, update_time=utime_var,
-                                              inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var,nb_s=nb_s_var))
+                                              inte_time=inte_var, minwl=minwl_var, maxwl=maxwl_var,nb_s=nb_s_var,laser=self.laser_var))
         
         # Values sent to devices and their action
         self.pos_e.bind('<Return>', lambda e: self.stage.move_to(pos_var.get()*34.555))
@@ -7114,9 +7137,14 @@ class FROG_DFC:
         self.spectro_stop_button.grid(row=19, column=0, sticky='nsew')
         self.get_dark_button.grid(row=20,column=0,sticky='nsew')
         self.rescale_button.grid(row=21,column=0,sticky='nsew')
-        self.save_button.grid(row=22,column=0,sticky='nsew')
-        autocorr_lbl.grid(row=23, column=0, sticky='nsw')
-        self.autocorr_e.grid(row=23, column=1, sticky='nse')        
+        laser_lbl.grid(row=22, column=0, columnspan=1, sticky='nsew') 
+        self.laser_e.grid(row=22, column=1, sticky='nse')
+        self.master_b.grid(row=23, column=0, columnspan=1, sticky='nsew')     
+        self.slave_b.grid(row=24, column=0, columnspan=1, sticky='nsew')
+        self.save_button.grid(row=25,column=0,sticky='nsew')
+        autocorr_lbl.grid(row=26, column=0, sticky='nsw')
+        self.autocorr_e.grid(row=26, column=1, sticky='nse')
+        
 
     def adjust_2dgraph(self):#, step=None):
 
@@ -7170,8 +7198,7 @@ class FROG_DFC:
             spectro_graph.Line.set_ydata(S)     
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)
-            spectro_graph.update_graph()
-        
+            spectro_graph.update_graph()    
         
     def stop_spectro(self):
         self.running = False
@@ -7181,16 +7208,13 @@ class FROG_DFC:
         self.spectro_start_button['state'] = 'normal'
         self.inte_e["state"] = "normal"
         if self.stage != None:
-            self.start_button['state'] = 'normal'
-        
-        
+            self.start_button['state'] = 'normal'   
         
     def save(self,max_pos=None, min_pos=None, step=None, progress=None, update_time=None,
           inte_time=None, minwl=None, maxwl=None,nb_s=None,laser=None):
-        
-        laser = "_Slave"
+
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez(timeStamp+'_FROG_trace_pythonformat'+laser+'_pm'+str(f"{max_pos.get()}")+"um_"+str(f"{step.get()}")+"um_"+str(f"{inte_time.get()}")+"ms_"+str(f"{nb_s.get()}")+"spectra_per_delay",wavelengths = self.wl_crop,time = self.timeDelay,trace = self.trace)
+        np.savez(timeStamp+'_FROG_trace_pythonformat'+str(f"{laser.get()}")+'_pm'+str(f"{max_pos.get()}")+"um_"+str(f"{step.get()}")+"um_"+str(f"{inte_time.get()}")+"ms_"+str(f"{nb_s.get()}")+"spectra_per_delay",wavelengths = self.wl_crop,time = self.timeDelay,trace = self.trace)
         
         #np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_M.dat', self.trace, fmt='%.18e', delimiter='\t', newline='\n')       
         #np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_L.dat', self.wl_crop, fmt='%.18e', delimiter='\t', newline='\n')  
