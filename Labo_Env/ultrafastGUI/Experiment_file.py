@@ -6989,11 +6989,9 @@ class FROG_DFC:
             if laser == "Master":
                 self.master_b['state'] = 'disabled'
                 self.slave_b['state'] = 'normal'
-                print(laser)
             else:
                 self.slave_b['state'] = 'disabled'
                 self.master_b['state'] = 'normal'
-                print(laser)
                 
             self.laser_var.set(laser)
             
