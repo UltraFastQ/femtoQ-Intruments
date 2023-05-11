@@ -7041,9 +7041,9 @@ class FROG_DFC:
         step_var.set(1)
         utime_var.set(1)
         nb_s_var.set(1)
-        inte_var.set(5)
-        minwl_var.set(700)
-        maxwl_var.set(850)
+        inte_var.set(85)
+        minwl_var.set(650)
+        maxwl_var.set(900)
         self.autocorr_var.set(0)
         self.laser_var.set("None")
         
@@ -7292,7 +7292,7 @@ class FROG_DFC:
             
             # Move stage to required position
             self.stage.move_to(move[i]*34.555)
-            time.sleep(1)
+            time.sleep(0.5)
             # Measure real position
             pos[i] = self.stage.get_position()/34.555
             
