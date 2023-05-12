@@ -7292,7 +7292,7 @@ class FROG_DFC:
             
             # Move stage to required position
             self.stage.move_to(move[i]*34.555)
-            time.sleep(0.5)
+            time.sleep(0.2)
             # Measure real position
             pos[i] = self.stage.get_position()/34.555
             
@@ -7311,7 +7311,7 @@ class FROG_DFC:
 
             while nb_si != nb_s:
                 if nb_si != 0:
-                    time.sleep(0.2) # temps entre mesures à ajuster
+                    time.sleep(0.1) # temps entre mesures à ajuster
                     
                     wl = self.Spectro._wavelength_array
                     self.Spectro.start_single_scan()
