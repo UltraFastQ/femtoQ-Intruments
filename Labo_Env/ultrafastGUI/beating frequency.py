@@ -12,53 +12,66 @@ import csv
 plt.close("all")
 pi = np.pi
 
-# see number of csv file in ...... file
-nfiles = 5 #exemple
+def droite(x,a,b):
+    return (1e6*a*x/30-b*1e6)/1e3
 
-i =0
-fBNC = np.zeros(nfiles)
-while i != nfiles:
-    data = "C:/Users/milio/OneDrive/Documents/Maitrise/MokuPro et Frequency Counter/bnc_beat_stabilized_3.csv"
-    if "stabilized" in data:
+#beat = np.arange(2.999970,2.999978,0.000001)
+#beat = np.concatenate((beat,np.arange(2.999980,3.000046,0.000002)))
+#beat = np.concatenate((beat,np.arange(3.000047,3.000052,0.000001)))
+#beat = np.concatenate((beat,np.arange(3.000054,3.000067,0.000002)))
+
+beat = np.arange(3,3.000046,0.000002)
+beat = np.concatenate((beat,np.arange(3.000047,3.000052,0.000001)))
+beat = np.concatenate((beat,np.arange(3.000054,3.000067,0.000002)))
+freps = np.zeros(len(beat))
+frepstds = np.zeros(len(beat))
+
+
+for i in range(len(beat)):
+    data = "D:/bnc_"+str(round(beat[i],6))+"ghz.csv"
+
+    if "bnc" in data:
+        delimiter = ","
+        comments = "Time"
+        datas = np.genfromtxt(data,delimiter=delimiter,comments=comments)
+        times = 0.1*np.linspace(0,len(datas[:,0]),len(datas[:,0]))
+        frepsd = datas[:,1]/1000
+        frepstds[i] = np.std(frepsd)
+        freps[i] = np.mean(frepsd)
+        xlim1 = times[-1]
+        xlim2 = 2
+        yliml = "Number of Events in "+str(np.round(times[-1]/60,2))+" Minutes"
+
         
-        fBNCi = data.lstrip('C:/Users/milio/OneDrive/Documents/Maitrise/MokuPro et Frequency Counter/bnc_beat_stabilized_')
-        fBNCi = fBNCi.rstrip('.csv')
-        fBNC[i] = float(fBNCi)
-    i+=1
+        
+        
+        """
+        plt.figure()
+        plt.plot(times,frepsd,color="black",alpha=0.9)
+        #plt.plot(np.array([times[0],times[-1]]),np.array([frepstds,frepstds])+frepmeans,"--",label=r"$+\sigma$",linewidth=2,color="red")
+        #plt.plot(np.array([times[0],times[-1]]),np.array([-frepstds,-frepstds])+frepmeans,"--",label=r"$-\sigma$",linewidth=2,color="green")
+        plt.ylabel(r"Repetition Rate Variation $\delta f_{rep}$ [Hz]")
+        plt.xlabel("Time [s]")
+        plt.xlim(0,xlim1)
+        plt.legend()
+        plt.show()
+        """
 
 
-
-
-if "bnc" in data:
-    delimiter = ","
-    comments = "Time"
-    datas = np.genfromtxt(data,delimiter=delimiter,comments=comments)
-    times = 0.1*np.linspace(0,len(datas[:,0]),len(datas[:,0]))
-    freps = datas[:,1]
-    frepstds = np.std(freps)
-    frepmeans = np.mean(freps)
-    xlim1 = times[-1]
-    xlim2 = 2
-    yliml = "Number of Events in "+str(np.round(times[-1]/3600,2))+" Hours"
-
-
+popt,pcov = curve_fit(droite,beat[:-2],freps[:-2])
+xfit = np.arange(2.999992,3.000070,0.0000001)
+perr = np.sqrt(np.diag(pcov))
+print(popt)
+print(perr)
 
 plt.figure()
-plt.plot(times,freps,color="black",alpha=0.9)
-plt.plot(np.array([times[0],times[-1]]),np.array([frepstds,frepstds])+frepmeans,"--",label=r"$+\sigma$",linewidth=2,color="red")
-plt.plot(np.array([times[0],times[-1]]),np.array([-frepstds,-frepstds])+frepmeans,"--",label=r"$-\sigma$",linewidth=2,color="green")
-plt.ylabel(r"Repetition Rate Variation $\delta f_{rep}$ [Hz]")
-plt.xlabel("Time [s]")
-plt.xlim(0,xlim1)
-plt.legend()
+plt.plot(beat,freps,".")
+plt.errorbar(beat, freps, yerr=frepstds,fmt="none")
+plt.plot(xfit,droite(xfit,popt[0],popt[1]))
+plt.grid(alpha=0.5)
+plt.xlabel("Input Frequency at BNC [GHz]")
+plt.ylabel("Beat Frequency at Frequency Counter [kHz]")
 plt.show()
-
-
-
-
-
-
-
 
 
 
