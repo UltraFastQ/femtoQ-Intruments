@@ -24,7 +24,7 @@ frep = 100e6
 dfrep = 100
 N = frep/dfrep+1
 fsync =  N*frep
-print(fsync)
+#print(fsync)
 
 
 
