@@ -20,20 +20,30 @@ def freqdom(tabtime,Et):
     tabnu,spectrum = fq.ezfft(tabtime,Et,neg=True)
     return tabnu,spectrum
 
-#volt = loadtxt('D:/2023.06.05_14.21.37_1.1.1.1.A.txt',unpack=True)
-volt1 = np.load("C:/Users/milio/OneDrive/Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/dataf.npy")
-time = np.linspace(0,len(volt1)/500e6,len(volt1))
-#time = time[:int(1/(1046.8749672851561)/(time[1]-time[0]))]
-#volt = volt[:int(1/(1046.8749672851561)/(time[1]-time[0]))]
-volt = np.hanning(len(time))*volt1
+frep = 100e6
+dfrep = 100
+N = frep/dfrep+1
+fsync =  N*frep
+print(fsync)
 
 
+
+#volt1 = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.07_11.26.18_100Hz_100MS_1.1.1.1.B.txt',unpack=True)
+volt1 = np.load("C:/Users/Liom-admin/Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/data 100Hz 100MS.npy")
+time = np.linspace(0,len(volt1)/100e6,len(volt1))
+time = time[:int(1/(100)/(time[1]-time[0]))]
+volt = volt1[:int(1/(100)/(time[1]-time[0]))]
+#volt = np.hanning(len(time))*volt
+
+timet = time[np.where((time>0.00214)&(time<0.00217))[0]]
+voltt = volt[np.where((time>0.00214)&(time<0.00217))[0]]
+voltt = voltt-np.mean(voltt)
 
 plt.figure()
-plt.plot(time,volt)
+plt.plot(timet,voltt)
 plt.show()
 
-nurf,srf = freqdom(time,volt)
+nurf,srf = freqdom(timet,voltt)
 
 b = 0.000001
 frep1 = 100e6
@@ -41,17 +51,17 @@ lowpass = 1/(1+np.exp(b*(nurf-frep1/2)))
 lowpassneg = 1/(1+np.exp(b*(-nurf-frep1/2)))
 Sfil = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])
 
-peakind = find_peaks(Sfil,distance = 30, threshold = 2.5e-7)[0]
+#peakind = find_peaks(Sfil,distance = 30, threshold = 2.5e-7)[0]
 
 plt.figure()
 #plt.plot(nurf,np.abs(srf))
 plt.plot(nurf[np.where(nurf>=0)],Sfil/max(Sfil))
-plt.plot(nurf[np.where(nurf>=0)][peakind],Sfil[peakind]/max(Sfil),'.')
-plt.semilogy()
+#plt.plot(nurf[np.where(nurf>=0)][peakind],Sfil[peakind]/max(Sfil),'.')
+#plt.semilogy()
 plt.show()
 
-tint = 1/nurf[np.where(nurf>=0)][peakind][1]
-nint = int(time[-1]//tint)
+#tint = 1/nurf[np.where(nurf>=0)][peakind][1]
+#nint = int(time[-1]//tint)
 #time = time[:int(1/(1/tint)/(time[1]-time[0]))]
 #volt1 = volt1[:int(1/(1/tint)/(time[1]-time[0]))]
 
@@ -63,7 +73,7 @@ nint = int(time[-1]//tint)
 
 
 
-
+"""
 
 
 with open('C:/Users/milio/OneDrive/Documents/Maitrise/Dual-frequency comb/SPM/RetrivedSpectrumSlaveNoSPM.npy', 'rb') as f:
@@ -87,7 +97,7 @@ plt.xlabel("Wavelength [nm]")
 plt.ylabel("Intensity [arb.u.]")
 plt.legend()
 plt.show()
-
+"""
 
 """
 timef,voltf = timedom(nurf,srf*lowpass*lowpassneg)

@@ -28,7 +28,8 @@ frepstds = np.zeros(len(beat))
 
 
 for i in range(len(beat)):
-    data = "D:/bnc_"+str(round(beat[i],6))+"ghz.csv"
+    #data = "D:/bnc_"+str(round(beat[i],6))+"ghz.csv" # home
+    data = "E:/bnc_"+str(round(beat[i],6))+"ghz.csv" # lab
 
     if "bnc" in data:
         delimiter = ","
