@@ -80,7 +80,7 @@ wlm = wlm*1e9
 
 plt.figure()
 #plt.plot(wlhitran,Shitran,label="Acetylene Absorption",alpha = 0.5)
-plt.plot(wlm,Sm*Ss,label="Master * Slave (FROG)")
+plt.plot(wlm,2*np.sqrt(Sm*Ss)/max(2*np.sqrt(Sm*Ss)),label="Master * Slave (FROG)")
 plt.xlim(1490,1640)
 plt.ylim(0,1)
 plt.xlabel("Wavelength [nm]")
