@@ -28,61 +28,84 @@ fsync =  N*frep
 
 
 
-#volt1 = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.07_11.26.18_100Hz_100MS_1.1.1.1.B.txt',unpack=True)
-volt1 = np.load("C:/Users/milio/OneDrive/Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/dataf.npy")
-time = np.linspace(0,len(volt1)/500e6,len(volt1))
-#time = time[:int(1/(1050)/(time[1]-time[0]))]
-#volt = volt1[:int(1/(1050)/(time[1]-time[0]))]
-#volt = np.hanning(len(time))*volt
-
-#timet = time[np.where((time>0.00214)&(time<0.00217))[0]]
-#voltt = volt[np.where((time>0.00214)&(time<0.00217))[0]]
-#voltt = voltt-np.mean(voltt)
-timet = time
-voltt = volt1
-
+try:
+    voltraw = np.load("C:/Users/Liom-admin/Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/data 100Hz 100MS.npy")
+except:
+    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.07_11.26.18_100Hz_100MS_1.1.1.1.B.txt',unpack=True)
+sample_rate = 100e6 #S/s
+timeraw = np.linspace(0,len(voltraw)/sample_rate,len(voltraw))
 
 plt.figure()
-plt.plot(timet,voltt)
-#plt.plot(timet,np.imag(hilbert(voltt)))
+plt.plot(timeraw,voltraw)
+#plt.plot(timeraw,np.imag(hilbert(voltraw)))
+plt.title("Raw data")
 plt.show()
 
-nurf,srf = freqdom(timet,voltt)
 
+nurf,srf = freqdom(timeraw,voltraw)
 b = 0.000001
 a = 0.1
 frep1 = 100e6
-lowf = 400000
+lowf = 800000
 lowpass = 1/(1+np.exp(b*(nurf-frep1/2)))
 lowpassneg = 1/(1+np.exp(b*(-nurf-frep1/2)))
 highpass = -1/((1+np.exp(a*(nurf-lowf)))*(1+np.exp(-a*(nurf+lowf))))+1
 Sfil = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])*highpass[np.where(nurf>=0)]
 
-#peakind = find_peaks(Sfil,distance = 30, threshold = 2.5e-7)[0]
+Speak = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])
+peakind = find_peaks(Speak,threshold=0.5*np.max(Speak))[0]
 
 plt.figure()
 #plt.plot(nurf,np.abs(srf))
 plt.plot(nurf[np.where(nurf>=0)],Sfil/max(Sfil))
-#plt.plot(nurf[np.where(nurf>=0)][peakind],Sfil[peakind]/max(Sfil),'.')
+#plt.plot(nurf[np.where(nurf>=0)][peakind],Speak[peakind]/max(Speak),".")
 #plt.semilogy()
+plt.title("Filtered-Frequency")
 plt.show()
 
+srff = srf*lowpass*lowpassneg*highpass
 
-t,Et = timedom(nurf,srf*lowpass*lowpassneg*highpass)
+tf,Etf = timedom(nurf,srff)
+tf = tf+tf[-1]
+
 plt.figure()
-plt.plot(t,np.abs(Et))
-plt.plot(t,np.real(Et))
+plt.plot(tf,np.real(Etf))
+plt.title("Filtered-Time")
 plt.show()
 
 
+tint = 1/nurf[np.where(nurf>=0)][peakind[0]]
+#nint = int(tf[-1]//tint)
+nint = 1
+voltavg = 0
+i = 0
+
+while i != nint:
+    voltavg += Etf[:int(1/(1/tint)/(tf[1]-tf[0]))]
+    #voltavg += Etf[np.where((tf>0.00214)&(tf<0.00217))[0]]
+    i += 1
 
 
+timeavg = tf[:int(1/(1/tint)/(tf[1]-tf[0]))]
+#timeavg = tf[np.where((tf>0.00214)&(tf<0.00217))[0]]
+nurfavg,srfavg = freqdom(timeavg,voltavg)
+
+plt.figure()
+#plt.plot(nurf,np.abs(srf))
+plt.plot(nurfavg[np.where(nurfavg>=0)],np.abs(srfavg[np.where(nurfavg>=0)])/max(np.abs(srfavg[np.where(nurfavg>=0)])))
+#plt.semilogy()
+plt.title(fr"Filtered-Averaged-$N_{int}$={nint}-Frequency")
+plt.show()
 
 
-#tint = 1/nurf[np.where(nurf>=0)][peakind][1]
-#nint = int(time[-1]//tint)
-#time = time[:int(1/(1/tint)/(time[1]-time[0]))]
-#volt1 = volt1[:int(1/(1/tint)/(time[1]-time[0]))]
+#time = time[:int(1/(100)/(time[1]-time[0]))]
+#volt = volt1[:int(1/(100)/(time[1]-time[0]))]
+#volt = np.hanning(len(time))*volt
+
+#timet = time[np.where((time>0.00214)&(time<0.00217))[0]]
+#voltt = volt1[np.where((time>0.00214)&(time<0.00217))[0]]
+#voltt = voltt-np.mean(voltt)
+
 
 
 
