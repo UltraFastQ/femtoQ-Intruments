@@ -29,9 +29,11 @@ fsync =  N*frep
 
 
 try:
-    voltraw = np.load("C:/Users/Liom-admin/Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/data 100Hz 100MS.npy")
+    voltraw = np.load("C:/Users/Liom-admin/Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/data 500Hz 100MS.npy")
 except:
-    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.07_11.26.18_100Hz_100MS_1.1.1.1.B.txt',unpack=True)
+    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.13_17.14.52_500Hz_100MS_1.1.1.1.B.txt',unpack=True)
+    np.save("data 500Hz 100MS.npy",voltraw)
+    
 sample_rate = 100e6 #S/s
 timeraw = np.linspace(0,len(voltraw)/sample_rate,len(voltraw))
 
@@ -74,7 +76,8 @@ plt.title("Filtered-Time")
 plt.show()
 
 
-tint = 1/nurf[np.where(nurf>=0)][peakind[0]]
+#tint = 1/nurf[np.where(nurf>=0)][peakind[0]]
+tint = 0.002
 #nint = int(tf[-1]//tint)
 nint = 1
 voltavg = 0
@@ -94,7 +97,7 @@ plt.figure()
 #plt.plot(nurf,np.abs(srf))
 plt.plot(nurfavg[np.where(nurfavg>=0)],np.abs(srfavg[np.where(nurfavg>=0)])/max(np.abs(srfavg[np.where(nurfavg>=0)])))
 #plt.semilogy()
-plt.title(fr"Filtered-Averaged-$N_{int}$={nint}-Frequency")
+plt.title(f"Filtered-Averaged-N_int={nint}-Frequency")
 plt.show()
 
 
