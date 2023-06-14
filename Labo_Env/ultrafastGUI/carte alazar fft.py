@@ -29,33 +29,36 @@ fsync =  N*frep
 
 
 try:
-    voltraw = np.load("D:/data 500Hz 100MS.npy")
+    voltraw = np.load("D:/data 500Hz_500MS_filter.npy")
 except:
     voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.14_12.17.47_500Hz_500MS_filter_1.1.1.1.B.txt',unpack=True)
     np.save("data 500Hz_500MS_filter.npy",voltraw)
     
-sample_rate = 100e6 #S/s
+sample_rate = 500e6 #S/s
 timeraw = np.linspace(0,len(voltraw)/sample_rate,len(voltraw))
+
+Tpeakind = find_peaks(np.abs(voltraw),height=0.75*np.max(abs(voltraw)),distance = 2000)[0]
+
 
 plt.figure()
 plt.plot(timeraw,voltraw)
-#plt.plot(timeraw,np.imag(hilbert(voltraw)))
+plt.plot(timeraw[Tpeakind],voltraw[Tpeakind],".")
 plt.title("Raw data")
 plt.show()
 
 
 nurf,srf = freqdom(timeraw,voltraw)
 b = 0.000001
-a = 0.1
+a = 10
 frep1 = 100e6
-lowf = 800000
+lowf = 1e7
 lowpass = 1/(1+np.exp(b*(nurf-frep1/2)))
 lowpassneg = 1/(1+np.exp(b*(-nurf-frep1/2)))
 highpass = -1/((1+np.exp(a*(nurf-lowf)))*(1+np.exp(-a*(nurf+lowf))))+1
 Sfil = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])*highpass[np.where(nurf>=0)]
 
-Speak = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])
-peakind = find_peaks(Speak,threshold=0.5*np.max(Speak))[0]
+#Speak = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])
+#peakind = find_peaks(Speak,threshold=0.5*np.max(Speak))[0]
 
 plt.figure()
 #plt.plot(nurf,np.abs(srf))
@@ -77,20 +80,27 @@ plt.show()
 
 
 #tint = 1/nurf[np.where(nurf>=0)][peakind[0]]
-tint = 0.002
+#tint = 0.002
 #nint = int(tf[-1]//tint)
+nint = len(Tpeakind)-1
 nint = 1
 voltavg = 0
-i = 0
 
+i = 0
+t1 = tf[0]
+t2 = tf[-1]
 while i != nint:
-    #voltavg += Etf[:int(1/(1/tint)/(tf[1]-tf[0]))]
-    voltavg += Etf[np.where((tf>0.001823)&(tf<0.001834))[0]]
+    voltavg = Etf[np.where((tf>=timeraw[Tpeakind][i]) & (tf<=timeraw[Tpeakind][i+1]))]
+    lenv = len(voltavg)
+    #print(len(voltavg))
+    #voltavg += Etf[np.where((tf>t1)&(tf<t2))[0]] # ajuster pour jiter entre interferogrammes? ###############################
     i += 1
 
+    
 
-#timeavg = tf[:int(1/(1/tint)/(tf[1]-tf[0]))]
-timeavg = tf[np.where((tf>0.001823)&(tf<0.001834))[0]]
+
+timeavg = tf[np.where((tf>t1)&(tf<t2))[0]]
+#timeavg = tf[np.where((tf>=timeraw[Tpeakind][0]) & (tf<=timeraw[Tpeakind][1]))]
 nurfavg,srfavg = freqdom(timeavg,voltavg)
 
 plt.figure()
