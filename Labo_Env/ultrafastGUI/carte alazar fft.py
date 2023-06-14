@@ -29,7 +29,7 @@ fsync =  N*frep
 
 
 try:
-    voltraw = np.load("C:/Users/Liom-admin/Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/data 500Hz 100MS.npy")
+    voltraw = np.load("D:/data 500Hz 100MS.npy")
 except:
     voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.13_17.14.52_500Hz_100MS_1.1.1.1.B.txt',unpack=True)
     np.save("data 500Hz 100MS.npy",voltraw)
@@ -84,13 +84,13 @@ voltavg = 0
 i = 0
 
 while i != nint:
-    voltavg += Etf[:int(1/(1/tint)/(tf[1]-tf[0]))]
-    #voltavg += Etf[np.where((tf>0.00214)&(tf<0.00217))[0]]
+    #voltavg += Etf[:int(1/(1/tint)/(tf[1]-tf[0]))]
+    voltavg += Etf[np.where((tf>0.001823)&(tf<0.001834))[0]]
     i += 1
 
 
-timeavg = tf[:int(1/(1/tint)/(tf[1]-tf[0]))]
-#timeavg = tf[np.where((tf>0.00214)&(tf<0.00217))[0]]
+#timeavg = tf[:int(1/(1/tint)/(tf[1]-tf[0]))]
+timeavg = tf[np.where((tf>0.001823)&(tf<0.001834))[0]]
 nurfavg,srfavg = freqdom(timeavg,voltavg)
 
 plt.figure()
