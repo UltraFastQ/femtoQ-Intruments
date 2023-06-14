@@ -31,8 +31,8 @@ fsync =  N*frep
 try:
     voltraw = np.load("D:/data 500Hz 100MS.npy")
 except:
-    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.13_17.14.52_500Hz_100MS_1.1.1.1.B.txt',unpack=True)
-    np.save("data 500Hz 100MS.npy",voltraw)
+    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.14_12.17.47_500Hz_500MS_filter_1.1.1.1.B.txt',unpack=True)
+    np.save("data 500Hz_500MS_filter.npy",voltraw)
     
 sample_rate = 100e6 #S/s
 timeraw = np.linspace(0,len(voltraw)/sample_rate,len(voltraw))
