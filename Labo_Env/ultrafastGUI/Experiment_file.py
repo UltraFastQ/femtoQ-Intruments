@@ -6513,3 +6513,365 @@ class D_Scan:
         self.spectro_start_button['state'] = 'normal'
         self.start_button['state'] = 'normal'
         self.spectro_connect_button['state'] = 'normal'
+
+class PUMA:
+    def __init__(self, mainf=None):
+        """
+        The constructor for your Experiment.
+
+        Parameters:
+            mainf : This is the Mainframe, it cannot be anything else.
+        """
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+        self.Spectro = mainf.Frame[3].Spectro
+
+    def create_frame(self, frame):
+        """
+        This function is used to create the free frame mentionned in the
+        CreateLayout.This is where you place all of the widget you desire to
+        have in your experiment.
+
+        Parameters:
+            frame : This is the section attributed to your widget in the big
+            Experiment frame.
+        """
+        # Define variables
+                # PI stage
+        intTime_var = tk.DoubleVar()
+        disp_var = tk.StringVar()
+        name_var = tk.StringVar()
+        dir_var = tk.StringVar()
+        intTime_var.set(1)
+        disp_var.set("0, 1, 2, 3, 4, 5, 6, 7")
+        name_var.set('_PUMA_Measurement')
+        dir_var.set("C:/Users/jlauz/OneDrive/Bureau/Data FemtoQ/Julien/")
+        
+        
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+        intTime_lbl = tk.Label(frame, text = 'Integration time [ms]:')
+        disp_lbl = tk.Label(frame, text = 'Sequence of dispersion')
+        name_lbl = tk.Label(frame, text = 'File Name')
+        dir_lbl = tk.Label(frame, text = 'Save Directory')
+        
+        
+        # Define entry boxes
+        intTime_e = tk.Entry(frame, width = 6, textvariable = intTime_var)
+        disp_e = tk.Entry(frame, width = 18, textvariable = disp_var)
+        intTime_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(intTime_var))
+        name_e = tk.Entry(frame, width=30, textvariable = name_var)
+        dir_e = tk.Entry(frame, width=30, textvariable = dir_var)
+        
+        # Define position of all objects on the grid
+        
+        param_lbl.grid(row=0, column=0, columnspan=2, sticky='nsew')
+        intTime_lbl.grid(row=1, column=0, sticky='nsw')
+        intTime_e.grid(row=1, column=1, sticky='nse')
+        disp_lbl.grid(row=3, column=0, sticky='nsw')
+        disp_e.grid(row=3, column=1, sticky='nse')
+        name_lbl.grid(row=23, column=0, sticky='nsw')
+        name_e.grid(row=23, column=1, sticky='nse')
+        dir_lbl.grid(row=25, column=0, sticky='nsw')
+        dir_e.grid(row=25, column=1, sticky='nse')
+        
+        step1_lbl = tk.Label(frame, text = '')
+        step1_lbl.grid(row=16, column=1, sticky='nsw')
+        
+        step2_lbl = tk.Label(frame, text = '')
+        step2_lbl.grid(row=22, column=1, sticky='nsw')
+        
+        #i put these before the buttons because putting them after creates an error for some reason
+        def get_dark_spectrum(self):
+            self.Spectro.measure_darkspectrum()
+            self.sub_dark_button['state']='normal'
+        
+        def remove_dark(self):
+            self.Spectro.dark_spectrum = not self.Spectro.dark_spectrum
+        
+        def rescale(self):
+            S = self.Spectro.get_intensities()
+            spectro_graph = self.graph_dict['Spectro']
+            spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+            spectro_graph.update_graph()
+        
+        
+        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
+                           command=lambda: get_dark_spectrum(self))
+        self.dark_button.grid(row=11,column=0,sticky='nsew')
+        
+        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
+                                    command=lambda: remove_dark(self))
+        self.sub_dark_button.grid(row=13,column=0,sticky='nsew')
+        
+        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
+                                        command=lambda: rescale(self))
+        self.rescale_button.grid(row=15,column=0,sticky='nsew')
+
+        self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
+                                      command=lambda: self.start_experiment(window_array=disp_var, intTime=intTime_var))
+        self.start_button.grid(row=17, column=0, columnspan=2, sticky='nsew')
+        # The other lines are required option you would like to change before an experiment with the correct binding
+        # and/or other function you can see the WhiteLight for more exemple.
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
+        
+        self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
+                                        command=lambda: self.save(directory=dir_var, name=name_var))
+        self.save_button.grid(row=27, column=0, columnspan=2, sticky='nsew')
+        
+        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
+                                        command=lambda: self.start_spectro(inte_time=intTime_var))
+        self.spectro_start_button.grid(row=7, column=0, sticky='nsew')
+        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
+                                             command=lambda: self.stop_spectro())
+        self.spectro_stop_button.grid(row=9, column=0, sticky='nsew')
+        
+        self.spectro_connect_button = tk.Button(frame, text='Connect Spectrometer', state='normal', width=18,
+                                                command=lambda: self.connect_spectrometer())
+        self.spectro_connect_button.grid(row=5, column=0, columnspan=2, sticky='nsew')
+
+        self.start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
+        
+        self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
+                                        command=lambda: self.fast_retrieve())
+        self.retrieve_button.grid(row=21,column=0,columnspan=2, sticky='nsew')
+
+    def stop_experiment(self):
+        self.running = False
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'normal'
+
+    def start_experiment(self, window_array=None, intTime=None):
+
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'disabled'
+        self.running = True
+        self.window_array = np.fromstring(window_array.get(),dtype=float, sep=', ')
+        try:
+            self.wl=self.Spectro.spectro.wavelengths()
+        except:
+            self.wl=np.arange(1,513,1)
+        
+        #creating empty data matrix
+        #try: 
+        self.data_matrix = np.zeros((len(self.window_array), len(self.wl)))
+            
+        #except:
+         #   self.data_matrix = np.zeros((len(self.window_array), 512))
+        
+        #measurement loop
+        for i in range(len(self.window_array)):
+            if not messagebox.askokcancel(title='INFO', message='Take measurement with ' + str(self.window_array[i]) +' mm of dispersion'):
+                self.stop_experiment()
+                break
+            #take measurement from spectrometer
+            ###############################################
+            self.data_matrix[i] = self.Spectro.get_intensities()
+            if np.isnan(self.data_matrix[i][0]):
+                self.data_matrix[i] = 0.2*np.random.rand(len(self.wl))+np.exp(-((self.wl-(250+10*self.window_array[i]))/(120/(1+0.5*self.window_array[i])))**2)
+                #for j in range(len(self.data_matrix[0])):
+                 #   self.data_matrix[i][j] = np.random.rand()
+           ############################################
+           
+            self.adjust_2dgraph()
+
+        self.trace=self.data_matrix.copy()
+        self.retrieve_button['state'] = 'normal'
+        self.stop_experiment()
+            
+            
+        
+    def connect_spectrometer(self):
+        self.Spectro.connect(exp_dependencie=True)
+        self.spectro_start_button['state'] = 'normal'       
+    
+    def save(self, directory=None, name=None):
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        try: np.savez(directory.get() + timeStamp + name.get() ,data = self.data_matrix ,dispersion = self.window_array, wavelengths=self.wl)
+        except:
+            messagebox.showerror("Error", "Error while saving, might be wrong directory.")
+            
+        # Going back to initial state
+        self.running = False
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+
+    def fast_retrieve(self):
+        wavelengths = self.wl*1e-9
+        delay = self.window_array    # Here delay is actually insertion
+        trace = self.trace.copy()
+        
+        pulseRetrieved, pulseFrequencies = fqpr.shgDscan(filename='', inputDelays = delay, inputWavelengths = wavelengths, inputTrace = trace, makeFigures = False)
+        
+        
+        
+        t = timeRetrieved
+        E = pulseRetTime
+        
+        pulseTime = np.abs(E)**2
+        pulseTime /= pulseTime.max()
+        pulseFreq = np.abs(pulseRetrieved)**2
+        pulseFreq /= pulseFreq.max()
+        pulsePhase = np.unwrap(np.angle(pulseRetrieved))
+        
+        
+        iiOverHM = np.argwhere(pulseTime>=0.5).flatten()
+        
+        t00 = t[iiOverHM[0]-1]
+        t01  = t[iiOverHM[0]]
+        s00 = pulseTime[iiOverHM[0]-1]
+        s01  = pulseTime[iiOverHM[0]]
+        
+        t10 = t[iiOverHM[-1]]
+        t11  = t[iiOverHM[-1]+1]
+        s10 = pulseTime[iiOverHM[-1]]
+        s11  = pulseTime[iiOverHM[-1]+1]
+        
+        a0 = (s01-s00)/(t01-t00)
+        b0 = s00-a0*t00
+        t0 = (0.5-b0) / a0 * 1e15
+        
+        a1 = (s11-s10)/(t11-t10)
+        b1 = s10-a1*t10
+        t1 = (0.5-b1) / a1 * 1e15
+        
+        self.fwhm_var.set(round(abs(t1-t0),1))
+        
+        
+        pulse_time_graph = self.graph_dict['Retrieved pulse (time)']
+        pulse_time_graph.axes.set_xlim([t[0]*1e15,t[-1]*1e15])
+        pulse_time_graph.axes.set_ylim([0,1])
+        
+        pulse_time_graph.Line.set_xdata(t*1e15)
+        pulse_time_graph.Line.set_ydata(pulseTime/np.max(pulseTime))
+        pulse_time_graph.update_graph()
+        
+        v0 = np.trapz(pulseFreq*pulseFrequencies,pulseFrequencies) / np.trapz(pulseFreq,pulseFrequencies)
+        deltaV = np.sqrt( np.trapz(pulseFreq*(pulseFrequencies-v0)**2,pulseFrequencies) / np.trapz(pulseFreq,pulseFrequencies) )
+        
+        pulse_freq_graph = self.graph_dict['Retrieved pulse (frequency)']
+        
+        
+        if self.phaseExists is False:
+            self.pulse_spectralPhase_graph = pulse_freq_graph.axes.twinx()
+            self.LinePhase, = self.pulse_spectralPhase_graph.plot([],[],'--k')
+            self.pulse_spectralPhase_graph.set_ylabel('Spectral phase [rad]')
+            self.phaseExists = True
+        
+        
+        pulse_freq_graph.axes.set_xlim([(v0-3*deltaV)/1e12,(v0+3*deltaV)/1e12])
+        pulse_freq_graph.axes.set_ylim([0,1])
+        
+        pulse_freq_graph.Line.set_xdata(pulseFrequencies/1e12)
+        pulse_freq_graph.Line.set_ydata(pulseFreq/np.max(pulseFreq))
+        
+        
+        IIplot = pulseFreq > pulseFreq.max()/100
+        
+        pulsePhase -= np.average(pulsePhase[IIplot],weights = np.abs(pulseFreq[IIplot])**2)
+       
+        phasemax = pulsePhase[IIplot].max()
+        phasemin = pulsePhase[IIplot].min()
+        self.pulse_spectralPhase_graph.set_ylim(phasemin,phasemax)
+
+        self.LinePhase.set_xdata(pulseFrequencies[IIplot]/1e12)
+        self.LinePhase.set_ydata(pulsePhase[IIplot])
+        pulse_freq_graph.update_graph()
+
+
+    def adjust_2dgraph(self):#, step=None):
+# =============================================================================
+#         step = step.get()
+#         if step == 0:
+#             step=1
+# =============================================================================
+        #try:
+         #    wl = len(self.Spectro.spectro.wavelengths())
+        #except:
+         #   return
+        
+        parent2d = self.graph_dict["D-Scan trace"].parent
+        self.graph_dict["D-Scan trace"].destroy_graph()
+        #print(wl, step)
+        self.graph_dict["D-Scan trace"] = Graphic.TwoDFrame(parent2d, axis_name=["New name", "New name2"],
+                                                       figsize=[2,2], data_size= self.data_matrix.shape)
+       #trace = (self.data_matrix-np.min(self.data_matrix))
+       #trace = trace/np.max(trace)
+        trace = np.flipud(self.data_matrix/self.data_matrix.max())
+        aspectRatio = len(self.data_matrix[0])/(2*len(self.data_matrix[:, 0]))
+        
+        self.graph_dict["D-Scan trace"].axes.set_aspect(aspectRatio)
+       
+        self.graph_dict["D-Scan trace"].change_data(trace,False)
+        self.graph_dict["D-Scan trace"].im.set_extent((self.wl[0], self.wl[-1], self.window_array[0], self.window_array[-1]))
+        #aspectRatio = abs((self.timeDelay[-1]-self.timeDelay[0])/(self.wl_crop[0]-self.wl_crop[-1]))
+        
+        #Setting tick positions and labels
+        disp_ticks = []
+        step = (self.window_array[-1]-self.window_array[0])/(len(self.window_array)-1)
+        i=self.window_array[0]
+        while i<self.window_array[-1]:
+            disp_ticks.append(i)
+            i += step
+        disp_ticks.append(self.window_array[-1])
+        #messagebox.showinfo("bfobf", disp_ticks)
+        #wl_ticks = []
+        #i=self.wl[0]
+        #while i<self.wl[-1]:
+        #    wl_ticks.append(i)
+        #    i += 100
+        
+        #self.graph_dict["D-Scan trace"].axes.set_xticks(ticks = wl_ticks)
+        self.graph_dict["D-Scan trace"].axes.set_yticks(ticks = disp_ticks, labels = self.window_array)
+        
+        self.graph_dict["D-Scan trace"].axes.set_xlabel('Wavelengths [nm]')
+        self.graph_dict["D-Scan trace"].axes.set_ylabel('Dispersion  Length [mm]')
+        cbar = self.graph_dict["D-Scan trace"].Fig.colorbar(self.graph_dict["D-Scan trace"].im)
+        cbar.set_label('Normalized intensity')
+        self.graph_dict["D-Scan trace"].update_graph()
+        
+    def start_spectro(self, inte_time=None):
+        self.dark_button['state'] = 'normal'
+        self.sub_dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'disabled'
+        self.start_button['state'] = 'disabled'
+        self.spectro_connect_button['state'] = 'disabled'
+        self.running = True
+        
+        #self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
+        self.Spectro.adjust_integration_time(inte_time)
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        
+        while self.running is True:            
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)     
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+            
+    def stop_spectro(self):
+        self.running = False
+        self.dark_button['state'] = 'disabled'
+        self.sub_dark_button['state'] = 'disabled'
+        self.rescale_button['state'] = 'disabled'
+        self.spectro_stop_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'normal'
+        self.start_button['state'] = 'normal'
+        self.spectro_connect_button['state'] = 'normal'
