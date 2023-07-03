@@ -6540,25 +6540,42 @@ class PUMA:
         # Define variables
                 # PI stage
         intTime_var = tk.DoubleVar()
-        disp_var = tk.StringVar()
+        gdd_var = tk.DoubleVar()
+        tod_var = tk.DoubleVar()
+        fod_var = tk.DoubleVar()
+        scg_var = tk.StringVar()
+        pump_var = tk.StringVar()
         name_var = tk.StringVar()
         dir_var = tk.StringVar()
         intTime_var.set(1)
-        disp_var.set("0, 1, 2, 3, 4, 5, 6, 7")
+        gdd_var.set(0)
+        tod_var.set(0)
+        fod_var.set(0)
+        scg_var.set('Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/measurements/Reference_SCG_Spectrum.npy')
+        pump_var.set('Documents/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/measurements/Reference_Pump_Spectrum.npy')
         name_var.set('_PUMA_Measurement')
         dir_var.set("C:/Users/jlauz/OneDrive/Bureau/Data FemtoQ/Julien/")
         
-        
+
         param_lbl = tk.Label(frame, text = 'Experiment parameters')
         intTime_lbl = tk.Label(frame, text = 'Integration time [ms]:')
-        disp_lbl = tk.Label(frame, text = 'Sequence of dispersion')
+        gdd_lbl = tk.Label(frame, text = 'Group delay dispersion')
+        tod_lbl = tk.Label(frame, text = 'Third order dispersion')
+        fod_lbl = tk.Label(frame, text = 'Fourth order dispersion')
+        scg_lbl = tk.Label(frame, text = 'Reference SCG spectrum')
+        pump_lbl = tk.Label(frame, text = 'Reference pump spectrum')
         name_lbl = tk.Label(frame, text = 'File Name')
         dir_lbl = tk.Label(frame, text = 'Save Directory')
         
         
+        
         # Define entry boxes
         intTime_e = tk.Entry(frame, width = 6, textvariable = intTime_var)
-        disp_e = tk.Entry(frame, width = 18, textvariable = disp_var)
+        gdd_e = tk.Entry(frame, width = 6, textvariable = gdd_var)
+        tod_e = tk.Entry(frame, width = 6, textvariable = tod_var)
+        fod_e = tk.Entry(frame, width = 6, textvariable = fod_var)
+        scg_e = tk.Entry(frame, width = 30, textvariable = scg_var)
+        pump_e = tk.Entry(frame, width = 30, textvariable = pump_var)
         intTime_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(intTime_var))
         name_e = tk.Entry(frame, width=30, textvariable = name_var)
         dir_e = tk.Entry(frame, width=30, textvariable = dir_var)
@@ -6568,18 +6585,26 @@ class PUMA:
         param_lbl.grid(row=0, column=0, columnspan=2, sticky='nsew')
         intTime_lbl.grid(row=1, column=0, sticky='nsw')
         intTime_e.grid(row=1, column=1, sticky='nse')
-        disp_lbl.grid(row=3, column=0, sticky='nsw')
-        disp_e.grid(row=3, column=1, sticky='nse')
-        name_lbl.grid(row=23, column=0, sticky='nsw')
-        name_e.grid(row=23, column=1, sticky='nse')
-        dir_lbl.grid(row=25, column=0, sticky='nsw')
-        dir_e.grid(row=25, column=1, sticky='nse')
+        gdd_lbl.grid(row=3, column=0, sticky='nsw')
+        gdd_e.grid(row=3, column=1, sticky='nse')
+        tod_lbl.grid(row=5, column=0, sticky='nsw')
+        tod_e.grid(row=5, column=1, sticky='nse')
+        fod_lbl.grid(row=7, column=0, sticky='nsw')
+        fod_e.grid(row=7, column=1, sticky='nse')
+        scg_lbl.grid(row=9, column=0, sticky='nsw')
+        scg_e.grid(row=9, column=1, sticky='nse')
+        pump_lbl.grid(row=11, column=0, sticky='nsw')
+        pump_e.grid(row=11, column=1, sticky='nse')
+        name_lbl.grid(row=31, column=0, sticky='nsw')
+        name_e.grid(row=31, column=1, sticky='nse')
+        dir_lbl.grid(row=33, column=0, sticky='nsw')
+        dir_e.grid(row=33, column=1, sticky='nse')
         
         step1_lbl = tk.Label(frame, text = '')
-        step1_lbl.grid(row=16, column=1, sticky='nsw')
+        step1_lbl.grid(row=24, column=1, sticky='nsw')
         
         step2_lbl = tk.Label(frame, text = '')
-        step2_lbl.grid(row=22, column=1, sticky='nsw')
+        step2_lbl.grid(row=30, column=1, sticky='nsw')
         
         #i put these before the buttons because putting them after creates an error for some reason
         def get_dark_spectrum(self):
@@ -6598,39 +6623,39 @@ class PUMA:
         
         self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
                            command=lambda: get_dark_spectrum(self))
-        self.dark_button.grid(row=11,column=0,sticky='nsew')
+        self.dark_button.grid(row=19,column=0,sticky='nsew')
         
         self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
                                     command=lambda: remove_dark(self))
-        self.sub_dark_button.grid(row=13,column=0,sticky='nsew')
+        self.sub_dark_button.grid(row=21,column=0,sticky='nsew')
         
         self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
                                         command=lambda: rescale(self))
-        self.rescale_button.grid(row=15,column=0,sticky='nsew')
+        self.rescale_button.grid(row=23,column=0,sticky='nsew')
 
         self.start_button = tk.Button(frame, text='Start Experiment', state='normal', width=18,
-                                      command=lambda: self.start_experiment(window_array=disp_var, intTime=intTime_var))
-        self.start_button.grid(row=17, column=0, columnspan=2, sticky='nsew')
+                                      command=lambda: self.start_experiment(gdd=gdd_var, tod=tod_var, fod=fod_var, scg=scg_var, pump=pump_var, intTime=intTime_var))
+        self.start_button.grid(row=25, column=0, columnspan=2, sticky='nsew')
         # The other lines are required option you would like to change before an experiment with the correct binding
         # and/or other function you can see the WhiteLight for more exemple.
         self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
                                      command=lambda: self.stop_experiment())
-        self.stop_button.grid(row=19, column=0, columnspan=2, sticky='nsew')
+        self.stop_button.grid(row=27, column=0, columnspan=2, sticky='nsew')
         
         self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
                                         command=lambda: self.save(directory=dir_var, name=name_var))
-        self.save_button.grid(row=27, column=0, columnspan=2, sticky='nsew')
+        self.save_button.grid(row=35, column=0, columnspan=2, sticky='nsew')
         
         self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
                                         command=lambda: self.start_spectro(inte_time=intTime_var))
-        self.spectro_start_button.grid(row=7, column=0, sticky='nsew')
+        self.spectro_start_button.grid(row=15, column=0, sticky='nsew')
         self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
                                              command=lambda: self.stop_spectro())
-        self.spectro_stop_button.grid(row=9, column=0, sticky='nsew')
+        self.spectro_stop_button.grid(row=17, column=0, sticky='nsew')
         
         self.spectro_connect_button = tk.Button(frame, text='Connect Spectrometer', state='normal', width=18,
                                                 command=lambda: self.connect_spectrometer())
-        self.spectro_connect_button.grid(row=5, column=0, columnspan=2, sticky='nsew')
+        self.spectro_connect_button.grid(row=13, column=0, columnspan=2, sticky='nsew')
 
         self.start_button['state'] = 'normal'
         self.save_button['state'] = 'normal'
@@ -6638,7 +6663,7 @@ class PUMA:
         
         self.retrieve_button = tk.Button(frame, text='Fast retrieval', state='disabled',width=18,
                                         command=lambda: self.fast_retrieve())
-        self.retrieve_button.grid(row=21,column=0,columnspan=2, sticky='nsew')
+        self.retrieve_button.grid(row=29,column=0,columnspan=2, sticky='nsew')
 
     def stop_experiment(self):
         self.running = False
@@ -6647,14 +6672,15 @@ class PUMA:
         self.save_button['state'] = 'normal'
         self.spectro_start_button['state'] = 'normal'
 
-    def start_experiment(self, window_array=None, intTime=None):
+    def start_experiment(self, gdd=None, tod=None, fod=None, scg=None, pump=None, intTime=None):
 
         self.stop_button['state'] = 'normal'
         self.start_button['state'] = 'disabled'
         self.save_button['state'] = 'disabled'
         self.spectro_start_button['state'] = 'disabled'
         self.running = True
-        self.window_array = np.fromstring(window_array.get(),dtype=float, sep=', ')
+        self.scg_spectrum = np.load(scg)
+        self.pump_spectrum = np.load(pump)
         try:
             self.wl=self.Spectro.spectro.wavelengths()
         except:
@@ -6662,26 +6688,35 @@ class PUMA:
         
         #creating empty data matrix
         #try: 
-        self.data_matrix = np.zeros((len(self.window_array), len(self.wl)))
+        self.data_matrix = np.zeros(len(self.wl))
             
         #except:
          #   self.data_matrix = np.zeros((len(self.window_array), 512))
         
-        #measurement loop
-        for i in range(len(self.window_array)):
-            if not messagebox.askokcancel(title='INFO', message='Take measurement with ' + str(self.window_array[i]) +' mm of dispersion'):
-                self.stop_experiment()
-                break
-            #take measurement from spectrometer
-            ###############################################
-            self.data_matrix[i] = self.Spectro.get_intensities()
-            if np.isnan(self.data_matrix[i][0]):
-                self.data_matrix[i] = 0.2*np.random.rand(len(self.wl))+np.exp(-((self.wl-(250+10*self.window_array[i]))/(120/(1+0.5*self.window_array[i])))**2)
-                #for j in range(len(self.data_matrix[0])):
-                 #   self.data_matrix[i][j] = np.random.rand()
-           ############################################
-           
-            self.adjust_2dgraph()
+        #verification
+        plt.plot(self.scg_spectrum[0],self.scg_spectrum[1])
+        plt.title('Reference spectrum for supercontinuum')
+        plt.xlabel('Wavelength (nm)')
+        plt.ylabel('Intensity (W/m²)')
+        plt.show()
+        plt.plot(self.pump_spectrum[0],self.pump_spectrum[1])
+        plt.title('Reference spectrum for pump pulses')
+        plt.xlabel('Wavelength (nm)')
+        plt.ylabel('Intensity (W/m²)')
+        plt.show()
+        if not messagebox.askokcancel(title='INFO', message='Take measurement with previously shown reference spectrums'):
+            self.stop_experiment()
+
+        #take measurement from spectrometer
+        ###############################################
+        self.data_matrix = self.Spectro.get_intensities()
+        if np.isnan(self.data_matrix[0]):
+            self.data_matrix = 0.2*np.random.rand(len(self.wl))+np.exp(-((self.wl-(250+10*self.window_array[i]))/(120/(1+0.5*self.window_array[i])))**2)
+            #for j in range(len(self.data_matrix[0])):
+             #   self.data_matrix[i][j] = np.random.rand()
+           ###########################################
+        
+        self.adjust_2dgraph()
 
         self.trace=self.data_matrix.copy()
         self.retrieve_button['state'] = 'normal'
