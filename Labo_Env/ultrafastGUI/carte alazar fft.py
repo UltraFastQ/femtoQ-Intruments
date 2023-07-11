@@ -13,11 +13,11 @@ plt.close("all")
 pi = np.pi
 
 def timedom(tabnu,spectrum):
-    time,Et = fq.ezifft(tabnu,spectrum,amplitudeSpectrumRecentering=(False))
+    time,Et = fq.ezifft(tabnu,spectrum)
     return time,Et
 
 def freqdom(tabtime,Et):
-    tabnu,spectrum = fq.ezfft(tabtime,Et,neg=True)
+    tabnu,spectrum = fq.ezfft(tabtime,Et)
     return tabnu,spectrum
 
 frep = 100e6
@@ -29,7 +29,7 @@ fsync =  N*frep
 
 
 try:
-    voltraw = np.load("D:/data 500Hz_500MS_filter.npy")
+    voltraw = np.load("C:/Users/milio/OneDrive/Documents/Maitrise/Dual-frequency comb/Data/data 500Hz_500MS_filter.npy")
 except:
     voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.14_12.17.47_500Hz_500MS_filter_1.1.1.1.B.txt',unpack=True)
     np.save("data 500Hz_500MS_filter.npy",voltraw)
@@ -47,7 +47,10 @@ plt.title("Raw data")
 plt.show()
 
 
+voltraw = voltraw-np.mean(voltraw)
+
 nurf,srf = freqdom(timeraw,voltraw)
+
 b = 0.000001
 a = 10
 frep1 = 100e6
@@ -55,7 +58,8 @@ lowf = 1e7
 lowpass = 1/(1+np.exp(b*(nurf-frep1/2)))
 lowpassneg = 1/(1+np.exp(b*(-nurf-frep1/2)))
 highpass = -1/((1+np.exp(a*(nurf-lowf)))*(1+np.exp(-a*(nurf+lowf))))+1
-Sfil = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])*highpass[np.where(nurf>=0)]
+#Sfil = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])*highpass[np.where(nurf>=0)]
+Sfil = np.abs(srf[np.where(nurf>=0)])
 
 #Speak = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])
 #peakind = find_peaks(Speak,threshold=0.5*np.max(Speak))[0]
@@ -63,10 +67,22 @@ Sfil = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.wh
 plt.figure()
 #plt.plot(nurf,np.abs(srf))
 plt.plot(nurf[np.where(nurf>=0)],Sfil/max(Sfil))
+plt.plot(nurf,lowpass*lowpassneg)
 #plt.plot(nurf[np.where(nurf>=0)][peakind],Speak[peakind]/max(Speak),".")
 #plt.semilogy()
 plt.title("Filtered-Frequency")
 plt.show()
+
+plt.figure()
+plt.plot(nurf,np.abs(srf))
+plt.plot(nurf,np.real(srf))
+plt.plot(nurf,np.imag(srf))
+#plt.plot(nurf[np.where(nurf>=0)][peakind],Speak[peakind]/max(Speak),".")
+#plt.semilogy()
+plt.title("Filtered-Frequency")
+plt.show()
+
+
 
 srff = srf*lowpass*lowpassneg*highpass
 
@@ -87,13 +103,15 @@ nint = 1
 voltavg = 0
 
 i = 0
-t1 = tf[0]
-t2 = tf[-1]
+#t1 = 0.001295
+#t2 = 0.001299
+t1 = 0.001437
+t2 = 0.001443
 while i != nint:
-    voltavg = Etf[np.where((tf>=timeraw[Tpeakind][i]) & (tf<=timeraw[Tpeakind][i+1]))]
-    lenv = len(voltavg)
+    #voltavg = Etf[np.where((tf>=timeraw[Tpeakind][i]) & (tf<=timeraw[Tpeakind][i+1]))]
+    #lenv = len(voltavg)
     #print(len(voltavg))
-    #voltavg += Etf[np.where((tf>t1)&(tf<t2))[0]] # ajuster pour jiter entre interferogrammes? ###############################
+    voltavg += Etf[np.where((tf>t1)&(tf<t2))[0]] # ajuster pour jiter entre interferogrammes? ###############################
     i += 1
 
     
@@ -101,11 +119,12 @@ while i != nint:
 
 timeavg = tf[np.where((tf>t1)&(tf<t2))[0]]
 #timeavg = tf[np.where((tf>=timeraw[Tpeakind][0]) & (tf<=timeraw[Tpeakind][1]))]
+voltavg = np.hanning(len(timeavg))*voltavg
 nurfavg,srfavg = freqdom(timeavg,voltavg)
 
 plt.figure()
 #plt.plot(nurf,np.abs(srf))
-plt.plot(nurfavg[np.where(nurfavg>=0)],np.abs(srfavg[np.where(nurfavg>=0)])/max(np.abs(srfavg[np.where(nurfavg>=0)])))
+plt.plot(nurfavg[np.where(nurfavg>=0)],(np.abs(srfavg[np.where(nurfavg>=0)])/max(np.abs(srfavg[np.where(nurfavg>=0)])))**2)
 #plt.semilogy()
 plt.title(f"Filtered-Averaged-N_int={nint}-Frequency")
 plt.show()
