@@ -20,34 +20,43 @@ def freqdom(tabtime,Et):
     tabnu,spectrum = fq.ezfft(tabtime,Et)
     return tabnu,spectrum
 
-frep = 100e6
-dfrep = 100
-N = frep/dfrep+1
-fsync =  N*frep
-#print(fsync)
-
-
-
 try:
     voltraw = np.load("C:/Users/milio/OneDrive/Documents/Maitrise/Dual-frequency comb/Data/data 500Hz_500MS_filter.npy")
+    #voltraw = np.load("test.npy")
 except:
-    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.06.14_12.17.47_500Hz_500MS_filter_1.1.1.1.B.txt',unpack=True)
-    np.save("data 500Hz_500MS_filter.npy",voltraw)
+    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/test_1.1.1.1.B.txt',unpack=True)
+    np.save("test.npy",voltraw)
     
 sample_rate = 500e6 #S/s
 timeraw = np.linspace(0,len(voltraw)/sample_rate,len(voltraw))
-
-Tpeakind = find_peaks(np.abs(voltraw),height=0.75*np.max(abs(voltraw)),distance = 2000)[0]
-
-
-plt.figure()
-plt.plot(timeraw,voltraw)
-plt.plot(timeraw[Tpeakind],voltraw[Tpeakind],".")
-plt.title("Raw data")
-plt.show()
-
+hilbertraw = hilbert(voltraw)
 
 voltraw = voltraw-np.mean(voltraw)
+Tpeakind = find_peaks(np.abs(hilbertraw),height=0.75*np.max(abs(hilbertraw)),distance = 2000)[0]
+Tpeak = timeraw[Tpeakind]
+Hpeak = abs(hilbertraw)[Tpeakind]
+
+#plt.figure()
+#plt.plot(timeraw,voltraw)
+#plt.plot(timeraw,np.abs(hilbertraw))
+#plt.plot(Tpeak,Hpeak,".")
+#plt.title("Raw data")
+#plt.show()
+
+dtpeak = np.zeros(len(Tpeakind)-1)
+for i in range(1,len(Tpeakind)):
+    dtpeak[i-1] = Tpeak[i]-Tpeak[i-1]
+
+plt.figure()
+plt.plot(Tpeak[1:],dtpeak-np.mean(dtpeak))
+plt.show()
+
+nuigm,Sigm = fq.ezfft(Tpeak[1:],dtpeak-np.mean(dtpeak))
+
+plt.figure()
+plt.plot(nuigm[np.where(nuigm>0)],np.abs(Sigm)[np.where(nuigm>0)])
+plt.show()
+
 
 nurf,srf = freqdom(timeraw,voltraw)
 
@@ -55,8 +64,8 @@ b = 0.000001
 a = 10
 frep1 = 100e6
 lowf = 1e7
-lowpass = 1/(1+np.exp(b*(nurf-frep1/2)))
-lowpassneg = 1/(1+np.exp(b*(-nurf-frep1/2)))
+lowpass = 1/(1+np.exp(b*(nurf-20e6)))
+lowpassneg = 1/(1+np.exp(b*(-nurf+5e6)))
 highpass = -1/((1+np.exp(a*(nurf-lowf)))*(1+np.exp(-a*(nurf+lowf))))+1
 #Sfil = lowpass[np.where(nurf>=0)]*lowpassneg[np.where(nurf>=0)]*np.abs(srf[np.where(nurf>=0)])*highpass[np.where(nurf>=0)]
 Sfil = np.abs(srf[np.where(nurf>=0)])
@@ -73,24 +82,24 @@ plt.plot(nurf,lowpass*lowpassneg)
 plt.title("Filtered-Frequency")
 plt.show()
 
-plt.figure()
-plt.plot(nurf,np.abs(srf))
-plt.plot(nurf,np.real(srf))
-plt.plot(nurf,np.imag(srf))
+#plt.figure()
+#plt.plot(nurf,np.abs(srf))
+#plt.plot(nurf,np.real(srf))
+#plt.plot(nurf,np.imag(srf))
 #plt.plot(nurf[np.where(nurf>=0)][peakind],Speak[peakind]/max(Speak),".")
 #plt.semilogy()
-plt.title("Filtered-Frequency")
-plt.show()
+#plt.title("Filtered-Frequency")
+#plt.show()
 
 
 
-srff = srf*lowpass*lowpassneg*highpass
+srff = srf*lowpass*lowpassneg#*highpass
 
 tf,Etf = timedom(nurf,srff)
 tf = tf+tf[-1]
 
 plt.figure()
-plt.plot(tf,np.real(Etf))
+plt.plot(tf,np.abs(Etf))
 plt.title("Filtered-Time")
 plt.show()
 
@@ -105,8 +114,8 @@ voltavg = 0
 i = 0
 #t1 = 0.001295
 #t2 = 0.001299
-t1 = 0.001437
-t2 = 0.001443
+t1 = 0.01003
+t2 = 0.01006
 while i != nint:
     #voltavg = Etf[np.where((tf>=timeraw[Tpeakind][i]) & (tf<=timeraw[Tpeakind][i+1]))]
     #lenv = len(voltavg)
@@ -125,7 +134,7 @@ nurfavg,srfavg = freqdom(timeavg,voltavg)
 plt.figure()
 #plt.plot(nurf,np.abs(srf))
 plt.plot(nurfavg[np.where(nurfavg>=0)],(np.abs(srfavg[np.where(nurfavg>=0)])/max(np.abs(srfavg[np.where(nurfavg>=0)])))**2)
-#plt.semilogy()
+plt.semilogy()
 plt.title(f"Filtered-Averaged-N_int={nint}-Frequency")
 plt.show()
 
