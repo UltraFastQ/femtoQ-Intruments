@@ -15,7 +15,7 @@ pi = np.pi
 inst = scpi.Instrument('USB0') # initiates an object at specified port
 inst.connect() # connects the device to specfied port
 
-print(inst.source1.frequency()) # CW output Frequency in Hz. Returns current setting if there is no input in function
+print(inst.source1.frequency(3000000000)) # CW output Frequency in Hz. Returns current setting if there is no input in function
 
 inst.display.enable("ON") # "ON" or "OFF"
 

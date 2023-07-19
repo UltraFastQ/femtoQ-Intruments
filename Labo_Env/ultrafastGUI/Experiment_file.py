@@ -5284,7 +5284,7 @@ class iHR320:
         esw_e.bind('<Return>', lambda e: self.mono.set_front_entrance_slit(self.esw_var.get()))
         ssw_e.bind('<Return>', lambda e: self.mono.set_front_exit_slit(self.ssw_var.get()))
 
-
+        # exit mirror command not coded yet
 
 
 
