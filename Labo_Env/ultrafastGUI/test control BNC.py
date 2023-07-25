@@ -28,7 +28,7 @@ if mode == "slave":
     inst.source1.roscillator.output.state("ON")
     inst.source1.roscillator.output.frequency(100000000)
     inst.source1.roscillator.source("slave")
-"""    
+  
 elif mode == "external":
     inst.source1.roscillator.output("ON")
     inst.source1.roscillator.external.frequency(99999400)
@@ -39,4 +39,3 @@ elif mode == 'internal':
     inst.source1.roscillator.source("internal")
 #inst.roscillator.source.
 #inst.roscillator.external.frequency(99999400)
-"""

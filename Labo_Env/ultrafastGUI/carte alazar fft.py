@@ -24,8 +24,8 @@ try:
     voltraw = np.load("C:/Users/milio/OneDrive/Documents/Maitrise/Dual-frequency comb/Data/data 500Hz_500MS_filter.npy")
     #voltraw = np.load("test.npy")
 except:
-    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/test_1.1.1.1.B.txt',unpack=True)
-    np.save("test.npy",voltraw)
+    voltraw = loadtxt('C:/Users/Liom-admin/Documents/AlazarTech/2023.07.11_13.59.46_0db_1500us_1.1.1.1.B.txt',unpack=True)
+    #np.save("test.npy",voltraw)
     
 sample_rate = 500e6 #S/s
 timeraw = np.linspace(0,len(voltraw)/sample_rate,len(voltraw))
@@ -56,7 +56,7 @@ nuigm,Sigm = fq.ezfft(Tpeak[1:],dtpeak-np.mean(dtpeak))
 plt.figure()
 plt.plot(nuigm[np.where(nuigm>0)],np.abs(Sigm)[np.where(nuigm>0)])
 plt.show()
-
+"""
 
 nurf,srf = freqdom(timeraw,voltraw)
 
@@ -150,7 +150,7 @@ plt.show()
 
 
 
-
+"""
 
 
 

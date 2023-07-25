@@ -5547,12 +5547,12 @@ class Horiba_spectrum:
         utime_var = tk.IntVar()
         self.wait_var = tk.IntVar()
         sli_var.set(1)
-        sle_var.set(0.5)
-        self.pos_var.set(1000)
-        gra_var.set(150)
-        min_var.set(1000)
-        max_var.set(2000)
-        step_var.set(100)
+        sle_var.set(0.1)
+        self.pos_var.set(1475)
+        gra_var.set(600)
+        min_var.set(1475)
+        max_var.set(1675)
+        step_var.set(0.25)
         utime_var.set(1)
         self.wait_var.set(1)
         
@@ -5621,7 +5621,7 @@ class Horiba_spectrum:
         self.wait.grid(row=10, column=0, columnspan=2, sticky='nsew')
     def save(self):
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
-        np.savez('E:/GitHub/femtoQ-Intruments/Labo_Env/ultrafastGUI/measurements/' + timeStamp + '_spectrum',lamda = self.L,signal = self.S)
+        np.savez('C:/Users/Liom-admin/Documents/Monochromateur/' + timeStamp + '_spectrum',lamda = self.L,signal = self.S)
 
     def SignalRef(self):
         if self.refExists is False:
