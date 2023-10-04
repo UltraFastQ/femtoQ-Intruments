@@ -1628,7 +1628,7 @@ class SpectroFrame(tk.Frame):
         connect = tk.Button(option_frame, text='Connect',
                             command=lambda: self.Spectro.connect(exp_dependencie=True))
         self.inte_var = tk.IntVar()
-        self.inte_var.set(1000)
+        self.inte_var.set(1)
         inte_lbl = tk.Label(option_frame, text='Integration time [ms]:')
         inte = tk.Entry(option_frame, textvariable=self.inte_var, width=6)
         inte.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(self.inte_var))

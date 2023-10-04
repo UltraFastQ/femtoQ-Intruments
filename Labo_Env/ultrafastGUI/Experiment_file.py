@@ -1483,14 +1483,14 @@ class Electro_Optic_Sampling_ZeroDelay:
         self.running = True
         
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectro']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     
@@ -1576,7 +1576,7 @@ class Electro_Optic_Sampling_ZeroDelay:
 
         
             # Spectro
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectro']
@@ -1598,7 +1598,7 @@ class Electro_Optic_Sampling_ZeroDelay:
             pos[i] = self.PI.get_position()
             
             # Acquire spectrum and plot graph 
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
@@ -1834,14 +1834,14 @@ class CHI3_Sampling_ZeroDelay:
         self.running = True
         
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectro']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     
@@ -1927,7 +1927,7 @@ class CHI3_Sampling_ZeroDelay:
 
         
             # Spectro
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectro']
@@ -1949,7 +1949,7 @@ class CHI3_Sampling_ZeroDelay:
             self.pos[i] = self.PI.get_position()
             
             # Acquire spectrum and plot graph 
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             self.wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
@@ -2110,9 +2110,10 @@ class FROG:
         #vel_e.bind('<Return>', lambda e: self.PI.set_velocity(vel_var))
         
         def connect_spectrometer(self):
-            self.Spectro.connect(exp_dependencie=True)
-            self.spectro_start_button['state'] = 'normal'
-            self.cons_b['state'] = 'disabled'
+            connected = self.Spectro.connect(exp_dependencie=True)
+            if connected:
+                self.spectro_start_button['state'] = 'normal'
+                self.cons_b['state'] = 'disabled'
         
         def connect_stage(self):
             self.PI.connect_identification(dev_name='E-816',exp_dependencie=True)
@@ -2207,7 +2208,7 @@ class FROG:
 #             step=1
 # =============================================================================
         try:
-             wl = len(self.Spectro.spectro.wavelengths())
+             wl = len(self.Spectro.get_wavelengths())
         except:
             return
         
@@ -2237,14 +2238,14 @@ class FROG:
         self.running = True
         
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectrometer']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     
@@ -2340,7 +2341,7 @@ class FROG:
         scan_graph.update_graph()
         
             # Spectro
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectrometer']
@@ -2365,7 +2366,7 @@ class FROG:
             pos[i] = self.PI.get_position()
             
             # Acquire spectrum and plot graph 
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
@@ -2804,7 +2805,7 @@ class TwoDSI:
         scan_graph.update_graph()
         
             # Spectro
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectrometer']
@@ -2826,7 +2827,7 @@ class TwoDSI:
             pos[i] = self.PI.get_position()
             
             # Acquire spectrum and plot graph 
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
@@ -3048,7 +3049,7 @@ class TwoDSI:
     def adjust_sheargraph(self):
 # =============================================================================
 #         try:
-#              wl = len(self.Spectro.spectro.wavelengths())
+#              wl = len(self.Spectro.get_wavelengths())
 #         except:
 #             return
 # =============================================================================
@@ -3056,7 +3057,7 @@ class TwoDSI:
         if not self.shearCalculated:
             self.graph_dict["Shear calc. curve"].LineFit, =  self.graph_dict["Shear calc. curve"].axes.plot([], [])
         
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         refSpectrum = self.refSpectrum[(wl >= self.shearWL[0])&(wl<=self.shearWL[-1])]
         self.find_shear(self.shearWL, refSpectrum, self.shearTrace, self.shearPos)
         
@@ -3099,7 +3100,7 @@ class TwoDSI:
         
     def adjust_2dsigraph(self):
         try:
-             wl = len(self.Spectro.spectro.wavelengths())
+             wl = len(self.Spectro.get_wavelengths())
         except:
             return
         
@@ -3132,14 +3133,14 @@ class TwoDSI:
         self.running = True
         
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectrometer']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     
@@ -3168,7 +3169,7 @@ class TwoDSI:
         
     def save(self):
         
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         refSpectrum = self.refSpectrum[(wl >= self.shearWL[0])&(wl<=self.shearWL[-1])]
         
         if not np.all( self.shearWL == self.twoDSIWL ):
@@ -3274,7 +3275,7 @@ class TwoDSI:
         scan_graph.update_graph()
         
             # Spectro
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectrometer']
@@ -3296,7 +3297,7 @@ class TwoDSI:
             pos[i] = self.PI.get_position()
             
             # Acquire spectrum and plot graph 
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             wl_crop = wl[(wl>minwl)&(wl<maxwl)]
             S_crop = S[(wl>minwl)&(wl<maxwl)]
@@ -4521,7 +4522,7 @@ class PumpProbe:
         from scipy.signal import savgol_filter
         self.align_state = not self.align_state
         data_pos=[]
-        wavelength=self.Spectro.spectro.wavelengths()
+        wavelength=self.Spectro.get_wavelengths()
         witness=abs(wavelength-self.timingWL_var.get()) <= 1
         
         signal_graph = self.graph_dict['Signal']
@@ -4598,14 +4599,14 @@ class PumpProbe:
         
         #self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectro']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     
@@ -4633,7 +4634,7 @@ class PumpProbe:
 #             step=1
 # =============================================================================
         # try:
-        #      wl = len(self.Spectro.spectro.wavelengths())
+        #      wl = len(self.Spectro.get_wavelengths())
         # except:
         #     return
         
@@ -4778,7 +4779,7 @@ class PumpProbe:
 
             # Spectro
         self.Spectro.set_trigger(0)
-        self.wl = self.Spectro.spectro.wavelengths()
+        self.wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectro']
@@ -5047,14 +5048,14 @@ class batchSpectra:
         self.running = True
         
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectrometer']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     
@@ -5093,7 +5094,7 @@ class batchSpectra:
         
         
         # Spectro
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectrometer']
@@ -6019,14 +6020,14 @@ class interferenceStability:
         self.running = True
         
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectrometer']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     
@@ -6071,7 +6072,7 @@ class interferenceStability:
         
         
         # Spectro
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         self.Spectro.adjust_integration_time(inte_time)
         spectro_graph = self.graph_dict['Spectrometer']
@@ -6294,7 +6295,7 @@ class D_Scan:
         self.running = True
         self.window_array = np.fromstring(window_array.get(),dtype=float, sep=', ')
         try:
-            self.wl=self.Spectro.spectro.wavelengths()
+            self.wl=self.Spectro.get_wavelengths()
         except:
             self.wl=np.arange(1,513,1)
         
@@ -6433,7 +6434,7 @@ class D_Scan:
 #             step=1
 # =============================================================================
         #try:
-         #    wl = len(self.Spectro.spectro.wavelengths())
+         #    wl = len(self.Spectro.get_wavelengths())
         #except:
          #   return
         
@@ -6489,14 +6490,14 @@ class D_Scan:
         
         #self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
         self.Spectro.adjust_integration_time(inte_time)
-        wl = self.Spectro.spectro.wavelengths()
+        wl = self.Spectro.get_wavelengths()
         S = self.Spectro.get_intensities()
         spectro_graph = self.graph_dict['Spectro']
         spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
         spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
         
         while self.running is True:            
-            wl = self.Spectro.spectro.wavelengths()
+            wl = self.Spectro.get_wavelengths()
             S = self.Spectro.get_intensities()
             spectro_graph.Line.set_xdata(wl)
             spectro_graph.Line.set_ydata(S)     

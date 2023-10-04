@@ -93,14 +93,53 @@ class Spectro:
                 device = device_popup(value=devices, lib_=sb)
             else:
                 device = devices[0]
+            self.spectroType = 'ocean'
+            self.spectro = sb.Spectrometer(device)
+            self.spectro.integration_time_micros(1000)
+            #return 1
         else:
-            messagebox.showinfo(title='Error', message='It seems like no devices are connected')
-            return
-        print(device)
-        self.spectro = sb.Spectrometer(device)
+            import avaspec
+            ret = avaspec.AVS_Init(-1)
+            ret = avaspec.AVS_UpdateUSBDevices()
+            ret = avaspec.AVS_GetList()
+            if ret:
+                self.spectroType = 'avantes'
+                self.spectro = avaspec.AVS_Activate(ret[0])
+                config = avaspec.DeviceConfigType
+                ret = avaspec.AVS_GetParameter(self.spectro)
+                ret = avaspec.AVS_UseHighResAdc(self.spectro, True)
+                self.spectroconfig = avaspec.MeasConfigType
+                self.spectroconfig.m_StartPixel = 0
+                self.spectroconfig.m_StopPixel = avaspec.AVS_GetNumPixels(self.spectro) - 1
+                self.spectroconfig.m_IntegrationTime = 1 #in milliseconds
+                self.spectroconfig.m_IntegrationDelay = 0 #in FPGA clock cycles
+                self.spectroconfig.m_NrAverages = 1
+                self.spectroconfig.m_CorDynDark_m_Enable = 0  # nesting of types does NOT work!!
+                self.spectroconfig.m_CorDynDark_m_ForgetPercentage = 100
+                self.spectroconfig.m_Smoothing_m_SmoothPix = 0
+                self.spectroconfig.m_Smoothing_m_SmoothModel = 0
+                self.spectroconfig.m_SaturationDetection = 0
+                self.spectroconfig.m_Trigger_m_Mode = 0
+                self.spectroconfig.m_Trigger_m_Source = 0
+                self.spectroconfig.m_Trigger_m_SourceType = 0
+                self.spectroconfig.m_Control_m_StrobeControl = 0
+                self.spectroconfig.m_Control_m_LaserDelay = 0
+                self.spectroconfig.m_Control_m_LaserWidth = 0
+                self.spectroconfig.m_Control_m_LaserWaveLength = 0.0
+                self.spectroconfig.m_Control_m_StoreToRam = 0
+                ret = avaspec.AVS_PrepareMeasure(self.spectro, self.spectroconfig)
+                scans = -1
+                avaspec.AVS_Measure(self.spectro, 0, scans)
+                #return 1
+            else:
+                messagebox.showinfo(title='Error', message='It seems like no devices are connected')
+                return 0
+        
+        
+        
         self.adjust_wavelength_range()
         # Set basic integration time
-        self.spectro.integration_time_micros(1000)
+        #self.adjust_integration_time(1)
         # Display message of successful connection
         messagebox.showinfo(title='Spectrometer', message='Spectrometer is connected.')
         # Update of the Experimental window
@@ -114,6 +153,22 @@ class Spectro:
             for experiment in experiments:
                 experiments[experiment].update_options('Spectrometer')
 
+        return 1
+
+    def get_wavelengths(self):
+        if not self.spectro:
+            return
+        # Extract the spectral range of the device and put it as limits of the
+        # wavelength graphic.
+        if self.spectroType == 'ocean':
+            wavelengths = self.spectro.wavelengths()
+        elif self.spectroType == 'avantes':
+            import avaspec
+            pixels = avaspec.AVS_GetNumPixels(self.spectro)
+            lamb = avaspec.AVS_GetLambda(self.spectro)
+            wavelengths = np.array(lamb[0:pixels])
+        return wavelengths    
+        
     def adjust_wavelength_range(self):
         """
         This function is used to adjust the xaxis to be fitting the wavelength
@@ -124,9 +179,18 @@ class Spectro:
             return
         # Extract the spectral range of the device and put it as limits of the
         # wavelength graphic.
-        wavelengths = self.spectro.wavelengths()
-        min_wave = min(wavelengths)
-        max_wave = max(wavelengths)
+        if self.spectroType == 'ocean':
+            wavelengths = self.spectro.wavelengths()
+            min_wave = min(wavelengths)
+            max_wave = max(wavelengths)
+        elif self.spectroType == 'avantes':
+            import avaspec
+            pixels = avaspec.AVS_GetNumPixels(self.spectro)
+            lamb = avaspec.AVS_GetLambda(self.spectro)
+            wavelengths = np.array(lamb[0:pixels])
+            min_wave = min(wavelengths)
+            max_wave = max(wavelengths)
+            
         self.wv_graphic.axes.set_xlim([min_wave, max_wave])
         self.wv_graphic.Line.set_xdata(wavelengths)
         self.wv_graphic.Line.set_ydata(np.zeros(len(wavelengths)))
@@ -159,8 +223,14 @@ class Spectro:
         time = variable.get()
         if time == 0:
             time = 1
-        self.spectro.integration_time_micros(time*1000)
-
+        if self.spectroType == 'ocean':
+            self.spectro.integration_time_micros(time*1000)
+        elif self.spectroType == 'avantes':
+            import avaspec
+            avaspec.AVS_StopMeasure(self.spectro)
+            self.spectroconfig.m_IntegrationTime = time
+            avaspec.AVS_PrepareMeasure(self.spectro, self.spectroconfig)
+            avaspec.AVS_Measure(self.spectro, 0, -1)
 
     def set_trigger(self, mode):
         """
@@ -198,14 +268,16 @@ class Spectro:
                 ave = 1
         if ave == 0:
             ave = 1
-        intensities = np.zeros((ave, len(self.spectro.wavelengths())))
+        intensities = np.zeros((ave, len(self.get_wavelengths())))
         # Calculating the average and computing the mean value
         for i in range(ave):
-            intensities[i, :] = self.spectro.intensities()
+            intensities[i, :] = self.get_intensities()
         intensities = np.mean(intensities, axis=0)
         # Substracting the dark spectrum from the intensities
-        if self.dark_spectrum:
-            intensities -= self.dark_array
+# =============================================================================
+#         if self.dark_spectrum:
+#             intensities -= self.dark_array
+# =============================================================================
         # Dividing efficiency from the intensities
         if self.eff_divider:
             intensities = np.divide(intensities, self.eff_array)
@@ -240,9 +312,25 @@ class Spectro:
         """
         if not self.spectro:
             return
-        intensities = self.spectro.intensities()
+        if self.spectroType == 'ocean':
+            intensities = self.spectro.intensities()
+        elif self.spectroType == 'avantes':
+            import avaspec
+# =============================================================================
+#             dataready = False
+#             import time
+#             while not dataready:
+#                 dataready = avaspec.AVS_PollScan(self.spectro)
+#                 time.sleep(self.spectroconfig.m_IntegrationTime/1000)
+# =============================================================================
+            pixels = avaspec.AVS_GetNumPixels(self.spectro)
+            intensities = np.zeros(pixels)
+            for ii in range(40):
+                timestamp, scopedata = avaspec.AVS_GetScopeData(self.spectro)
+                intensities += np.array(scopedata[0:pixels])/40
         if self.dark_spectrum is True:
             intensities = intensities - self.dark_array
+            
         return intensities
 
     def enable_darkspectrum(self, variable, dark_button):
@@ -263,7 +351,6 @@ class Spectro:
         # Getting the state of the Chekbox
         state = variable.get()
         if state == 'enable':
-            self.dark_spectrum = True
             # Asking if there is something in front of the spectro
             answ = messagebox.askyesno(title='INFO',
                                        message='Is there any incident beam'+
@@ -275,6 +362,7 @@ class Spectro:
                 messagebox.showinfo(title='Dark Spectrum',
                                     message='Dark spectrum completed.')
                 dark_button['state'] = 'normal'
+                self.dark_spectrum = True
             else:
                 messagebox.showinfo(title='Dark Spectrum',
                                     message='Block the beam and try again')
@@ -290,7 +378,16 @@ class Spectro:
         Function that extract a simple intensity with the integration time
         asked and save it in the dark_array attribute
         """
-        self.dark_array = self.spectro.intensities()
+        if not self.spectro:
+            return
+        if self.spectroType == 'ocean':
+            intensities = self.spectro.intensities()
+        elif self.spectroType == 'avantes':
+            import avaspec
+            timestamp, scopedata = avaspec.AVS_GetScopeData(self.spectro)
+            pixels = avaspec.AVS_GetNumPixels(self.spectro)
+            intensities = np.array(scopedata[0:pixels])
+        self.dark_array = intensities
         
         
     def measure_average_darkspectrum(self,numDark = 1):
@@ -298,10 +395,10 @@ class Spectro:
         Function that extract a simple intensity with the integration time
         asked and save it in the dark_array attribute
         """
-        tmp = self.spectro.intensities()
+        tmp = self.get_intensities()
         
         for ii in range(numDark-1):
-            tmp += self.spectro.intensities()
+            tmp += self.get_intensities()
         self.dark_array = tmp / numDark
         
 
@@ -350,7 +447,7 @@ class Spectro:
             the tkinter Entry to be updated in real time.
         """
         # Manipulation to prepare for the fft
-        wavelengths = self.spectro.wavelengths()
+        wavelengths = self.get_wavelengths()
         frequencies = np.divide(sc.c, wavelengths*1e-9)
         frequencies = np.flip(frequencies)
         intensities = np.flip(intensities)
