@@ -6910,3 +6910,739 @@ class PUMA:
         self.spectro_start_button['state'] = 'normal'
         self.start_button['state'] = 'normal'
         self.spectro_connect_button['state'] = 'normal'
+
+
+
+
+
+class BSVTunnel:
+    
+    # This class is implicitly called in the main frame
+    def __init__(self, mainf = None):
+        # here are the initiation of the item that will be called throughout the program as self
+        self.empty_var = []
+        self.graph_dict = {}
+        self.PI = mainf.Frame[2].Linstage
+        self.Zurich = mainf.Frame[1].Zurich
+        self.Spectro = mainf.Frame[3].Spectro
+        self.plotRefSignal = False
+        self.refSignal =[]
+        self.refTime =[]
+        self.refExists = False
+        self.LogSpec = False
+        self.phaseExists = False
+    def create_frame(self, frame):
+        # Define labels
+                # Delay line
+        pos_lbl = tk.Label(frame, text = 'Go to position (mm):')
+        vel_lbl = tk.Label(frame, text = 'Set velocity to:')
+ 
+        intTime_lbl = tk.Label(frame, text ='Integration time (ms):')
+        intTime_var = tk.DoubleVar()
+        intTime_var.set(1)
+        intTime_e = tk.Entry(frame, width = 6, textvariable = intTime_var)
+        intTime_e.bind('<Return>', lambda e: self.Spectro.adjust_integration_time(intTime_var))
+        
+        param_lbl = tk.Label(frame, text = 'Experiment parameters')
+        min_lbl = tk.Label(frame, text = 'Min. pos. (mm):')
+        max_lbl = tk.Label(frame, text = 'Max. pos. (mm):')
+        step_lbl = tk.Label(frame, text = 'Step size (um):')
+        lamda_min_lbl = tk.Label(frame, text = 'Min. Wavelength (nm):')
+        lamda_max_lbl = tk.Label(frame, text = 'Max. Wavelength (nm):')
+        lamda_delta_lbl = tk.Label(frame, text = 'Wavelength inccrement (nm):')
+        utime_lbl = tk.Label(frame, text='Update graph after [s]:')
+        directory_lbl = tk.Label(frame, text='Data saving directory')
+        
+        
+        # Define variables
+                # PI stage
+        pos_var = tk.DoubleVar()
+        self.vel_var = tk.DoubleVar()
+        min_var = tk.DoubleVar()
+        max_var = tk.DoubleVar()
+        step_var = tk.DoubleVar()
+        lamda_min_var = tk.DoubleVar()
+        lamda_max_var = tk.DoubleVar()
+        lamda_delta_var = tk.DoubleVar()        
+        utime_var = tk.IntVar()
+        self.wait_var = tk.IntVar()
+        self.directory_var=tk.StringVar()
+        
+        pos_var.set(0)
+        self.vel_var.set(0.5)
+        min_var.set(0)
+        max_var.set(39)
+        lamda_min_var.set(1200)
+        lamda_max_var.set(2200)
+        lamda_delta_var.set(200)
+        step_var.set(1000)
+        utime_var.set(1)
+        self.directory_var.set('E:/Gabriel/Fiber_Charact/')
+        
+        # Define entry boxes
+                # PI stage
+        pos_e = tk.Entry(frame, width = 6, textvariable = pos_var)
+        vel_e = tk.Entry(frame, width = 6, textvariable = self.vel_var)
+        min_e = tk.Entry(frame, width = 6, textvariable = min_var)
+        max_e = tk.Entry(frame, width = 6, textvariable = max_var)
+        step_e = tk.Entry(frame, width = 6, textvariable = step_var)
+        lamda_min_e = tk.Entry(frame, width = 6, textvariable = lamda_min_var)
+        lamda_max_e = tk.Entry(frame, width = 6, textvariable = lamda_max_var)
+        lamda_delta_e = tk.Entry(frame, width = 6, textvariable = lamda_delta_var)
+        utime_e = tk.Entry(frame, width=6, textvariable = utime_var)
+        directory_e = tk.Entry(frame, width=30, textvariable = self.directory_var)
+
+        # Define position of all objects on the grid
+                # PI stage
+        pos_lbl.grid(row=2, column=0, sticky='nsw')
+        pos_e.grid(row=2, column=1, sticky='nse')
+        vel_lbl.grid(row=3, column=0, sticky='nsw')
+        vel_e.grid(row=3, column=1, sticky='nse')
+     
+        intTime_lbl.grid(row=8, column=0, sticky='nsw')
+        intTime_e.grid(row=8, column=1, sticky='nse')
+        
+        param_lbl.grid(row=9, column=0, columnspan=2, sticky='nsew')
+        min_lbl.grid(row=10, column=0, sticky='nsw')
+        min_e.grid(row=10, column=1, sticky='nse')
+        max_lbl.grid(row=11, column=0, sticky='nsw')
+        max_e.grid(row=11, column=1, sticky='nse')
+        step_lbl.grid(row=12, column=0, sticky='nsw')
+        step_e.grid(row=12, column=1, sticky='nse')
+        lamda_min_lbl.grid(row=13, column=0, sticky='nsw')
+        lamda_min_e.grid(row=13, column=1, sticky='nse')
+        lamda_max_lbl.grid(row=14, column=0, sticky='nsw')
+        lamda_max_e.grid(row=14, column=1, sticky='nse')
+        lamda_delta_lbl.grid(row=15, column=0, sticky='nsw')
+        lamda_delta_e.grid(row=15, column=1, sticky='nse')
+        utime_lbl.grid(row=16, column=0, sticky='nsw')
+        utime_e.grid(row=16, column=1, sticky='nse')
+        self.wait = tk.Checkbutton(frame,text='Settling wait time', variable=self.wait_var)   
+        self.wait.grid(row=17, column=0, columnspan=2, sticky='nsew')
+
+        directory_lbl.grid(row=18, column=0, sticky='nsw')
+        directory_e.grid(row=18, column=1, sticky='nse')
+
+
+        p_bar = ttk.Progressbar(frame, orient='horizontal', length=200, mode='determinate')
+        p_bar.grid(row=20, column=0, sticky='nsew', columnspan=2)
+        p_bar['maximum'] = 1
+        # Select a key and its effect when pressed in an entry box
+            # PI stage
+        pos_e.bind('<Return>', lambda e: self.PI.go_2position(pos_var))
+        vel_e.bind('<Return>', lambda e: self.PI.set_velocity(self.vel_var))
+            
+        # Start & stop buttons :
+
+        con_b = tk.Button(frame, text='Connect PI linear stage',
+                          command=lambda: self.PI.connect_identification(dev_name='C-891',exp_dependencie=True))
+        con_b.grid(row=1, column=0, columnspan=2, sticky='nsew')
+
+        self.spectro_connect_button = tk.Button(frame, text='Connect Spectrometer', state='normal', width=18,
+                                                command=lambda: self.connect_spectrometer())
+        self.spectro_connect_button.grid(row=4, column=0, columnspan=2, sticky='nsew')
+
+        self.spectro_start_button = tk.Button(frame, text='Start Spectrometer', state='disabled',width=18,
+                                        command=lambda: self.start_spectro(inte_time=intTime_var))
+        self.spectro_start_button.grid(row=5, column=0, sticky='nsew')
+        
+        self.spectro_stop_button = tk.Button(frame, text='Stop Spectrometer', state='disabled', width=18,
+                                             command=lambda: self.stop_spectro())
+        self.spectro_stop_button.grid(row=5, column=1, sticky='nsew')
+
+        self.dark_button = tk.Button(frame, text='Get dark spectrum', state='disabled',width=18,
+                           command=lambda: get_dark_spectrum(self))
+        self.dark_button.grid(row=6, column=0, sticky='nsew')
+        
+        self.sub_dark_button = tk.Button(frame, text='Substract dark spectrum', state='disabled',width=18,
+                                    command=lambda: remove_dark(self))
+        self.sub_dark_button.grid(row=6, column=1, sticky='nsew')
+        
+        self.rescale_button = tk.Button(frame, text='Rescale spectrum graph', state='disabled',width=18,
+                                        command=lambda: rescale(self))
+        self.rescale_button.grid(row=7, column=0, columnspan=2, sticky='nsew')
+
+        def get_dark_spectrum(self):
+            self.Spectro.measure_darkspectrum()
+            self.sub_dark_button['state']='normal'
+        
+        def remove_dark(self):
+            self.Spectro.dark_spectrum = not self.Spectro.dark_spectrum
+        
+        def rescale(self):
+            S = self.Spectro.get_intensities()
+            spectro_graph = self.graph_dict['Spectro']
+            spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+            spectro_graph.update_graph()
+
+
+        self.start_button = tk.Button(frame, text='Start Experiment', state='disabled', width=18,
+                                      command=lambda: self.start_experiment(max_pos=max_var, min_pos=min_var, step=step_var, lamda_max=lamda_max_var, lamda_min=lamda_min_var, lamda_delta=lamda_delta_var, progress=p_bar, update_time=utime_var))
+        self.start_button.grid(row=19, column=0, sticky='nsew')
+        self.stop_button = tk.Button(frame, text='Stop Experiment', state='disabled', width=18,
+                                     command=lambda: self.stop_experiment())
+        self.stop_button.grid(row=19, column=1, sticky='nsew')   
+        self.save_button = tk.Button(frame, text='Save measurement', state='disabled',width=18,
+                                        command=lambda: self.save())
+        self.RefSignal_button = tk.Button(frame, text='Signal reference', state='disabled', command=lambda: self.SignalRef())
+        self.RefSignal_button.grid(row=21, column=0, sticky='nsw')
+        self.RefOff_button = tk.Button(frame, text='Ref ON/OFF', state='disabled',command=lambda: self.RemoveRef())
+        self.RefOff_button.grid(row=21, column=1, sticky='nse')
+        self.Log_button = tk.Button(frame, text='Log Spectrum ON/OFF', state='disabled',command=lambda: self.LogSpectrum())
+        self.Log_button.grid(row=21, columnspan=2, sticky='nsew')
+        self.save_button.grid(row=22, column=0, columnspan=2, sticky='nsew')
+        
+        
+    def connect_spectrometer(self):
+        self.Spectro.connect(exp_dependencie=True)
+        self.spectro_start_button['state'] = 'normal'       
+
+    def start_spectro(self, inte_time=None):
+        self.dark_button['state'] = 'normal'
+        self.sub_dark_button['state'] = 'normal'
+        self.rescale_button['state'] = 'normal'
+        self.spectro_stop_button['state'] = 'normal'
+        self.spectro_start_button['state'] = 'disabled'
+        self.start_button['state'] = 'disabled'
+        self.spectro_connect_button['state'] = 'disabled'
+        self.running = True
+        
+        #self.Spectro.set_trigger(0)         #Setting an external hardware edge trigger
+        self.Spectro.adjust_integration_time(inte_time)
+        wl = self.Spectro.spectro.wavelengths()
+        S = self.Spectro.get_intensities()
+        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+        spectro_graph.axes.set_xlim([np.min(wl),np.max(wl)])
+        
+        while self.running is True:            
+            wl = self.Spectro.spectro.wavelengths()
+            S = self.Spectro.get_intensities()
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)     
+            spectro_graph.Line.set_xdata(wl)
+            spectro_graph.Line.set_ydata(S)
+            spectro_graph.update_graph()
+            
+    def stop_spectro(self):
+        self.running = False
+        self.dark_button['state'] = 'disabled'
+        self.sub_dark_button['state'] = 'disabled'
+        self.rescale_button['state'] = 'disabled'
+        self.spectro_stop_button['state'] = 'disabled'
+        self.spectro_start_button['state'] = 'normal'
+        self.start_button['state'] = 'normal'
+        self.spectro_connect_button['state'] = 'normal'
+
+    def get_dark_spectrum(self):
+        self.Spectro.measure_darkspectrum()
+        self.sub_dark_button['state']='normal'
+    
+    def remove_dark(self):
+        self.Spectro.dark_spectrum = not self.Spectro.dark_spectrum
+    
+    def rescale(self):
+        S = self.Spectro.get_intensities()
+        spectro_graph = self.graph_dict['Spectro']
+        spectro_graph.axes.set_ylim([np.min(S),np.max(S)*1.1])
+        spectro_graph.update_graph()
+        
+
+
+    
+    def save(self):
+        timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
+        np.savez(self.directory_var.get() + timeStamp+'_FiberCharact_measurement',data = self.data_array ,lamda = self.lamda_array)
+        
+    def LogSpectrum(self):
+        if self.LogSpec is False:
+            self.LogSpec = True
+            LogAA = np.log(self.AA)
+            self.graph_dict['Spectrum'].Line.set_ydata(LogAA)
+            if ((self.refExists is True)&(self.plotRefSignal is True)):
+                LogAref = np.log(self.refSpec)
+                self.graph_dict['Spectrum'].LineRef.set_ydata(LogAref)
+            self.graph_dict['Spectrum'].axes.set_ylim([np.min(LogAA),1.2*np.max(LogAA)])
+            self.graph_dict['Spectrum'].update_graph()
+        elif self.LogSpec is True:
+            self.LogSpec = False
+            self.graph_dict['Spectrum'].Line.set_ydata(self.AA)
+            if ((self.refExists is True)&(self.plotRefSignal is True)):
+                self.graph_dict['Spectrum'].LineRef.set_ydata(self.refSpec)
+            self.graph_dict['Spectrum'].axes.set_ylim([1.2*np.min(self.AA),1.2*np.max(self.AA)])
+            self.graph_dict['Spectrum'].update_graph()
+            
+    def SignalRef(self):
+        if self.refExists is False:
+            self.graph_dict['Signal'].LineRef, =  self.graph_dict['Signal'].axes.plot([], [])
+            self.graph_dict['Spectrum'].LineRef, = self.graph_dict['Spectrum'].axes.plot([],[])
+            self.refExists = True
+        self.refSignal = self.S
+        self.refTime = self.t
+        self.refFreq = self.v
+        self.refSpec = self.AA
+        if self.plotRefSignal is False:
+            self.plotRefSignal = True
+        return
+    def RemoveRef(self):
+        if self.refExists is True:
+            if self.plotRefSignal is True:    
+                self.plotRefSignal = False
+                self.graph_dict['Signal'].LineRef.set_xdata([])
+                self.graph_dict['Signal'].LineRef.set_ydata([])
+                self.graph_dict['Spectrum'].LineRef.set_xdata([])
+                self.graph_dict['Spectrum'].LineRef.set_ydata([])
+            elif self.plotRefSignal is False:
+                self.plotRefSignal = True
+                self.graph_dict['Signal'].LineRef.set_xdata(self.refTime)
+                self.graph_dict['Signal'].LineRef.set_ydata(self.refSignal)
+                self.graph_dict['Spectrum'].LineRef.set_xdata([self.refFreq])
+                if self.LogSpec is True:
+                    self.graph_dict['Spectrum'].LineRef.set_ydata(np.log(self.refSpec))
+                else:
+                    self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
+            self.graph_dict['Signal'].update_graph()
+            self.graph_dict['Spectrum'].update_graph()
+        return
+    
+    def Zurich_acquire(self):
+        import time
+        path = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/sample'
+        path2 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/timeconstant'
+        path3 = '/' + '{}'.format(self.Zurich.info['device'])+'/demods/0/order'
+        tc= self.Zurich.info['daq'].getDouble(path2)
+        # print
+        order= self.Zurich.info['daq'].getDouble(path3)
+        if self.wait_var.get() == 1:
+            # Times for 99% settling. Source : https://www.zhinst.com/americas/resources/principles-lock-detection
+            if order == 1:
+                Settling_time = 4.61*tc
+            elif order == 2:
+                Settling_time = 6.64*tc
+            elif order == 3:
+                Settling_time = 8.41*tc
+            elif order == 4:
+                Settling_time = 10.05*tc
+            time.sleep(Settling_time)
+        self.Zurich.info['daq'].subscribe(path)
+        data_set = self.Zurich.info['daq'].poll(0.01,100,0,True)
+
+
+        try:
+            data = data_set[path]['x']
+            # print(data)
+            # print(len(data))
+        except:
+            pass
+        self.Zurich.info['daq'].unsubscribe(path)
+        return  data
+
+
+
+    def zurich_Boxcar(device_id, do_plot=False):
+        apilevel_example = 6  # The API level supported by this example.
+        err_msg = "This example can only be ran on UHF Instruments with the BOX option enabled."
+        # Call a zhinst utility function that returns:
+        # - an API session `daq` in order to communicate with devices via the data server.
+        # - the device ID string that specifies the device branch in the server's node hierarchy.
+        # - the device's discovery properties.
+        (daq, device, props) = zhinst.utils.create_api_session(
+            device_id, apilevel_example, required_devtype="UHF", required_options=["BOX"], required_err_msg=err_msg
+        )
+        zhinst.utils.api_server_version_check(daq)
+    
+        # Create a base configuration: Disable all available outputs, awgs, demods, scopes,...
+        zhinst.utils.disable_everything(daq, device)
+    
+        # Now configure the instrument for this experiment. The following channels
+        # and indices work on all device configurations. The values below may be
+        # changed if the instrument has multiple input/output channels and/or either
+        # the Multifrequency or Multidemodulator options installed.
+    #    out_channel = 0
+    #    out_mixer_channel = zhinst.utils.default_output_mixer_channel(props)
+        in_channel = 0
+        osc_index = 0
+    #    frequency = 400e3
+        boxcar_index = 0
+        inputpwa_index = 0
+        amplitude = 0.6
+        frequency = 39.063e6
+        windowstart = 5 # boxcar windowstart [degrees]
+        windowsize = 15e-9  # boxcar windowsize [seconds]
+        periods_vals = np.logspace(4, 4, 1, base=2)
+        demod_1_index = 3
+        demod_2_index = 7
+    #    demod_rate = 10e3
+        exp_setting = [
+            ["/%s/sigins/%d/imp50" % (device, in_channel), 1],
+            ["/%s/sigins/%d/ac" % (device, in_channel), 0],
+            ["/%s/sigins/%d/range" % (device, in_channel), 2 * amplitude],
+    #        ["/%s/demods/%d/enable" % (device, demod_index), 1],
+    #        ["/%s/demods/%d/order" % (device, demod_index), 4],
+            ["/%s/extrefs/0/enable" % (device), 0],
+            ["/%s/extrefs/1/enable" % (device), 0],
+            ["/%s/demods/%d/adcselect" % (device, demod_1_index), 3],
+            ["/%s/demods/%d/adcselect" % (device, demod_2_index), 3],
+    #        ["/%s/demods/%d/mode" % (device, demod_index), 2],
+    #        ["/%s/demods/%d/rate" % (device, demod_index), demod_rate],
+            ["/%s/inputpwas/%d/oscselect" % (device, inputpwa_index), osc_index],
+            ["/%s/inputpwas/%d/inputselect" % (device, inputpwa_index), in_channel],
+            ["/%s/inputpwas/%d/mode" % (device, inputpwa_index), 1],
+            ["/%s/inputpwas/%d/shift" % (device, inputpwa_index), 0],
+            ["/%s/inputpwas/%d/harmonic" % (device, inputpwa_index), 1],
+            ["/%s/inputpwas/%d/samplecount" % (device, inputpwa_index), 33.5544e6],
+            ["/%s/inputpwas/%d/enable" % (device, inputpwa_index), 1],
+            ["/%s/boxcars/%d/oscselect" % (device, boxcar_index), osc_index],
+            ["/%s/boxcars/%d/inputselect" % (device, boxcar_index), in_channel],
+            ["/%s/boxcars/%d/windowstart" % (device, boxcar_index), windowstart],
+            ["/%s/boxcars/%d/windowsize" % (device, boxcar_index), windowsize],
+            ["/%s/boxcars/%d/limitrate" % (device, boxcar_index), 13e6],
+            ["/%s/boxcars/%d/periods" % (device, boxcar_index), periods_vals[0]],
+            ["/%s/boxcars/%d/baseline/windowstart" % (device, boxcar_index), 220],
+            ["/%s/boxcars/%d/baseline/enable" % (device, boxcar_index), 0],
+            ["/%s/boxcars/%d/enable" % (device, boxcar_index), 1],
+            #ziDAQ('setInt', '/dev2318/boxcars/0/baseline/enable', 1);
+            ["/%s/oscs/%d/freq" % (device, osc_index), frequency],
+    #        ["/%s/sigouts/%d/on" % (device, out_channel), 1],
+    #        ["/%s/sigouts/%d/enables/%d" % (device, out_channel, out_mixer_channel), 1],
+    #        ["/%s/sigouts/%d/range" % (device, out_channel), 1],
+    #        ["/%s/sigouts/%d/amplitudes/%d" % (device, out_channel, out_mixer_channel), amplitude],
+        ]
+        daq.set(exp_setting)
+    
+        # Wait for boxcar output to settle
+        time.sleep(periods_vals[0] / frequency)
+    
+        # Perform a global synchronisation between the device and the data server:
+        # Ensure that the settings have taken effect on the device before issuing
+        # the poll().
+        daq.sync()
+    
+        # Get the values that were actually set on the device
+        frequency_set = daq.getDouble("/%s/oscs/%d/freq" % (device, osc_index))
+        windowstart_set = daq.getDouble("/%s/boxcars/%d/windowstart" % (device, boxcar_index))
+        windowsize_set = daq.getDouble("/%s/boxcars/%d/windowsize" % (device, boxcar_index))
+        rate = daq.getDouble("/%s/boxcars/%d/rate" % (device, boxcar_index))
+        bw = daq.getDouble("/%s/boxcars/%d/averagerbandwidth" % (device, boxcar_index))
+    
+        # Subscribe to the nodes we would like to record data from
+        boxcar_sample_path = "/%s/boxcars/%d/sample" % (device, boxcar_index)
+        boxcar_periods_path = "/%s/boxcars/%d/periods" % (device, boxcar_index)
+        inputpwa_wave_path = "/%s/inputpwas/%d/wave" % (device, inputpwa_index)
+        daq.subscribe([boxcar_sample_path, boxcar_periods_path, inputpwa_wave_path])
+        # We use getAsEvent() to ensure we obtain the first ``periods`` value; if
+        # its value didn't change, the server won't report the first value.
+        daq.getAsEvent(boxcar_periods_path)
+        
+    
+        for periods in periods_vals:
+            time.sleep(0.5)
+            daq.setInt(boxcar_periods_path, int(periods))
+    
+        # Poll the data
+        poll_length = 4 # [s]
+        poll_timeout = 500 # [ms]
+        poll_flags = 0
+        poll_return_flat_dict = True
+        data = daq.poll(poll_length, poll_timeout, poll_flags, poll_return_flat_dict)
+    
+        # Unsubscribe from all paths
+        daq.unsubscribe("*")
+    
+        # Check the dictionary returned by poll contains the subscribed data. The
+        # data returned is a dictionary with keys corresponding to the recorded
+        # data's path in the node hierarchy
+        assert data, "poll returned an empty data dictionary, did you subscribe to any paths?"
+        assert boxcar_sample_path in data, "data dictionary has no key '%s'" % boxcar_sample_path
+        assert boxcar_periods_path in data, "data dictionary has no key '%s'" % boxcar_periods_path
+        assert inputpwa_wave_path in data, "data dictionary has no key '%s'" % inputpwa_wave_path
+    
+        sample = data[boxcar_sample_path]
+    #    pwa = data[inputpwa_wave_path]
+    
+        # When using API Level 4 (or higher) poll() returns both the 'value' and
+        # 'timestamp' of the node. These are two vectors of the same length;
+        # which consist of (timestamp, value) pairs.
+        boxcar_value = sample["value"]
+        boxcar_timestamp = sample["timestamp"]
+        boxcar_periods_value = data[boxcar_periods_path]["value"]
+        boxcar_periods_timestamp = data[boxcar_periods_path]["timestamp"]
+        clockbase = float(daq.getInt("/%s/clockbase" % device))
+    
+        print(f"Measured average boxcar amplitude is {np.mean(boxcar_value):.5e} V.")
+    
+        if do_plot:
+            # get the sample rate of the device's ADCs
+            clockbase = float(daq.getInt("/%s/clockbase" % device))
+            # convert timestamps from ticks to seconds via clockbase
+            boxcar_t = (boxcar_timestamp - boxcar_timestamp[0]) / clockbase
+            boxcar_periods_t = (boxcar_periods_timestamp - boxcar_periods_timestamp[0]) / clockbase
+            boxcar_periods_t[0] = boxcar_t[0]
+            # Create plot
+            import matplotlib.pyplot as plt
+    
+            _, ax1 = plt.subplots()
+            ax2 = ax1.twinx()
+    
+            ax1.grid(True)
+            ax1.plot(boxcar_t, boxcar_value, label="boxcar output")
+            ax1.set_xlabel("Time (s)")
+    
+            ax2.step(
+                np.append(boxcar_periods_t, boxcar_t[-1]),
+                np.append(boxcar_periods_value, boxcar_periods_value[-1]),
+                "-r",
+                label="Averaging periods",
+            )
+            ax2.set_yscale("log")
+            ax1.set_xlim(min(boxcar_t[0], boxcar_periods_t[0]), max(boxcar_t[-1], boxcar_periods_t[-1]))
+            ax2.legend(loc=1)
+            ax1.set_title("Boxcar output: The effect of averaging\nperiods on the boxcar value.")
+            ax1.legend(loc=4)
+            ax1.set_ylabel("Boxcar value (V)")
+            ax2.set_ylabel("Number of Averaging Periods")
+    
+            _, ax = plt.subplots()
+            ax.grid(True)
+            pwa_wave = data[inputpwa_wave_path][-1]
+            pwa_wave["binphase"] = pwa_wave["binphase"] * 360 / (2 * np.pi)
+            ax.axhline(0, color="k")
+    #         The inputpwa waveform is stored in 'x', currently 'y' is unused.
+            ax.plot(pwa_wave["binphase"], 1e6*pwa_wave["x"])
+            windowsize_set_degrees = 360 * frequency_set * windowsize_set
+            phase_window = (pwa_wave["binphase"] >= windowstart_set) & (
+                pwa_wave["binphase"] <= windowstart_set + windowsize_set_degrees
+            )
+            ax.fill_between(pwa_wave["binphase"], 0, pwa_wave["x"], where=phase_window, alpha=0.2)
+            ax.set_xlim(0, 360)
+            title = "Input PWA waveform, the shaded region shows the portion\n of the waveform the boxcar is integrating."
+            ax.set_title(title)
+            ax.set_xlabel("Phase (degrees)")
+            ax.set_ylabel("Amplitude (uV)")
+    
+    #        plt.savefig('ac_on.png')
+            plt.show()
+        return sample,clockbase,bw,rate
+    # device_id="dev2318"
+    # sample,clockbase,bw,rate=run_example(device_id, do_plot=False)
+    # values=sample["value"]
+    # timestmp=(sample["timestamp"]-sample["timestamp"][0])/clockbase
+    # print("The averaging bandwidth is",bw," and the actual rate is",rate)
+    # #fin_table = np.column_stack((timestmp,values))
+    # #titre= "Rate "+str(rate)+" bw : "+str(bw)
+    # #title="gatewidth_5n_ps32_2Mlowpass_1Mohm_ACon_3.txt"
+    # #np.savetxt(title,fin_table,delimiter=" ",header=titre)
+
+
+
+
+
+    def stop_experiment(self):
+        self.running = False
+
+    def start_experiment(self, min_pos=None, max_pos=None, step = None, lamda_max=None, lamda_min=None, lamda_delta=None, progress=None, update_time=None):
+        self.stop_button['state'] = 'normal'
+        self.start_button['state'] = 'disabled'
+        self.save_button['state'] = 'disabled'
+        self.RefSignal_button['state'] = 'disabled'
+        self.RefOff_button['state'] = 'disabled'
+        self.Log_button['state'] = 'disabled'
+        self.running = True
+
+        # Imports
+        from pipython import pitools
+        import time
+        import scipy
+        import femtoQ.tools as fQ
+        c = scipy.constants.c
+        # Main experiment
+        if self.PI == None:
+            self.PI = self.mainf.Frame[2].Linstage
+
+            # Parameters initialisation
+        max_pos = max_pos.get()
+        min_pos = min_pos.get()
+        step = step.get()/1000
+        lamda_min=int(lamda_min.get())
+        lamda_max=int(lamda_max.get())
+        lamda_delta=int(lamda_delta.get())
+        
+        update_time = update_time.get()
+
+        return_vel = tk.IntVar()
+        return_vel.set(1)
+
+
+            # Verification
+        if not self.PI.device:
+            return
+
+        if (max_pos is None) or (min_pos is None):
+            return
+
+            # Getting the max and min possible value of the device
+        maxp = self.PI.device.qTMX(self.PI.axes).get(str(self.PI.axes))
+        minp = self.PI.device.qTMN(self.PI.axes).get(str(self.PI.axes))
+        
+        
+            # This is a fail safe in case you don't know your device
+        if not(min_pos >= minp and max_pos >= minp and min_pos <= maxp and max_pos <= maxp):
+            messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
+                                'of your physik instrument device')
+            return
+
+            # Steps and position vector initialisation
+        nsteps = int(np.ceil((max_pos - min_pos)/step))
+        iteration = np.linspace(0, nsteps, nsteps+1)
+        move = np.linspace(min_pos, max_pos, nsteps+1)
+
+
+            # Wavelength steps initialization
+        steps_lamda = int(np.floor((lamda_max-lamda_min)/lamda_delta)+1)
+        self.lamda_array=np.linspace(lamda_min,lamda_max,steps_lamda)
+        self.data_array = np.zeros([steps_lamda,2,nsteps+1])
+
+            # Variables for the graph update
+        
+        last_gu = time.time()
+        scan_graph = self.graph_dict['Scanning']
+        scan_graph.axes.set_ylim([min_pos, max_pos])
+        scan_graph.axes.set_xlim([0, nsteps])
+        scan_graph.Line.set_xdata([])
+        scan_graph.Line.set_ydata([])
+        scan_graph.Line.set_marker('o')
+        scan_graph.Line.set_markersize(2)
+        scan_graph.update_graph()
+        EOS_graph = self.graph_dict['Signal']
+        EOS_graph.axes.set_ylim([-10,10])
+        EOS_graph.axes.set_xlim([0, (max_pos-min_pos)*2/1000/c*1e15])
+        EOS_graph.Line.set_xdata([])
+        EOS_graph.Line.set_ydata([])
+        if self.plotRefSignal is True:
+            EOS_graph.LineRef.set_xdata(self.refTime)
+            EOS_graph.LineRef.set_ydata(self.refSignal)
+            EOS_graph.LineRef.set_linestyle('--')
+            self.graph_dict['Spectrum'].LineRef.set_xdata([self.refFreq])
+            self.graph_dict['Spectrum'].LineRef.set_ydata([self.refSpec])
+            self.graph_dict['Spectrum'].LineRef.set_linestyle('--')
+        EOS_graph.update_graph()
+        self.graph_dict['Spectrum'].update_graph()
+            #Steps in wavelength
+        for j in range(len(self.lamda_array)):
+            answer = messagebox.askokcancel(title='Verify Wavelength', message='Are you sure the laser is at ' + str(int(self.lamda_array[j])) + ' nm?', icon=messagebox.WARNING)
+            if not answer:
+                self.running = False
+                return
+            
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(move[0])
+            self.PI.set_velocity(self.vel_var)
+            
+            pos = np.zeros(nsteps+1)
+            self.S = np.zeros(nsteps+1)
+            self.t= np.zeros(nsteps+1)
+            
+                # Main scanning and measurements
+            for i in range(nsteps+1):
+                # Move stage to required position
+                self.PI.go_2position(move[i])
+                # Measure real position
+                pos[i] = self.PI.get_position()
+                # Measure signal
+                self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
+                self.S[i] = np.mean(self.Zurich_acquire())*1000
+                
+                # Actualise progress bar
+                if progress:
+                    progress['value'] = (i)/(nsteps)
+                    progress.update()
+                # Actualise graph if required
+                if (time.time() - last_gu) > update_time:
+                    scan_graph.Line.set_xdata(iteration[:i])
+                    scan_graph.Line.set_ydata(pos[:i])
+                    scan_graph.update_graph()
+                    EOS_graph.Line.set_xdata(self.t[:i])
+                    EOS_graph.Line.set_ydata(self.S[:i])
+                    EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+                    EOS_graph.update_graph()
+                    
+                    last_gu = time.time()
+                    
+                if not self.running:
+                    break
+            
+            
+            # data = np.array([self.t,self.S])
+            print(self.t,self.S)
+            self.data_array[j,0]=self.t
+            self.data_array[j,1]=self.S
+
+            
+            if not self.running:
+                    break
+        if not self.running:
+
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(min_pos)
+            self.PI.set_velocity(self.vel_var)
+            messagebox.showinfo(title='Error', message='Experiment was aborted')
+        else:
+
+            self.PI.set_velocity(return_vel)
+            self.PI.go_2position(min_pos)
+            self.PI.set_velocity(self.vel_var)
+            scan_graph.Line.set_xdata(iteration)
+            scan_graph.Line.set_ydata(pos)
+            scan_graph.update_graph()
+            EOS_graph.Line.set_xdata(self.t)
+            EOS_graph.Line.set_ydata(self.S)
+            EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+            EOS_graph.update_graph()
+            
+            dp = np.std(pos-move)
+            messagebox.showinfo(title='INFO', message='Measurements is done.' + str(nsteps) + ' Steps done with displacement repeatability of ' + str(round(dp*1000,2)) + ' micrometer')
+        
+            # Display spectrum graph
+            spec_t = self.t*1e-15
+            t_sort, indices = np.unique(spec_t,return_index=True)
+            S_sort = self.S[indices]
+            func = interp.interp1d(t_sort, S_sort,kind='quadratic')
+            t_interp = np.linspace(t_sort.min(),t_sort.max(),len(t_sort))
+            E_interp = func(t_interp)
+            self.v,self.A = fQ.ezfft(t_interp,E_interp)
+            self.AA = np.abs(self.A)**2
+            self.AA = self.AA/np.max(self.AA)
+            self.v = self.v/1e12
+            Spectrum_graph = self.graph_dict['Spectrum']
+            Spectrum_graph.axes.set_ylim([0, 1.1*np.max(self.AA)])
+            Spectrum_graph.axes.set_xlim([np.min(self.v), np.max(self.v)])
+            Spectrum_graph.Line.set_xdata([self.v])
+            Spectrum_graph.Line.set_ydata([self.AA])
+            
+            if self.phaseExists is False:
+                        self.Phase_graph_ax = Spectrum_graph.axes.twinx()
+                        self.LinePhase, = self.Phase_graph_ax.plot([],[],'m')
+                        self.phaseExists = True
+            phi = np.arctan2(self.A.imag,self.A.real)
+            phi = np.unwrap(phi)
+            a,b = np.polyfit(self.v,phi,deg=1,w=self.AA)
+            slope = a*self.v+b
+            phi = phi - slope
+            self.Phase_graph_ax.set_ylim([-2*np.pi,2*np.pi])
+            self.LinePhase.set_xdata(self.v)
+            self.LinePhase.set_ydata([phi])
+            self.LinePhase.set_linestyle(':')
+            Spectrum_graph.update_graph()
+        
+        # Going back to initial state
+        self.running = False
+        progress['value'] = 0
+        progress.update()
+        self.stop_button['state'] = 'disabled'
+        self.start_button['state'] = 'normal'
+        self.save_button['state'] = 'normal'
+        self.RefSignal_button['state'] = 'normal'
+        self.RefOff_button['state'] = 'normal'
+        self.Log_button['state'] = 'normal'
+
+

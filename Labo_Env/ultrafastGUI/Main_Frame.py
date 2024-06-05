@@ -2028,6 +2028,13 @@ class Experiment(ttk.LabelFrame):
                              'D-Scan trace':['Wavelengths [nm]','Dispersion Length [mm]'],
                              'Retrieved pulse (time)':['Time [fs]','Normalized power'],
                              'Retrieved pulse (frequency)':['Frequency [THz]','Normalized power density']})        
+        create_layout(name='BSV Tunneling', function_=Experiment_file.BSVTunnel,
+                      option=['Spectrometer', 'Physics_Linear_Stage'],
+                      graph={'Spectro': ['Wavelength', 'Intensity'],
+                             'Scanning': ['Step number', 'Measured stage position [mm]'],
+                             'Signal':['Time (fs)','Signal (mV)'],
+                             'Spectrum':['Frequency (THz)','Normalized intensity']})
+
 
         frame_switch(self.experiment_dict, experiment_name.get())
         for i in range(1):
