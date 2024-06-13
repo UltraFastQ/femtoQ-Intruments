@@ -7263,7 +7263,7 @@ class BSVTunnel:
         in_channel = 0
         osc_index = 0
     #    frequency = 400e3
-        boxcar_index = 0
+        boxcar_index = 0 
         inputpwa_index = 0
         amplitude = 0.6
         frequency = 39.063e6
@@ -7463,9 +7463,6 @@ class BSVTunnel:
         max_pos = max_pos.get()
         min_pos = min_pos.get()
         step = step.get()/1000
-        lamda_min=int(lamda_min.get())
-        lamda_max=int(lamda_max.get())
-        lamda_delta=int(lamda_delta.get())
         
         update_time = update_time.get()
 
@@ -7496,12 +7493,6 @@ class BSVTunnel:
         iteration = np.linspace(0, nsteps, nsteps+1)
         move = np.linspace(min_pos, max_pos, nsteps+1)
 
-
-            # Wavelength steps initialization
-        steps_lamda = int(np.floor((lamda_max-lamda_min)/lamda_delta)+1)
-        self.lamda_array=np.linspace(lamda_min,lamda_max,steps_lamda)
-        self.data_array = np.zeros([steps_lamda,2,nsteps+1])
-
             # Variables for the graph update
         
         last_gu = time.time()
@@ -7527,59 +7518,46 @@ class BSVTunnel:
             self.graph_dict['Spectrum'].LineRef.set_linestyle('--')
         EOS_graph.update_graph()
         self.graph_dict['Spectrum'].update_graph()
-            #Steps in wavelength
-        for j in range(len(self.lamda_array)):
-            answer = messagebox.askokcancel(title='Verify Wavelength', message='Are you sure the laser is at ' + str(int(self.lamda_array[j])) + ' nm?', icon=messagebox.WARNING)
+
+        answer = messagebox.askokcancel(title='Ready to start Data Acquisition?', icon=messagebox.WARNING)
+        if not answer:
+            self.running = False
+            return
+        
+        self.PI.set_velocity(return_vel)
+        self.PI.go_2position(move[0])
+        self.PI.set_velocity(self.vel_var)
+        
+        pos = np.zeros(nsteps+1)
+            
+        for i in range(nsteps+1):
+            # Move stage to required position
+            self.PI.go_2position(move[i])
+            # Measure real position
+            pos[i] = self.PI.get_position()
+            # Measure signal
+            
+            answer = messagebox.askokcancel(title='Acquire at Position', message=' We are at iteration ' + str(int(iteration[i]+1)) + '\n Please save data when buffer is full', icon=messagebox.WARNING)
             if not answer:
                 self.running = False
                 return
-            
-            self.PI.set_velocity(return_vel)
-            self.PI.go_2position(move[0])
-            self.PI.set_velocity(self.vel_var)
-            
-            pos = np.zeros(nsteps+1)
-            self.S = np.zeros(nsteps+1)
-            self.t= np.zeros(nsteps+1)
-            
-                # Main scanning and measurements
-            for i in range(nsteps+1):
-                # Move stage to required position
-                self.PI.go_2position(move[i])
-                # Measure real position
-                pos[i] = self.PI.get_position()
-                # Measure signal
-                self.t[i] = (pos[i]-pos[0])*2/1000/c*1e15
-                self.S[i] = np.mean(self.Zurich_acquire())*1000
-                
-                # Actualise progress bar
-                if progress:
-                    progress['value'] = (i)/(nsteps)
-                    progress.update()
-                # Actualise graph if required
-                if (time.time() - last_gu) > update_time:
-                    scan_graph.Line.set_xdata(iteration[:i])
-                    scan_graph.Line.set_ydata(pos[:i])
-                    scan_graph.update_graph()
-                    EOS_graph.Line.set_xdata(self.t[:i])
-                    EOS_graph.Line.set_ydata(self.S[:i])
-                    EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
-                    EOS_graph.update_graph()
-                    
-                    last_gu = time.time()
-                    
-                if not self.running:
-                    break
-            
-            
-            # data = np.array([self.t,self.S])
-            print(self.t,self.S)
-            self.data_array[j,0]=self.t
-            self.data_array[j,1]=self.S
 
-            
-            if not self.running:
-                    break
+            # Actualise progress bar
+            if progress:
+                progress['value'] = (i)/(nsteps)
+                progress.update()
+            # Actualise graph if required
+            if (time.time() - last_gu) > update_time:
+                scan_graph.Line.set_xdata(iteration[:i])
+                scan_graph.Line.set_ydata(pos[:i])
+                scan_graph.update_graph()
+                EOS_graph.Line.set_xdata(self.t[:i])
+                EOS_graph.Line.set_ydata(self.S[:i])
+                EOS_graph.axes.set_ylim([1.2*np.min(self.S),1.2*np.max(self.S)])
+                EOS_graph.update_graph()
+                
+                last_gu = time.time()
+                            
         if not self.running:
 
             self.PI.set_velocity(return_vel)
