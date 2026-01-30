@@ -18,8 +18,9 @@ import zhinst.utils
 from _horiba_ihr import HoribaIHR320
 import femtoQ.pulse_retrieval as fqpr
 from class_NanoPZ import NanoPZ
-import instrumental.drivers.spectrometers.thorlabs_ccs as ccscode
-from pylablib.devices import Thorlabs
+#import instrumental.drivers.spectrometers.thorlabs_ccs as ccscode
+#import thorlabs_ccs as ccscode
+#from pylablib.devices import Thorlabs
 
 
 class CreateLayout:
