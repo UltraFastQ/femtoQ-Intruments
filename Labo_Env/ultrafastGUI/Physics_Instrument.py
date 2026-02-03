@@ -127,8 +127,10 @@ class LinearStage:
                     for ii, comPort in enumerate(comPorts):
                         try:
                             gcs.ConnectRS232(comPort,115200)
+                            print('Connecté.')
                             break
-                        except:
+                        except Exception as e:
+                            print('Erreur %s' % e)
                             pass
                     self.device = gcs
                     self.axes = self.device.axes[0]

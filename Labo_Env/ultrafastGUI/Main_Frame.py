@@ -2046,6 +2046,12 @@ class Experiment(ttk.LabelFrame):
 
 if __name__ == '__main__':
     app = MainFrame()
-    app.mainloop()
+    try:
+        app.mainloop()
+    except KeyboardInterrupt:
+        print('Fin...')
+    finally:
+        app.quit()
+        print('Sorti.')
 
 #Ceci est un exemple
