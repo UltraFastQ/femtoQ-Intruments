@@ -218,6 +218,7 @@ class LinearStage:
             messagebox.showinfo(title='Error', message='You are either over or under the maximum or lower limit of '+
                                 'of your physik instrument device')
             return
+        
         # Defines the number of steps needed to do the full range
         nsteps = int(np.abs(max_pos - min_pos)/steps)
         for i in range(iteration):

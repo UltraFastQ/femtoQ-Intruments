@@ -18,9 +18,8 @@ import zhinst.utils
 from _horiba_ihr import HoribaIHR320
 import femtoQ.pulse_retrieval as fqpr
 from class_NanoPZ import NanoPZ
-#import instrumental.drivers.spectrometers.thorlabs_ccs as ccscode
-#import thorlabs_ccs as ccscode
-#from pylablib.devices import Thorlabs
+import instrumental.drivers.spectrometers.thorlabs_ccs as ccscode
+from pylablib.devices import Thorlabs
 
 
 class CreateLayout:
@@ -7215,10 +7214,7 @@ class FROG_DFC:
         timeStamp = datetime.datetime.now().strftime("%Y-%m-%d %Hh%M_%S")
         np.savez(timeStamp+'_FROG_trace_pythonformat'+str(f"{laser.get()}")+'_pm'+str(f"{max_pos.get()}")+"um_"+str(f"{step.get()}")+"um_"+str(f"{inte_time.get()}")+"ms_"+str(f"{nb_s.get()}")+"spectra_per_delay",wavelengths = self.wl_crop,time = self.timeDelay,trace = self.trace)
         
-        #np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_M.dat', self.trace, fmt='%.18e', delimiter='\t', newline='\n')       
-        #np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_L.dat', self.wl_crop, fmt='%.18e', delimiter='\t', newline='\n')  
-        #np.savetxt(timeStamp+'_FROG_trace_matlabformat'+'_T.dat', self.timeDelay, fmt='%.18e', delimiter='\t', newline='\n')
-        
+
     def stop_experiment(self):
         self.running = False
         self.spectro_start_button['state'] = 'normal'
